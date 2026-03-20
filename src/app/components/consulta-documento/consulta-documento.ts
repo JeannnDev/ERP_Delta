@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, signal, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LoadingService } from '../../services/loading.service';
 import { FormsModule } from '@angular/forms';
@@ -55,6 +55,10 @@ export interface ResultadoConsulta {
     providers: [PoNotificationService],
 })
 export class ConsultaDocumento implements OnInit {
+    private poNotification = inject(PoNotificationService);
+    private loadingService = inject(LoadingService);
+    private platformId = inject(PLATFORM_ID);
+
     /* ------------------------------------------------------------------ *
      * Estado                                                              *
      * ------------------------------------------------------------------ */
@@ -115,12 +119,6 @@ export class ConsultaDocumento implements OnInit {
     ];
 
     historico = signal<ResultadoConsulta[]>([]);
-
-    constructor(
-        private poNotification: PoNotificationService,
-        private loadingService: LoadingService,
-        @Inject(PLATFORM_ID) private platformId: Object
-    ) { }
 
     ngOnInit() {
         if (isPlatformBrowser(this.platformId)) {
