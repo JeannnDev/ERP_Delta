@@ -1,0 +1,13 @@
+/* Força a imagem/logo do menu do PO UI a centralizar em relação ao restante da barra */
+::ng-deep .po-menu-header-logo,
+::ng-deep .po-menu-logo {
+    display: flex !important;
+    justify-content: center !important;
+    width: 100% !important;
+}
+
+::ng-deep .po-menu-header-logo img,
+::ng-deep .po-menu-logo img {
+    margin: 0 auto !important;
+    display: block !important;
+}

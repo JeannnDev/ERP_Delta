@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -53,11 +53,12 @@ export interface ResultadoConsulta {
     styleUrl: './consulta-documento.css',
     providers: [PoNotificationService],
 })
-export class ConsultaDocumento {
+export class ConsultaDocumento implements OnInit {
     /* ------------------------------------------------------------------ *
      * Estado                                                              *
      * ------------------------------------------------------------------ */
     tipoDocumento: TipoDocumento = 'cpf';
+    carregandoTela = true;
     documento = '';
     carregando = signal(false);
     resultado = signal<ResultadoConsulta | null>(null);
@@ -115,6 +116,13 @@ export class ConsultaDocumento {
     historico = signal<ResultadoConsulta[]>([]);
 
     constructor(private poNotification: PoNotificationService) { }
+
+    ngOnInit() {
+        // Simula o tempo de carregamento inicial ao abrir a aba
+        setTimeout(() => {
+            this.carregandoTela = false;
+        }, 1000);
+    }
 
     /* ------------------------------------------------------------------ *
      * Ao trocar tipo, limpa documento e resultado                         *

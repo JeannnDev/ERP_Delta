@@ -1,5 +1,6 @@
-<po-page-default p-title="Consulta de CPF / CNPJ" [p-breadcrumb]="breadcrumb">
+<po-loading-overlay [hidden]="!carregandoTela" [p-screen-lock]="true" p-text="Carregando dados"></po-loading-overlay>
 
+<po-page-default p-title="Consulta de CPF / CNPJ">
     <!-- ─── Barra de busca otimizada ────────────────────────────── -->
     <po-container class="container-consulta po-mt-2">
 
