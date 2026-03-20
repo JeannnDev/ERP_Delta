@@ -1,34 +1,34 @@
 <po-page-default p-title="Consulta de CPF / CNPJ" [p-breadcrumb]="breadcrumb">
 
-    <!-- ─── Seção de busca ──────────────────────────────────────────── -->
-    <po-container p-title="Identificação do Documento">
+    <!-- ─── Barra de busca otimizada ────────────────────────────── -->
+    <po-container class="container-consulta po-mt-2">
 
-        <!-- Tipo de documento (radio) - usa ngModel como qualquer campo PO -->
-        <div class="po-row po-mt-1">
-            <div class="po-col-12">
-                <po-radio-group name="tipoDocumento" p-label="Tipo de documento" [p-options]="opcoesDocumento"
+        <div class="row-alinhada po-row">
+
+            <!-- Tipo (sem label em cima por causa do alinhamento) -->
+            <div class="po-col-12 po-col-md-3">
+                <po-radio-group name="tipoDocumento" p-label="Modalidade" [p-options]="opcoesDocumento"
                     [(ngModel)]="tipoDocumento" (p-change)="onTipoChange($event)"></po-radio-group>
             </div>
-        </div>
 
-        <!-- Campo de entrada do documento -->
-        <div class="po-row">
-            <div class="po-col-12 po-col-md-6 po-col-lg-4">
-                <po-input name="documento" [p-label]="labelDocumento" [p-placeholder]="placeholderDocumento"
-                    [p-mask]="maskDocumento" [p-error-pattern]="erroDocumento" [(ngModel)]="documento" p-clean
-                    p-required [p-disabled]="$any(carregando())" (keyup.enter)="consultar()"></po-input>
+            <!-- Input de busca -->
+            <div class="po-col-12 po-col-md-5">
+                <po-input name="documento" [p-label]="'Número do ' + labelDocumento"
+                    [p-placeholder]="placeholderDocumento" [p-mask]="maskDocumento" [p-error-pattern]="erroDocumento"
+                    [(ngModel)]="documento" p-clean p-required [p-disabled]="$any(carregando())"
+                    (keyup.enter)="consultar()"></po-input>
             </div>
-        </div>
 
-        <!-- Ações -->
-        <div class="po-row">
-            <div class="po-col-12 consulta-acoes">
+            <!-- Botão consultar já em linha se houver espaço (ou na row seguinte se preferir) -->
+            <div class="po-col-12 po-col-md-4 consulta-acoes"
+                style="margin-top: 0; align-items: flex-end; padding-bottom: 8px;">
                 <po-button p-label="Consultar" p-kind="primary" p-icon="po-icon-search" [p-loading]="carregando()"
                     [p-disabled]="carregando()" (p-click)="consultar()"></po-button>
 
                 <po-button p-label="Limpar" p-kind="secondary" p-icon="po-icon-clean" [p-disabled]="carregando()"
                     (p-click)="limpar()"></po-button>
             </div>
+
         </div>
 
     </po-container>
