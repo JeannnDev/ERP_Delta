@@ -1,0 +1,56 @@
+<po-page-default p-title="Consulta de CPF / CNPJ">
+    <!-- ─── Barra de busca otimizada ────────────────────────────── -->
+    <po-container class="container-consulta po-mt-2">
+
+        <div class="row-alinhada po-row">
+
+            <!-- Tipo (sem label em cima por causa do alinhamento) -->
+            <div class="po-col-12 po-col-md-3">
+                <po-radio-group name="tipoDocumento" p-label="Modalidade" [p-options]="opcoesDocumento"
+                    [(ngModel)]="tipoDocumento" (p-change)="onTipoChange($event)"></po-radio-group>
+            </div>
+
+            <!-- Input de busca -->
+            <div class="po-col-12 po-col-md-5">
+                <po-input name="documento" [p-label]="'Número do ' + labelDocumento"
+                    [p-placeholder]="placeholderDocumento" [p-mask]="maskDocumento" [p-error-pattern]="erroDocumento"
+                    [(ngModel)]="documento" p-clean p-required [p-disabled]="$any(carregando())"
+                    (keyup.enter)="consultar()"></po-input>
+            </div>
+
+            <!-- Botão consultar já em linha se houver espaço (ou na row seguinte se preferir) -->
+            <div class="po-col-12 po-col-md-4 consulta-acoes"
+                style="margin-top: 0; align-items: flex-end; padding-bottom: 8px;">
+                <po-button p-label="Consultar" p-kind="primary" p-icon="po-icon-search" [p-loading]="carregando()"
+                    [p-disabled]="carregando()" (p-click)="consultar()"></po-button>
+
+                <po-button p-label="Limpar" p-kind="secondary" p-icon="po-icon-clean" [p-disabled]="carregando()"
+                    (p-click)="limpar()"></po-button>
+            </div>
+
+        </div>
+
+    </po-container>
+
+    <!-- ─── Resultado da consulta ───────────────────────────────────── -->
+    @if (resultado()) {
+    <po-container [p-title]="'Resultado da Consulta — ' + labelDocumento" class="po-mt-2">
+
+        <div class="po-mt-2">
+            <po-dynamic-view 
+                [p-fields]="getViewFields()" 
+                [p-value]="resultado()!">
+            </po-dynamic-view>
+        </div>
+    </po-container>
+    }
+
+    <!-- ─── Histórico de consultas ──────────────────────────────────── -->
+    @if (historico().length > 0) {
+    <po-container p-title="Histórico de Consultas" class="po-mt-2">
+        <po-table [p-columns]="colunas" [p-items]="historico()" [p-striped]="true" [p-sort]="true"
+            [p-height]="250"></po-table>
+    </po-container>
+    }
+
+</po-page-default>

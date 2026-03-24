@@ -1,0 +1,52 @@
+.container-consulta {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.row-alinhada {
+  display: flex;
+  align-items: flex-end;
+  /* Alinha o rádio e o input pela parte de baixo */
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.consulta-acoes {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+
+
+.resultado-situacao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* Garante que os radios fiquem em linha sem quebrar o label */
+::ng-deep .po-radio-group-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* CORREÇÃO CRÍTICA: Impede a quebra do texto CNPJ e dá espaço */
+::ng-deep .po-radio-group-item {
+  white-space: nowrap !important;
+  margin-right: 16px !important;
+  min-width: 80px;
+}
+
+/* Ajuste fino na label do radio group para não empurrar os itens */
+::ng-deep .po-radio-group-label {
+  margin-bottom: 8px !important;
+}

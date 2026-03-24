@@ -1,0 +1,16 @@
+/* Arquivo de estilo limpo - a classe sample-container foi removida pois o loading agora é de tela cheia */
+
+::ng-deep .po-radio-group-content {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 16px !important;
+}
+
+::ng-deep .po-radio-group-item {
+    white-space: nowrap !important;
+    min-width: 100px;
+}
+
+.po-row {
+    margin-bottom: 8px;
+}

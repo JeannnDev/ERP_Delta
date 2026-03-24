@@ -9,6 +9,9 @@ import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
+// Permissões de host para evitar o erro 'Bad Request' no acesso via IP
+process.env['NG_ALLOWED_HOSTS'] = '192.168.1.28,localhost,127.0.0.1';
+
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
