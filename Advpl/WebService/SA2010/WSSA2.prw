@@ -153,10 +153,10 @@ WSMETHOD GET WSRECEIVE RECEIVE WSSERVICE WsFornecedor
     oIntegracao['success'] 	:= .T.
     oIntegracao['data'] 	:= ""
 
-    RpcClearEnv()
-    RpcSetType(3)
+    // RpcClearEnv()
+    // RpcSetType(3)
 
-    If RpcSetEnv("01", ::FILIAL, Nil, Nil, "COM", Nil, {"SA2"})
+    // If RpcSetEnv("01", ::FILIAL, Nil, Nil, "COM", Nil, {"SA2"})
 
         SA2->(DbSetOrder(3))
 
@@ -191,9 +191,9 @@ WSMETHOD GET WSRECEIVE RECEIVE WSSERVICE WsFornecedor
             U_SetErro("Fornecedor não encontrado.")
         EndIf
 
-    Else
-        U_SetErro("Não foi possível conectar na empresa e filial informados.")
-    EndIf
+    // Else
+    //     U_SetErro("Não foi possível conectar na empresa e filial informados.")
+    // EndIf
 
     ::SetResponse(oIntegracao:toJson())
 
