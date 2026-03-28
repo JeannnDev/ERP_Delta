@@ -1,49 +1,17 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { PedidoCsv, ResultadoImportacao } from '../models/importacao.model';
 import * as XLSX from 'xlsx';
-
-// Auxiliar para ler variáveis do .env (adaptado do FornecedorService)
-const getEnv = (key: string, defaultValue: string): string => {
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key]!;
-  }
-  return defaultValue;
-};
-
-const CONFIG = {
-  apiBaseUrl: getEnv('apiBaseUrl', 'http://localhost:8080/rest').replace(/\/$/, ''),
-  authorization: getEnv('Authorization', 'YWRtaW46amVhbg=='), 
-  empresa: getEnv('EMPRESA', '01'),
-  filial: getEnv('FILIAL', '99')
-};
+import { ProtheusApiService } from './protheus-api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImportacaoService {
-  private http = inject(HttpClient);
+  private api = inject(ProtheusApiService).resource('WsPedidoVenda');
   
-  // Recurso no Protheus (Ainda a ser criado)
-  private readonly resource = `${CONFIG.apiBaseUrl}/WsPedidoVenda`;
-
-
-  private getHeaders() {
-    const auth = CONFIG.authorization.trim();
-    const finalAuth = auth.startsWith('Basic ') ? auth : `Basic ${auth}`;
-
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': finalAuth,
-      'EMPRESA': CONFIG.empresa.trim(),
-      'FILIAL': CONFIG.filial.trim()
-    });
-  }
-
   /**
    * Lê CSV ou XLSX e converte para array de PedidoCsv.
-   * Mudado para ArrayBuffer para maior compatibilidade.
    */
   async lerArquivo(arquivo: File): Promise<PedidoCsv[]> {
     return new Promise((resolve, reject) => {
@@ -102,16 +70,15 @@ export class ImportacaoService {
 
   /**
    * Envia os pedidos para o Protheus.
-   * Por enquanto, estruturado para o futuro WebService.
    */
   importar(pedidos: PedidoCsv[], origem: string): Observable<ResultadoImportacao> {
     const payload = { origem, pedidos };
-    const url = `${this.resource}/IMPORTAR`;
+    const url = `/IMPORTAR`;
     
     console.log('--- ENVIANDO PARA O PROTHEUS (IMPORTAR) ---');
-    console.log('URL:', url);
+    console.log('URL:', this.api.baseUrl + url);
     console.log('PAYLOAD:', JSON.stringify(payload, null, 2));
 
-    return this.http.post<ResultadoImportacao>(url, payload, { headers: this.getHeaders() });
+    return this.api.post<ResultadoImportacao>(url, payload);
   }
 }
