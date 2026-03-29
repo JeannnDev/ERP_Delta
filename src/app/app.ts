@@ -31,9 +31,21 @@ export class App {
     });
   }
 
-  readonly menus: PoMenuItem[] =
-    [
-      { label: 'Cadastro fornecedor', link: '/fornecedor', icon: 'an an-identification-card' },
-      { label: 'Consulta fornecedor', link: '/consulta', icon: 'an an-magnifying-glass' }
-    ];
+  readonly menus: PoMenuItem[] = [
+    {
+      label: 'Fornecedores',
+      icon: 'an an-users',
+      subItems: [
+        { label: 'Cadastro', link: '/fornecedor', icon: 'an an-identification-card' },
+        { label: 'Consulta', link: '/consulta', icon: 'an an-magnifying-glass' }
+      ]
+    },
+    {
+      label: 'Pedidos de Compra',
+      icon: 'an an-shopping-cart',
+      subItems: [
+        { label: 'Importar Pedidos', link: '/upload', icon: 'an an-upload-simple' }
+      ]
+    }
+  ];
 }

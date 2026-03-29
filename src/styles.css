@@ -1,7 +1,78 @@
 @import url('@po-ui/style/css/po-theme-default.min.css');
 
+:root {
+    /* Cores Principais */
+    --color-primary: #369ED8;
+    --color-primary-dark: #2a7ca9;
+    --color-primary-light: #5fb1df;
+    
+    --color-secondary: #B1C8CA;
+    --color-secondary-dark: #8da4a6;
+    --color-secondary-light: #d3e2e3;
+
+/* Cores de Ação (Aqui morava o Roxo) */
+    --color-action-default: #369ED8;
+    --color-action-hover: #2a7ca9;
+    --color-action-active: #2a7ca9;
+    --color-action-pressed: #2a7ca9;
+    --color-action-selected: #369ED8;
+    
+    /* Variáveis específicas de background de seleção do PO UI */
+    --color-action-item-selected: #369ED8;
+    --color-action-item-active: #369ED8;
+
+    /* Força ícones ativos a serem azuis */
+    --color-white: #ffffff;
+    --color-black: #000000;
+}
+
+/* Força TODOS os ícones do sistema a não serem roxos */
+.po-icon {
+    color: inherit;
+}
+
+/* Reset de cores para o Menu do PO UI */
+.po-menu-item-selected, 
+.po-menu-sub-item-selected {
+    background-color: rgba(54, 158, 216, 0.1) !important;
+    color: #369ED8 !important;
+    border-left-color: #369ED8 !important;
+}
+
+.po-menu-item-selected .po-icon,
+.po-menu-sub-item-selected .po-icon,
+.po-menu-item:focus .po-icon,
+.po-menu-sub-item:focus .po-icon {
+    color: #369ED8 !important;
+}
+
+/* Cor do texto, ícones e FUNDO ao passar o mouse ou focar */
+.po-menu-item:hover, .po-menu-sub-item:hover,
+.po-menu-item:focus, .po-menu-sub-item:focus {
+    background-color: rgba(54, 158, 216, 0.08) !important;
+    color: #369ED8 !important;
+}
+
+.po-menu-item:hover .po-icon, .po-menu-sub-item:hover .po-icon {
+    color: #369ED8 !important;
+}
+
+/* Evitar o roxo ao clicar (active) */
+.po-menu-item:active, .po-menu-sub-item:active {
+    background-color: rgba(54, 158, 216, 0.15) !important;
+}
+
+
+/* Cor de ícones dentro de botões e outros componentes */
+.po-button-primary .po-icon {
+    color: #ffffff !important;
+}
+
+
 body {
     margin: 0;
     padding: 0;
-    background-color: #f5f5f5;
+    font-family: 'Inter', sans-serif;
+    background-color: #f8fafc;
 }
+

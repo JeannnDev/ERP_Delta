@@ -1,0 +1,14 @@
+/* Estilos locais para o componente de importação */
+.po-mt-4 {
+  margin-top: 1.5rem;
+}
+
+.po-font-text-small {
+  margin-top: 0.5rem;
+  color: #64748b;
+}
+
+po-table {
+  display: block;
+  margin-top: 1rem;
+}

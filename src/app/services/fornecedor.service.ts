@@ -1,32 +1,23 @@
 import { inject, Injectable, signal, computed } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { lastValueFrom } from 'rxjs';
 import { AdvplField, AdvplRequest, Fornecedor } from '../models/fornecedor.model';
 // O usuário solicitou não usar environment.ts e consultar do .env
 // No Angular com SSR (Node), o process existe no servidor, mas não no navegador.
 // Usamos uma checagem segura para evitar o erro "process is not defined".
-const getEnv = (key: string, defaultValue: string): string => {
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key]!;
-  }
-  return defaultValue;
-};
+import { ProtheusApiService } from './protheus-api.service';
 
-const CONFIG = {
-  // Se a URL no .env já vier com o recurso /WsFornecedor/, nós limpamos para não duplicar
-  apiBaseUrl: getEnv('apiBaseUrl', 'http://localhost:8080/rest').replace(/\/WsFornecedor\/?$/, '').replace(/\/$/, ''),
-  authorization: getEnv('Authorization', 'YWRtaW46amVhbg=='), 
-  empresa: getEnv('EMPRESA', '01'),
-  filial: getEnv('FILIAL', '99')
-};
+interface ProtheusResponse {
+  response?: string;
+  success?: boolean;
+  data?: unknown;
+  Data?: unknown | unknown[];
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class FornecedorService {
-  private http = inject(HttpClient);
-  // Base do recurso no Protheus
-  private resource = `${CONFIG.apiBaseUrl}/WsFornecedor`; 
+  private api = inject(ProtheusApiService).resource('WsFornecedor');
   
   // -- ESTADO REATIVO (Signals) --
   private fornecedoresSignal = signal<Fornecedor[]>([]);
@@ -37,38 +28,25 @@ export class FornecedorService {
   readonly loading = computed(() => this.loadingSignal());
   readonly message = computed(() => this.messageSignal());
 
-  private getHeaders() {
-    // Garante que o header Authorization comece com "Basic "
-    const auth = CONFIG.authorization.trim();
-    const finalAuth = auth.startsWith('Basic ') ? auth : `Basic ${auth}`;
-
-    return new HttpHeaders({
-      'Content-Type': 'application/json',
-      'Authorization': finalAuth,
-      'EMPRESA': CONFIG.empresa.trim(),
-      'FILIAL': CONFIG.filial.trim()
-    });
-  }
-
   /**
    * Traz os fornecedores (GET) - Usando responseType 'text' para evitar erro de JSON inválido
    */
-  async getAll(cCgc: string = ''): Promise<void> {
+  async getAll(cCgc = ''): Promise<void> {
     this.loadingSignal.set(true);
     this.messageSignal.set('');
-    const url = `${this.resource}/GET${cCgc ? `?cCgc=${cCgc}` : ''}`;
+    const url = `/GET${cCgc ? `?cCgc=${cCgc}` : ''}`;
     
     try {
       const rawResponse = await lastValueFrom(
-        this.http.get(url, { headers: this.getHeaders(), responseType: 'text' })
+        this.api.get<string>(url, { responseType: 'text' })
       );
       
-      let response: any;
+      let response: ProtheusResponse;
       try {
-        response = JSON.parse(rawResponse);
-      } catch (e) {
+        response = JSON.parse(rawResponse as string);
+      } catch {
         // Se falhar o parse, assumimos que é uma mensagem direta (ex: Fornecedor não encontrado)
-        this.messageSignal.set(rawResponse.trim());
+        this.messageSignal.set((rawResponse as string).trim());
         this.fornecedoresSignal.set([]);
         return;
       }
@@ -81,11 +59,11 @@ export class FornecedorService {
         list = item ? [item] : [];
       } else if (response?.Data) {
         const dataArr = Array.isArray(response.Data) ? response.Data : [response.Data];
-        list = dataArr.map((i: any) => this.mapFromAdvpl(i)!);
+        list = dataArr.map((i) => this.mapFromAdvpl(i)!).filter(Boolean) as Fornecedor[];
       }
       
       this.fornecedoresSignal.set(list);
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.fornecedoresSignal.set([]);
       this.extractError(error);
       throw error;
@@ -105,18 +83,18 @@ export class FornecedorService {
     const doc = (fornecedor.A2_CGC || '').replace(/\D/g, ''); // Limpa pontuação (somente números)
     
     // O POST/INCLUIR agora também usa o CGC como query parameter
-    const url = `${this.resource}/INCLUIR/${doc ? `?cCgc=${doc}` : ''}`;
+    const url = `/INCLUIR/${doc ? `?cCgc=${doc}` : ''}`;
     const body = this.mapToAdvpl(fornecedor);
     
     console.log('--- ENVIANDO PARA O PROTHEUS (INCLUIR) ---');
-    console.log('URL:', url);
+    console.log('URL:', this.api.baseUrl + url);
     console.log('PAYLOAD:', JSON.stringify(body, null, 2));
     
     try {
       await lastValueFrom(
-        this.http.post(url, body, { headers: this.getHeaders(), responseType: 'text' })
+        this.api.post<string>(url, body, { responseType: 'text' })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.extractError(error);
       throw error;
     } finally {
@@ -132,18 +110,18 @@ export class FornecedorService {
     const doc = (fornecedor.A2_CGC || '').replace(/\D/g, ''); // Limpa pontuação
     
     // O ALTERAR usa o CGC como parâmetro de querystring: ?cCgc={doc}
-    const url = `${this.resource}/ALTERAR${doc ? `?cCgc=${doc}` : ''}`;
+    const url = `/ALTERAR${doc ? `?cCgc=${doc}` : ''}`;
     const body = this.mapToAdvpl(fornecedor);
     
     console.log('--- ENVIANDO PARA O PROTHEUS (ALTERAR) ---');
-    console.log('URL:', url);
+    console.log('URL:', this.api.baseUrl + url);
     console.log('PAYLOAD:', JSON.stringify(body, null, 2));
 
     try {
       await lastValueFrom(
-        this.http.put(url, body, { headers: this.getHeaders(), responseType: 'text' })
+        this.api.put<string>(url, body, { responseType: 'text' })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.extractError(error);
       throw error;
     } finally {
@@ -157,14 +135,14 @@ export class FornecedorService {
   async delete(cCgc: string): Promise<void> {
     this.loadingSignal.set(true);
     const doc = cCgc.replace(/\D/g, '');
-    const url = `${this.resource}/DELETE${doc ? `?cCgc=${doc}` : ''}`;
+    const url = `/DELETE${doc ? `?cCgc=${doc}` : ''}`;
     
     try {
       await lastValueFrom(
-        this.http.delete(url, { headers: this.getHeaders(), responseType: 'text' })
+        this.api.delete<string>(url, { responseType: 'text' })
       );
       this.fornecedoresSignal.update(list => list.filter(f => f.A2_CGC !== cCgc));
-    } catch (error: any) {
+    } catch (error: unknown) {
       this.extractError(error);
       throw error;
     } finally {
@@ -175,14 +153,15 @@ export class FornecedorService {
   /**
    * Centraliza a extração de mensagens de erro e limpeza de JSONs concatenados
    */
-  private extractError(error: any) {
+  private extractError(error: unknown) {
     let raw = "";
-    if (typeof error.error === 'string') {
-      raw = error.error;
-    } else if (error.error?.response) {
-      raw = error.error.response;
-    } else if (error.message) {
-      raw = error.message;
+    const err = error as { error?: string | { response?: string }; message?: string };
+    if (typeof err.error === 'string') {
+      raw = err.error;
+    } else if (err.error?.response) {
+      raw = err.error.response;
+    } else if (err.message) {
+      raw = err.message;
     }
 
     let msg = "";
@@ -220,23 +199,24 @@ export class FornecedorService {
   /**
    * Transforma [["A2_COD", "111"], ["A2_NOME", "..."]] em Objeto
    */
-  private mapFromAdvpl(data: any): Fornecedor | null {
+  private mapFromAdvpl(data: unknown): Fornecedor | null {
     if (!data || !Array.isArray(data)) return null;
 
-    const obj: any = {};
+    const obj: Record<string, string | number> = {};
 
-    data.forEach(item => {
+    data.forEach((item: unknown) => {
       // Se for o formato [["CAMPO", "VALOR"], ...]
       if (Array.isArray(item) && item.length === 2) {
-        const [campo, valor] = item;
+        const [campo, valor] = item as [string, string | number];
         obj[campo] = typeof valor === 'string' ? valor.trim() : valor;
       } 
       // Se for o formato { campo: "...", valor: "..." }
-      else if (item.campo && item.valor !== undefined) {
-        obj[item.campo] = typeof item.valor === 'string' ? item.valor.trim() : item.valor;
+      else if (item && typeof item === 'object' && 'campo' in item && 'valor' in (item as Record<string, unknown>)) {
+        const field = item as { campo: string, valor: string | number };
+        obj[field.campo] = typeof field.valor === 'string' ? field.valor.trim() : field.valor;
       }
     });
 
-    return Object.keys(obj).length > 0 ? obj : null;
+    return Object.keys(obj).length > 0 ? (obj as Fornecedor) : null;
   }
 }
