@@ -1,0 +1,44 @@
+<po-page-default 
+  p-title="Cadastro de Cliente" 
+  [p-actions]="pageActions">
+
+  <div class="po-row">
+    <div class="po-md-12">
+      <po-dynamic-form
+        #dynamicForm
+        [p-fields]="fields"
+        [p-value]="cliente"
+        (p-value-change)="onClienteChange($any($event))">
+      </po-dynamic-form>
+    </div>
+  </div>
+
+  <po-divider p-label="Clientes Importados"></po-divider>
+  
+  @if (isLoading()) {
+    <po-loading p-text="Comunicando com o Protheus..."></po-loading>
+  }
+
+  <div class="po-row">
+    <div class="po-md-12">
+      <po-list-view
+        p-property-title="A1_NOME"
+        [p-items]="clientes()">
+        <ng-template p-list-view-content-template let-item>
+          <div class="po-row">
+            <div class="po-md-4">
+              <strong>CNPJ:</strong> {{ item.A1_CGC }}
+            </div>
+            <div class="po-md-4">
+              <strong>Cidade:</strong> {{ item.A1_MUN }} - {{ item.A1_EST }}
+            </div>
+            <div class="po-md-4">
+              <strong>Código:</strong> {{ item.A1_COD }} / {{ item.A1_LOJA }}
+            </div>
+          </div>
+        </ng-template>
+      </po-list-view>
+    </div>
+  </div>
+
+</po-page-default>

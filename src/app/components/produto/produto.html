@@ -1,0 +1,44 @@
+<po-page-default 
+  p-title="Cadastro de Produto" 
+  [p-actions]="pageActions">
+
+  <div class="po-row">
+    <div class="po-md-12">
+      <po-dynamic-form
+        #dynamicForm
+        [p-fields]="fields"
+        [p-value]="produto"
+        (p-value-change)="onProdutoChange($any($event))">
+      </po-dynamic-form>
+    </div>
+  </div>
+
+  <po-divider p-label="Produtos Importados"></po-divider>
+  
+  @if (isLoading()) {
+    <po-loading p-text="Comunicando com o Protheus..."></po-loading>
+  }
+
+  <div class="po-row">
+    <div class="po-md-12">
+      <po-list-view
+        p-property-title="B1_DESC"
+        [p-items]="produtos()">
+        <ng-template p-list-view-content-template let-item>
+          <div class="po-row">
+            <div class="po-md-4">
+              <strong>Código SKU:</strong> {{ item.B1_COD }}
+            </div>
+            <div class="po-md-4">
+              <strong>UM:</strong> {{ item.B1_UM }}
+            </div>
+            <div class="po-md-4">
+              <strong>Tipo:</strong> {{ item.B1_TIPO }}
+            </div>
+          </div>
+        </ng-template>
+      </po-list-view>
+    </div>
+  </div>
+
+</po-page-default>

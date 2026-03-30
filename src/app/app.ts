@@ -33,10 +33,10 @@ export class App {
 
   readonly menus: PoMenuItem[] = [
     {
-      label: 'Fornecedores',
+      label: 'Cadastros',
       icon: 'an an-users',
       subItems: [
-        { label: 'Cadastro', link: '/fornecedor', icon: 'an an-identification-card' },
+        { label: 'Fornecedores', link: '/fornecedor', icon: 'an an-identification-card' },
         { label: 'Consulta', link: '/consulta', icon: 'an an-magnifying-glass' }
       ]
     },
@@ -45,6 +45,20 @@ export class App {
       icon: 'an an-shopping-cart',
       subItems: [
         { label: 'Importar Pedidos', link: '/upload', icon: 'an an-upload-simple' }
+      ]
+    },
+    {
+      label: 'Clientes',
+      icon: 'an an-user',
+      subItems: [
+        { label: 'Clientes', link: '/cliente', icon: 'an an-user' }
+      ]
+    },
+    {
+      label: 'Produtos',
+      icon: 'an an-package',
+      subItems: [
+        { label: 'Produtos', link: '/produto', icon: 'an an-package' }
       ]
     }
   ];
