@@ -1,6 +1,5 @@
 
 /**-------------------------------------------------------------------------------------------**/
-/** MODULO		  : SIGACOM		                      										  **/
 /** PROJETO	      : WebService para Cadastro de Fornecedores						          **/
 /** DATA 		  : 21/03/2026														          **/
 /** RESPONSÁVEL	  : Jean Correa                    	  										  **/

@@ -1,12 +1,24 @@
-#Include "Totvs.ch"
-#Include "RestFul.ch"
 
-/*/{Protheus.doc} WsProduto
-Web Service REST para manuten√ß√£o de Produtos (SB1)
-@author Antigravity
-@since 29/03/2026
-/*/
-WSRESTFUL WsProduto DESCRIPTION "Servi√ßo REST para Produtos Protheus"
+/**-------------------------------------------------------------------------------------------**/
+/** PROJETO	      : WebService para Cadastro de Produtos						              **/
+/** DATA 		  : 29/03/2026														          **/
+/** RESPONS¡VEL	  : Jean Correa                    	  										  **/
+/**-------------------------------------------------------------------------------------------**/
+/**                                 DECLARA«√O DAS BIBLIOTECAS                                **/
+/**-------------------------------------------------------------------------------------------**/
+
+#Include "rwmake.ch"
+#Include "protheus.ch"
+#Include "topconn.ch"
+#Include "totvs.ch"
+#Include "tbiconn.ch"
+#Include "fwmbrowse.ch"
+#Include "fwmvcdef.ch"
+#Include "restful.ch"
+
+#Define ENTER CHR(13)+CHR(10)
+
+WSRESTFUL WsProduto DESCRIPTION "ServiÁo REST para Produtos Protheus"
     WSDATA cCod AS STRING
     
     WSMETHOD GET DESCRIPTION "Retorna dados do produto" WSSYNTAX "/WsProduto || /WsProduto?cCod={cCod}"

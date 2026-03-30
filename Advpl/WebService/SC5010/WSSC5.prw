@@ -1,6 +1,5 @@
 
 /**-------------------------------------------------------------------------------------------**/
-/** MODULO		  : SIGA		                      										  **/
 /** PROJETO	      : WebService para Pedido de Venda						                      **/
 /** DATA 		  : 27/03/2026														          **/
 /** RESPONSÁVEL	  : Jean Correa                    	  										  **/
