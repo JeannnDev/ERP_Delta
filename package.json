@@ -25,6 +25,7 @@
     "@angular/ssr": "^21.2.3",
     "@po-ui/ng-components": "^21.6.0",
     "@po-ui/style": "^21.6.0",
+    "@totvs/protheus-lib-core": "^21.0.0",
     "express": "^5.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
