@@ -23,16 +23,16 @@
             </po-upload>
 
             @if (arquivoNome) {
-              <span class="po-font-text-bold po-text-color-neutral-dark-70">
-                ✅ Carregado: {{ arquivoNome }} — {{ clientes.length }} clientes lidos
-              </span>
+            <span class="po-font-text-bold po-text-color-neutral-dark-70">
+              ✅ Carregado: {{ arquivoNome }} — {{ clientes.length }} clientes lidos
+            </span>
             }
 
             @if (!arquivoNome) {
-              <p class="po-font-text-small po-text-color-neutral-dark-40 po-mt-2">
-                Selecione o arquivo com os dados dos clientes. Todos os itens serão pré-selecionados para você
-                revisar no próximo passo.
-              </p>
+            <p class="po-font-text-small po-text-color-neutral-dark-40 po-mt-2">
+              Selecione o arquivo com os dados dos clientes. Todos os itens serão pré-selecionados para você
+              revisar no próximo passo.
+            </p>
             }
           </div>
         </div>
@@ -53,23 +53,21 @@
 
         <div class="po-row">
           <div class="po-md-12">
-            <po-table #tabelaClientes [p-columns]="columns" [p-selectable]="true" [p-height]="380"
-              [p-items]="clientes" [p-hide-table-search]="false"
-              (p-selected)="onItemSelecionado($event)"
-              (p-unselected)="onItemRemovido($event)"
-              [p-hide-action-fixed-columns]="true" [p-text-wrap]="true">
+            <po-table #tabelaClientes [p-columns]="columns" [p-selectable]="true" [p-height]="380" [p-items]="clientes"
+              [p-hide-table-search]="false" (p-selected)="onItemSelecionado($event)"
+              (p-unselected)="onItemRemovido($event)" [p-hide-action-fixed-columns]="true" [p-text-wrap]="true">
             </po-table>
           </div>
         </div>
 
         @if (clientesSelecionados.length === 0) {
-          <div class="po-row po-mt-1">
-            <div class="po-md-12">
-              <span class="po-text-color-feedback-negative">
-                ⚠️ Nenhum item selecionado. Marque ao menos um para continuar.
-              </span>
-            </div>
+        <div class="po-row po-mt-1">
+          <div class="po-md-12">
+            <span class="po-text-color-feedback-negative">
+              ⚠️ Nenhum item selecionado. Marque ao menos um para continuar.
+            </span>
           </div>
+        </div>
         }
 
         <po-divider></po-divider>
@@ -80,9 +78,9 @@
               [p-disabled]="clientesSelecionados.length === 0" (p-click)="avancarParaImportar()">
             </po-button>
             @if (clientesSelecionados.length > 0) {
-              <span class="po-font-text-small po-text-color-neutral-dark-40">
-                {{ clientesSelecionados.length }} cliente(s) serão enviados ao Protheus.
-              </span>
+            <span class="po-font-text-small po-text-color-neutral-dark-40">
+              {{ clientesSelecionados.length }} cliente(s) serão enviados ao Protheus.
+            </span>
             }
           </div>
         </div>
@@ -95,7 +93,8 @@
         <po-widget p-title="Resumo da Importação" class="po-mb-3">
           <div class="po-row">
             <po-info class="po-md-6" p-label="Arquivo" [p-value]="arquivoNome || '-'"></po-info>
-            <po-info class="po-md-6" p-label="Total de Clientes Selecionados" [p-value]="clientesSelecionados.length.toString()"></po-info>
+            <po-info class="po-md-6" p-label="Total de Clientes Selecionados"
+              [p-value]="clientesSelecionados.length.toString()"></po-info>
           </div>
         </po-widget>
 
@@ -126,7 +125,7 @@
   </po-container>
 
   @if (isLoading) {
-    <po-loading-overlay p-text="Processando arquivo..."></po-loading-overlay>
+  <po-loading-overlay p-text="Processando arquivo"></po-loading-overlay>
   }
 
 </po-page-default>

@@ -1,14 +1,37 @@
-/* Estilos locais para o componente de importação */
-.po-mt-4 {
-  margin-top: 1.5rem;
+:host ::ng-deep {
+  .po-stepper-step-label {
+    font-weight: 500;
+  }
 }
 
-.po-font-text-small {
-  margin-top: 0.5rem;
-  color: #64748b;
+.po-row {
+  margin-bottom: 12px;
 }
 
-po-table {
-  display: block;
-  margin-top: 1rem;
+po-widget {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+po-widget:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.po-font-subtitle {
+  color: var(--po-color-primary-dark-30);
+  font-weight: 600;
+}
+
+po-tag {
+  margin-right: 4px;
+}
+
+.po-container {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+po-button[p-kind="primary"] {
+  --po-button-background: linear-gradient(135deg, var(--po-color-primary) 0%, var(--po-color-primary-dark-20) 100%);
 }

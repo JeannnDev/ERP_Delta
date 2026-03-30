@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PedidoCsv, ResultadoImportacao } from '../models/importacao.model';
+import { PedidoCsv, ResultadoImportacao, RawRecord } from '../models/importacao.model';
 import * as XLSX from 'xlsx';
 import { ProtheusApiService } from './protheus-api.service';
 
@@ -11,7 +11,55 @@ export class ImportacaoService {
   private api = inject(ProtheusApiService).resource('WsPedidoVenda');
   
   /**
-   * Lê CSV ou XLSX e converte para array de PedidoCsv.
+   * Lê CSV ou XLSX e converte para array de objetos (chaves = nome da coluna).
+   */
+  async lerGenerico(arquivo: File): Promise<RawRecord[]> {
+    console.log('--- Iniciando leitura de arquivo genérico ---', arquivo.name);
+    return new Promise((resolve, reject) => {
+      if (!(arquivo instanceof Blob)) {
+        console.error('O objeto fornecido não é um Blob/File!', arquivo);
+        return reject(new Error('Objeto de arquivo inválido.'));
+      }
+
+      const reader = new FileReader();
+
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        try {
+          const result = e.target?.result;
+          if (!result) {
+            console.warn('Leitura do arquivo retornou resultado vazio.');
+            return resolve([]);
+          }
+          
+          const data = new Uint8Array(result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+
+          // Converte para JSON (array de objetos usando a primeira linha como chave)
+          const jsonArr: RawRecord[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+          
+          console.log(`Leitura concluída (${arquivo.name}): ${jsonArr.length} linhas.`);
+          resolve(jsonArr);
+        } catch (error) {
+          console.error('Erro no XLSX parsing genérico:', error);
+          reject(error);
+        }
+      };
+
+      reader.onerror = (error) => {
+        console.error('Erro no FileReader:', error);
+        reject(error);
+      };
+
+      reader.readAsArrayBuffer(arquivo);
+    });
+  }
+
+  /**
+   * Mantém compatibilidade mas usa o novo leitor se necessário, ou mantém a lógica legada.
+   * Lógica original mapeia manualmente.
    */
   async lerArquivo(arquivo: File): Promise<PedidoCsv[]> {
     return new Promise((resolve, reject) => {
@@ -55,15 +103,11 @@ export class ImportacaoService {
               });
             }
           }
-          console.log('Fim do processamento de arquivo. Total: ' + pedidos.length);
           resolve(pedidos);
         } catch (error) {
-          console.error('Erro no XLSX parsing:', error);
           reject(error);
         }
       };
-
-      reader.onerror = (error) => reject(error);
       reader.readAsArrayBuffer(arquivo);
     });
   }
@@ -76,7 +120,6 @@ export class ImportacaoService {
     const url = `/IMPORTAR`;
     
     console.log('--- ENVIANDO PARA O PROTHEUS (IMPORTAR) ---');
-    console.log('URL:', this.api.baseUrl + url);
     console.log('PAYLOAD:', JSON.stringify(payload, null, 2));
 
     return this.api.post<ResultadoImportacao>(url, payload);

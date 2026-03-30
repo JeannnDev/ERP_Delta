@@ -44,7 +44,7 @@ export class App {
       label: 'Pedidos de Venda',
       icon: 'an an-shopping-cart',
       subItems: [
-        { label: 'Lançar Pedido', link: '/pedido-venda', icon: 'an an-plus' },
+        { label: 'Pedido de Venda', link: '/pedido-venda', icon: 'an an-plus' },
         { label: 'Importar Pedidos', link: '/upload', icon: 'an an-upload-simple' }
       ]
     },
