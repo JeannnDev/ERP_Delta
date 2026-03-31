@@ -115,11 +115,11 @@ export class ImportacaoService {
   /**
    * Envia os pedidos para o Protheus.
    */
-  importar(pedidos: PedidoCsv[], origem: string): Observable<ResultadoImportacao> {
+  importar(pedidos: any[], origem: string): Observable<ResultadoImportacao> {
     const payload = { origem, pedidos };
-    const url = `/IMPORTAR`;
+    const url = ``; // Chamada POST direta para /WsPedidoVenda
     
-    console.log('--- ENVIANDO PARA O PROTHEUS (IMPORTAR) ---');
+    console.log('--- ENVIANDO PARA O PROTHEUS (WsPedidoVenda) ---');
     console.log('PAYLOAD:', JSON.stringify(payload, null, 2));
 
     return this.api.post<ResultadoImportacao>(url, payload);

@@ -132,12 +132,12 @@ export class UploadComponent {
         const invalid = items.some(i => i.invalid) || !h.C5_CLIENTE;
         return {
           C5_EXTERNO: key,
-          C5_CLIENTE: h.C5_CLIENTE || '',
+          C5_CLIENTE: (h.C5_CLIENTE || '').toString().trim(),
           C5_EMISSAO: h.C5_EMISSAO || '',
           C5_FILIAL: h.C5_FILIAL || '',
-          C5_LOJA: h.C5_LOJA || '',
+          C5_LOJA: (h.C5_LOJA || '').toString().trim() || '01',
           C5_OBS: h.C5_OBS || '',
-          C5_CONDPAG: h.C5_CONDPAG || '',
+          C5_CONDPAG: (h.C5_CONDPAG || '').toString().trim(),
           C5_TABELA: h.C5_TABELA || '',
           C5_VENDEDO: h.C5_VENDEDO || '',
           detalhe: items,
@@ -411,21 +411,31 @@ export class UploadComponent {
 
     this.isLoading = true;
 
-    // Mapeia todos os itens de todos os pedidos selecionados para o payload flat
-    const payload: PedidoCsv[] = [];
+    // Mapeia os pedidos cabecalho e coloca os itens agrupados
+    const payload: any[] = [];
     
     this.pedidosSelecionados.forEach(order => {
+      const orderPayload: any = {
+        C5_EXTERNO: order.C5_EXTERNO,
+        C5_FILIAL: order.C5_FILIAL,
+        C5_EMISSAO: order.C5_EMISSAO,
+        C5_CLIENTE: order.C5_CLIENTE,
+        C5_CONDPAG: order.C5_CONDPAG,
+        itens: []
+      };
+
       if (order.detalhe && Array.isArray(order.detalhe)) {
         order.detalhe.forEach((item: PedidoCsv) => {
-          // Cópia para não alterar o item da tela
-          const itemPayload: PedidoCsv = { ...item };
-          // Remove propriedades de controle que não devem ir pro Protheus
-          delete itemPayload.$selected;
-          delete itemPayload.statusLabel;
-          delete itemPayload.invalid;
-          payload.push(itemPayload);
+          orderPayload.itens.push({
+            C6_ITEM: item.C6_ITEM,
+            C6_PRODUTO: item.C6_PRODUTO,
+            C6_QTDVEN: item.C6_QTDVEN,
+            C6_PRCVEN: item.C6_PRCVEN,
+            C6_DESCONTO: item.C6_DESCONTO
+          });
         });
       }
+      payload.push(orderPayload);
     });
 
     if (payload.length === 0) {

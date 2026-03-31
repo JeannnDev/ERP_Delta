@@ -38,18 +38,27 @@ export interface PedidoAgrupado {
 }
 
 export interface ItemResultado {
-    pedidoExterno: string;
-    numeroPedido: string;
-    status: 'sucesso' | 'erro' | 'duplicado';
-    mensagem: string;
+    PEDIDOEXTERNO?: string;
+    NUMEROPEDIDO?: string;
+    STATUS?: 'sucesso' | 'erro' | 'duplicado';
+    MENSAGEM?: string;
+    pedidoExterno?: string; // legatário
+    numeroPedido?: string; // legatário
+    status?: 'sucesso' | 'erro' | 'duplicado'; // legatário
+    mensagem?: string; // legatário
 }
 
 export interface ResultadoImportacao {
-    total: number;
-    sucesso: number;
-    erros: number;
-    duplicados: number;
-    itens: ItemResultado[];
+    TOTAL: number;
+    SUCESSO: number;
+    ERROS: number;
+    DUPLICADOS: number;
+    ITENS: ItemResultado[];
+    total?: number; // legatário
+    sucesso?: number; // legatário
+    erros?: number; // legatário
+    duplicados?: number; // legatário
+    itens?: ItemResultado[]; // legatário
 }
 
 /** 

@@ -4,31 +4,35 @@
     { label: 'Nova Importação', action: voltar.bind(this), icon: 'po-icon-refresh' }
   ]">
 
-  <div class="po-row" *ngIf="resultado">
-    <div class="po-md-3">
-      <po-info p-label="Total do CSV" [p-value]="resultado.total.toString()"></po-info>
+  @if (resultado) {
+    <div class="po-row">
+      <div class="po-md-3">
+        <po-info p-label="Total do CSV" [p-value]="(resultado.total || 0) + ''"></po-info>
+      </div>
+      <div class="po-md-3">
+        <po-info p-label="Sucesso" [p-value]="(resultado.sucesso || 0) + ''"></po-info>
+      </div>
+      <div class="po-md-3">
+        <po-info p-label="Erros" [p-value]="(resultado.erros || 0) + ''"></po-info>
+      </div>
+      <div class="po-md-3">
+        <po-info p-label="Duplicados" [p-value]="(resultado.duplicados || 0) + ''"></po-info>
+      </div>
     </div>
-    <div class="po-md-3">
-      <po-info p-label="Sucesso" [p-value]="resultado.sucesso.toString()"></po-info>
-    </div>
-    <div class="po-md-3">
-      <po-info p-label="Erros" [p-value]="resultado.erros.toString()"></po-info>
-    </div>
-    <div class="po-md-3">
-      <po-info p-label="Duplicados" [p-value]="resultado.duplicados.toString()"></po-info>
-    </div>
-  </div>
+  }
 
   <po-divider p-label="Detalhamento do Processamento"></po-divider>
 
-  <div class="po-row" *ngIf="resultado">
-    <div class="po-md-12">
-      <po-table 
-        [p-columns]="tableColumns" 
-        [p-items]="resultado.itens"
-        p-striped="true">
-      </po-table>
+  @if (resultado) {
+    <div class="po-row">
+      <div class="po-md-12">
+        <po-table 
+          [p-columns]="tableColumns" 
+          [p-items]="resultado.itens || []"
+          p-striped="true">
+        </po-table>
+      </div>
     </div>
-  </div>
+  }
 
 </po-page-default>

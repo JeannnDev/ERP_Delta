@@ -13,9 +13,11 @@
             </po-select>
           </div>
           <div class="po-md-6 po-mt-4" style="display: flex; justify-content: flex-end; gap: 8px;">
-            <po-button p-label="Modelo Cabeçalhos" p-icon="po-icon-download" p-kind="secondary" (p-click)="baixarModeloCabecalho()">
+            <po-button p-label="Modelo Cabeçalhos" p-icon="po-icon-download" p-kind="secondary"
+              (p-click)="baixarModeloCabecalho()">
             </po-button>
-            <po-button p-label="Modelo Itens" p-icon="po-icon-download" p-kind="secondary" (p-click)="baixarModeloItens()">
+            <po-button p-label="Modelo Itens" p-icon="po-icon-download" p-kind="secondary"
+              (p-click)="baixarModeloItens()">
             </po-button>
           </div>
         </div>
@@ -24,33 +26,31 @@
 
         <div class="po-row">
           <po-widget class="po-md-6 po-mb-2">
-             <div class="po-font-subtitle po-mb-1">1. Cabeçalhos (SC5)</div>
-             <p class="po-font-text-small">Arraste o arquivo XML/XLSX com os dados mestre do pedido.</p>
-             
-             <po-upload #uploadCab name="uploadCab" [p-drag-drop]="true" [p-required-url]="false" 
-                [p-hide-select-button]="false"
-                [p-auto-upload]="false" [p-hide-send-button]="true" [ngModel]="arquivosCabecalho"
-                (ngModelChange)="onCabecalhoChange($event)">
-             </po-upload>
+            <div class="po-font-subtitle po-mb-1">1. Cabeçalhos</div>
+            <p class="po-font-text-small">Arraste o arquivo XML/XLSX com os dados mestre do pedido.</p>
 
-             @if (nomeArquivoCabecalho) {
-                <po-tag p-label="Arquivo: {{ nomeArquivoCabecalho }}" [p-type]="tagSuccess" p-icon="po-icon-ok"></po-tag>
-             }
+            <po-upload #uploadCab name="uploadCab" [p-drag-drop]="true" [p-required-url]="false"
+              [p-hide-select-button]="false" [p-auto-upload]="false" [p-hide-send-button]="true"
+              [ngModel]="arquivosCabecalho" (ngModelChange)="onCabecalhoChange($event)">
+            </po-upload>
+
+            @if (nomeArquivoCabecalho) {
+            <po-tag p-label="Arquivo: {{ nomeArquivoCabecalho }}" [p-type]="tagSuccess" p-icon="po-icon-ok"></po-tag>
+            }
           </po-widget>
 
           <po-widget class="po-md-6 po-mb-2">
-             <div class="po-font-subtitle po-mb-1">2. Itens (SC6)</div>
-             <p class="po-font-text-small">Arraste o arquivo com o detalhamento dos produtos.</p>
-             
-             <po-upload #uploadItens name="uploadItens" [p-drag-drop]="true" [p-required-url]="false"
-                [p-hide-select-button]="false"
-                [p-auto-upload]="false" [p-hide-send-button]="true" [ngModel]="arquivosItens"
-                (ngModelChange)="onItensChange($event)">
-             </po-upload>
+            <div class="po-font-subtitle po-mb-1">2. Itens</div>
+            <p class="po-font-text-small">Arraste o arquivo com o detalhamento dos produtos.</p>
 
-             @if (nomeArquivoItens) {
-                <po-tag p-label="Arquivo: {{ nomeArquivoItens }}" [p-type]="tagSuccess" p-icon="po-icon-ok"></po-tag>
-             }
+            <po-upload #uploadItens name="uploadItens" [p-drag-drop]="true" [p-required-url]="false"
+              [p-hide-select-button]="false" [p-auto-upload]="false" [p-hide-send-button]="true"
+              [ngModel]="arquivosItens" (ngModelChange)="onItensChange($event)">
+            </po-upload>
+
+            @if (nomeArquivoItens) {
+            <po-tag p-label="Arquivo: {{ nomeArquivoItens }}" [p-type]="tagSuccess" p-icon="po-icon-ok"></po-tag>
+            }
           </po-widget>
         </div>
 
@@ -58,13 +58,14 @@
         <div class="po-row po-mt-2">
           <div class="po-md-12">
             <po-widget class="po-p-2" style="background-color: var(--po-color-neutral-light-10);">
-               <div style="display: flex; gap: 16px; align-items: center;">
-                 <span class="po-icon po-icon-finance po-font-title" style="color: var(--po-color-primary);"></span>
-                 <div>
-                   <div class="po-font-text-bold">Cruzamento de dados concluído!</div>
-                   <div class="po-font-text-small">Detectamos <strong>{{ pedidos.length }}</strong> pedidos vinculados. Prossiga para a conferência.</div>
-                 </div>
-               </div>
+              <div style="display: flex; gap: 16px; align-items: center;">
+                <span class="po-icon po-icon-finance po-font-title" style="color: var(--po-color-primary);"></span>
+                <div>
+                  <div class="po-font-text-bold">Cruzamento de dados concluído!</div>
+                  <div class="po-font-text-small">Detectamos <strong>{{ pedidos.length }}</strong> pedidos vinculados.
+                    Prossiga para a conferência.</div>
+                </div>
+              </div>
             </po-widget>
           </div>
         </div>
@@ -78,7 +79,8 @@
         <div class="po-row po-mb-2">
           <div class="po-md-8">
             <h2 class="po-font-subtitle po-mb-1">Validar Dados Importados</h2>
-            <p class="po-font-text">Preparamos os dados para importação. Revise os detalhes abaixo antes de processar.</p>
+            <p class="po-font-text">Preparamos os dados para importação. Revise os detalhes abaixo antes de processar.
+            </p>
           </div>
           <div class="po-md-4" style="display: flex; justify-content: flex-end; gap: 8px; align-items: center;">
             <po-tag [p-label]="pedidosValidosCount + ' Válidos'" [p-type]="tagSuccess"></po-tag>
@@ -89,17 +91,19 @@
         <div class="po-row">
           <div class="po-md-12">
             <po-table #POItemsOri [p-columns]="masterColumns" [p-selectable]="true" [p-height]="400" [p-items]="pedidos"
-               [p-hide-table-search]="false" (p-selected)="onItemSelecionado($event)"
+              [p-hide-table-search]="false" (p-selected)="onItemSelecionado($event)"
               (p-unselected)="onItemRemovido($event)" [p-hide-action-fixed-columns]="true" [p-text-wrap]="true">
             </po-table>
           </div>
         </div>
 
         <div class="po-row po-mt-2 po-mb-2">
-          <div class="po-md-12" style="display: flex; justify-content: space-between; align-items: center; background-color: var(--po-color-neutral-light-05); padding: 12px; border-radius: 4px;">
+          <div class="po-md-12"
+            style="display: flex; justify-content: space-between; align-items: center; background-color: var(--po-color-neutral-light-05); padding: 12px; border-radius: 4px;">
             <div style="display: flex; align-items: center; gap: 12px;">
-               <span class="po-icon po-icon-info po-font-subtitle" style="color: var(--po-color-primary);"></span>
-               <span class="po-font-text"><strong>{{ pedidosSelecionados.length }}</strong> pedidos marcados para envio.</span>
+              <span class="po-icon po-icon-info po-font-subtitle" style="color: var(--po-color-primary);"></span>
+              <span class="po-font-text"><strong>{{ pedidosSelecionados.length }}</strong> pedidos marcados para
+                envio.</span>
             </div>
             <po-button p-label="Avançar para Resumo" p-kind="primary" p-icon="po-icon-arrow-right"
               [p-disabled]="pedidosSelecionados.length === 0" (p-click)="avancarParaImportar()">
@@ -125,26 +129,29 @@
 
         <div class="po-row po-mb-2">
           <div class="po-md-12">
-            <div class="po-font-subtitle po-mb-1"><span class="po-icon po-icon-list po-mr-1"></span>Lista de Importação</div>
-            <po-table [p-columns]="masterColumns" [p-items]="pedidosSelecionados" 
-              [p-striped]="true" [p-height]="300" [p-hide-action-fixed-columns]="true" [p-text-wrap]="true">
+            <div class="po-font-subtitle po-mb-1"><span class="po-icon po-icon-list po-mr-1"></span>Lista de Importação
+            </div>
+            <po-table [p-columns]="masterColumns" [p-items]="pedidosSelecionados" [p-striped]="true" [p-height]="300"
+              [p-hide-action-fixed-columns]="true" [p-text-wrap]="true">
             </po-table>
           </div>
         </div>
 
         <div class="po-row po-mt-3 po-mb-2">
-           <div class="po-md-12" style="background-color: var(--po-color-neutral-light-10); padding: 24px; border-radius: 8px; text-align: center;">
-              <div class="po-font-subtitle po-mb-2">Pronto para processar?</div>
-              <p class="po-font-text po-mb-3">Ao confirmar, os pedidos serão enviados para o Protheus via MsExecAuto para validação e gravação.</p>
-              
-              <div style="display: flex; gap: 16px; justify-content: center;">
-                <po-button p-label="Processar Importação Agora" p-kind="primary" p-icon="po-icon-upload" [p-loading]="isLoading"
-                  (p-click)="importar()" style="width: 250px;">
-                </po-button>
-                <po-button p-label="Recomeçar do Zero" p-icon="po-icon-delete" (p-click)="limpar()">
-                </po-button>
-              </div>
-           </div>
+          <div class="po-md-12"
+            style="background-color: var(--po-color-neutral-light-10); padding: 24px; border-radius: 8px; text-align: center;">
+            <div class="po-font-subtitle po-mb-2">Pronto para processar?</div>
+            <p class="po-font-text po-mb-3">Ao confirmar, os pedidos serão enviados para o Protheus via MsExecAuto para
+              validação e gravação.</p>
+
+            <div style="display: flex; gap: 16px; justify-content: center;">
+              <po-button p-label="Processar Importação Agora" p-kind="primary" p-icon="po-icon-upload"
+                [p-loading]="isLoading" (p-click)="importar()" style="width: 250px;">
+              </po-button>
+              <po-button p-label="Recomeçar do Zero" p-icon="po-icon-delete" (p-click)="limpar()">
+              </po-button>
+            </div>
+          </div>
         </div>
 
       </po-step>

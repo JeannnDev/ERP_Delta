@@ -1,28 +1,22 @@
-<po-page-default 
-  p-title="Novo Pedido de Venda" 
-  [p-breadcrumb]="breadcrumb">
+<po-page-default p-title="Novo Pedido de Venda" [p-breadcrumb]="breadcrumb">
 
-  <po-divider p-label="Cabeçalho (SC5)"></po-divider>
-  
+  <po-divider p-label="Cabeçalho"></po-divider>
+
   <div class="po-row">
     <div class="po-md-12">
       <po-dynamic-form #formPedido [p-fields]="fields" [p-value]="pedido"></po-dynamic-form>
     </div>
   </div>
 
-  <po-divider p-label="Itens do Pedido (SC6)"></po-divider>
+  <po-divider p-label="Itens do Pedido"></po-divider>
 
   <div class="po-row po-mb-2">
     <div class="po-md-12">
       <div class="container-itens">
         <po-dynamic-form [p-fields]="itemFields" [p-value]="itemSendoEditado"></po-dynamic-form>
-        
+
         <div class="po-row po-mt-2">
-          <po-button 
-            p-label="Adicionar Item" 
-            p-kind="secondary" 
-            p-icon="po-icon-plus" 
-            (p-click)="adicionarItem()">
+          <po-button p-label="Adicionar Item" p-kind="secondary" p-icon="po-icon-plus" (p-click)="adicionarItem()">
           </po-button>
         </div>
       </div>
@@ -31,11 +25,7 @@
 
   <div class="po-row">
     <div class="po-md-12">
-      <po-table 
-        [p-columns]="columns" 
-        [p-items]="itens" 
-        [p-striped]="true"
-        [p-height]="200">
+      <po-table [p-columns]="columns" [p-items]="itens" [p-striped]="true" [p-height]="200">
       </po-table>
     </div>
   </div>
@@ -44,17 +34,10 @@
 
   <div class="po-row po-mt-2">
     <div class="po-md-12" style="display: flex; gap: 8px;">
-      <po-button 
-        p-label="Confirmar e Salvar Pedido" 
-        p-kind="primary" 
-        p-icon="po-icon-ok" 
-        [p-disabled]="itens.length === 0"
-        (p-click)="salvarPedido()">
+      <po-button p-label="Confirmar e Salvar Pedido" p-kind="primary" p-icon="po-icon-ok"
+        [p-disabled]="itens.length === 0" (p-click)="salvarPedido()">
       </po-button>
-      <po-button 
-        p-label="Limpar Tela" 
-        p-icon="po-icon-delete"
-        (p-click)="limpar()">
+      <po-button p-label="Limpar Tela" p-icon="po-icon-delete" (p-click)="limpar()">
       </po-button>
     </div>
   </div>
