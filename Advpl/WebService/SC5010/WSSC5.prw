@@ -38,27 +38,31 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WSPedidoVenda
     Local oItemPlan   := Nil
     Local aItensRes   := {}
     Local aItensJson  := {}
-    Private oItemRes  := Nil
 
+    Private oItemRes  := Nil
     Private oResponse := JsonObject():New()
     Private lMsErroAuto    := .F.
     Private lAutoErrNoFile := .T.
 
+    If (Select("SX2") <= 0)
+        RpcSetEnv("99", "01")
+    EndIf
+
     Self:SetContentType("application/json")
 
     If oJson:FromJson(cBody) <> Nil
-        oResponse:Set("sucesso", 0)
-        oResponse:Set("mensagem", "Payload JSON invalido ou mal formatado.")
+        oResponse["sucesso"] := 0
+        oResponse["mensagem"] := "Payload JSON invalido ou mal formatado."
         Self:SetResponse(oResponse:toJson())
         Return .T.
     EndIf
 
     aItensJson := oJson:GetJsonObject('pedidos')
 
-    oResponse:Set("total", Len(aItensJson))
-    oResponse:Set("sucesso", 0)
-    oResponse:Set("erros", 0)
-    oResponse:Set("duplicados", 0)
+    oResponse["total"] := Len(aItensJson)
+    oResponse["sucesso"] := 0
+    oResponse["erros"] := 0
+    oResponse["duplicados"] := 0
 
     For nX := 1 To Len(aItensJson)
         lOk     := .T.
@@ -67,31 +71,32 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WSPedidoVenda
 
         DbSelectArea("SC5")
         SC5->(DbOrderNickName("idext"))
-        If SC5->(DbSeek(xFilial("SC5") + PadR(oPedido:GetJsonObject('C5_EXTERNO'), 20)))
+
+        If SC5->(DbSeek(xFilial("SC5") + PadR(cValToChar(oPedido['C5_EXTERNO']), 20)))
             lOk := .F.
             cMsgLog := "Pedido Externo ja importado (Duplicado)."
             nDuplicates++
 
             oItemRes := JsonObject():New()
-            oItemRes:Set("pedidoExterno", oPedido:GetJsonObject('C5_EXTERNO'))
-            oItemRes:Set("status", "duplicado")
-            oItemRes:Set("mensagem", cMsgLog)
+            oItemRes["pedidoExterno"] := oPedido['C5_EXTERNO']
+            oItemRes["status"] := "duplicado"
+            oItemRes["mensagem"] := cMsgLog
             aAdd(aItensRes, oItemRes)
             Loop
         EndIf
 
         DbSelectArea("SA1")
         DbSetOrder(1)
-        If !SA1->(DbSeek(xFilial("SA1") + PadR(cValToChar(oPedido:GetJsonObject('C5_CLIENTE')), 6)))
+        If !SA1->(DbSeek(xFilial("SA1") + PadR(cValToChar(oPedido['C5_CLIENTE']), 6)))
             lOk := .F.
-            cMsgLog += "Cliente [" + cValToChar(oPedido:GetJsonObject('C5_CLIENTE')) + "] nao existe. "
+            cMsgLog += "Cliente [" + cValToChar(oPedido['C5_CLIENTE']) + "] nao existe. "
         EndIf
 
         DbSelectArea("SE4")
         DbSetOrder(1)
-        If !SE4->(DbSeek(xFilial("SE4") + PadR(cValToChar(oPedido:GetJsonObject('C5_CONDPAG')), 3)))
+        If !SE4->(DbSeek(xFilial("SE4") + PadR(cValToChar(oPedido['C5_CONDPAG']), 3)))
             lOk := .F.
-            cMsgLog += "CondPg [" + cValToChar(oPedido:GetJsonObject('C5_CONDPAG')) + "] invalida. "
+            cMsgLog += "CondPg [" + cValToChar(oPedido['C5_CONDPAG']) + "] invalida. "
         EndIf
 
         If lOk
@@ -99,12 +104,11 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WSPedidoVenda
             aItens  := {}
 
             aAdd(aCab, {"C5_TIPO"   , "N"                                     , Nil})
-            aAdd(aCab, {"C5_LOJA"   , "01"                                    , Nil})
-            aAdd(aCab, {"C5_CONDPAG", "0", Nil})
-            aAdd(aCab, {"C5_XORIG"  , cValToChar(oJson:GetJsonObject('origem')), Nil})
-            aAdd(aCab, {"C5_IDEXT"  , PadR(oPedido:GetJsonObject('C5_EXTERNO'), 20)  , Nil})
-            aAdd(aCab, {"C5_CLIENTE", PadR(cValToChar(oPedido:GetJsonObject('C5_CLIENTE')), 6) , Nil})
-            aAdd(aCab, {"C5_EMISSAO", STOD(StrTran(cValToChar(oPedido:GetJsonObject('C5_EMISSAO')), "-", "")), Nil})
+            aAdd(aCab, {"C5_XORIG"  , cValToChar(oJson['origem'])               , Nil})
+            aAdd(aCab, {"C5_IDEXT"  , PadR(cValToChar(oPedido['C5_EXTERNO']), 20)  , Nil})
+            aAdd(aCab, {"C5_CLIENTE", PadR(cValToChar(oPedido['C5_CLIENTE']), 6) , Nil})
+            aAdd(aCab, {"C5_CONDPAG", PadR(cValToChar(oPedido['C5_CONDPAG']), 3) , Nil})
+            aAdd(aCab, {"C5_EMISSAO", STOD(StrTran(cValToChar(oPedido['C5_EMISSAO']), "-", "")), Nil})
 
             aItensDepto := oPedido:GetJsonObject('itens')
 
@@ -115,20 +119,29 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WSPedidoVenda
 
                     DbSelectArea("SB1")
                     DbSetOrder(1)
-                    If !SB1->(DbSeek(xFilial("SB1") + PadR(cValToChar(oItemPlan:GetJsonObject('C6_PRODUTO')), 15)))
+                    If !SB1->(DbSeek(xFilial("SB1") + PadR(cValToChar(oItemPlan['C6_PRODUTO']), 15)))
                         lOk := .F.
-                        cMsgLog += "Produto " + cValToChar(oItemPlan:GetJsonObject('C6_PRODUTO')) + " nao existe. "
+                        cMsgLog += "Produto " + cValToChar(oItemPlan['C6_PRODUTO']) + " nao existe. "
                         Exit
                     EndIf
 
-                    aAdd(aItem, {"C6_ITEM"   , PadL(cValToChar(oItemPlan:GetJsonObject('C6_ITEM')), 2, "0"), Nil})
-                    aAdd(aItem, {"C6_PRODUTO", PadR(cValToChar(oItemPlan:GetJsonObject('C6_PRODUTO')), 15), Nil})
-                    aAdd(aItem, {"C6_QTDVEN" , Val(cValToChar(oItemPlan:GetJsonObject('C6_QTDVEN')))   , Nil})
-                    aAdd(aItem, {"C6_PRCVEN" , Val(cValToChar(oItemPlan:GetJsonObject('C6_PRCVEN')))   , Nil})
-                    aAdd(aItem, {"C6_TES"    , "501"                          , Nil})
+                    DbSelectArea("SF4")
+                    DbSetOrder(1)
+                    If !SF4->(DbSeek(xFilial("SF4") + PadR(cValToChar(oItemPlan['C6_TES']), 3)))
+                        lOk := .F.
+                        cMsgLog += "TES [" + cValToChar(oItemPlan['C6_TES']) + "] nao existe. "
+                        Exit
+                    EndIf
+
+                    aAdd(aItem, {"C6_ITEM"   , PadL(cValToChar(oItemPlan['C6_ITEM']), 2, "0"), Nil})
+                    aAdd(aItem, {"C6_PRODUTO", PadR(cValToChar(oItemPlan['C6_PRODUTO']), 15), Nil})
+                    aAdd(aItem, {"C6_QTDVEN" , Val(cValToChar(oItemPlan['C6_QTDVEN']))   , Nil})
+                    aAdd(aItem, {"C6_PRCVEN" , Val(cValToChar(oItemPlan['C6_PRCVEN']))   , Nil})
+                    aAdd(aItem, {"C6_TES"    , PadR(cValToChar(oItemPlan['C6_TES']), 3) , Nil})
                     aAdd(aItens, aItem)
                 Next nY
             Else
+                lOk     := .F.
                 cMsgLog := "Itens nao encontrados no JSON."
             EndIf
 
@@ -137,13 +150,13 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WSPedidoVenda
                 MSExecAuto({|x,y,z| MATA410(x,y,z)}, aCab, aItens, 3)
 
                 oItemRes := JsonObject():New()
-                oItemRes:Set("pedidoExterno", oPedido:GetJsonObject('C5_EXTERNO'))
+                oItemRes["pedidoExterno"] := oPedido['C5_EXTERNO']
 
                 If !lMsErroAuto
                     nSuccess++
-                    oItemRes:Set("numeroPedido", SC5->C5_NUM)
-                    oItemRes:Set("status", "sucesso")
-                    oItemRes:Set("mensagem", "Gerado com sucesso")
+                    oItemRes["numeroPedido"] := SC5->C5_NUM
+                    oItemRes["status"] := "sucesso"
+                    oItemRes["mensagem"] := "Gerado com sucesso"
                 Else
                     nErrors++
                     cError := GetAutoGRLog()
@@ -160,37 +173,36 @@ WSMETHOD POST WSRECEIVE RECEIVE WSSERVICE WSPedidoVenda
                         cError := "Erro interno na MSExecAuto."
                     EndIf
 
-                    oItemRes:Set("status", "erro")
-                    oItemRes:Set("mensagem", cError)
+                    oItemRes["status"] := "erro"
+                    oItemRes["mensagem"] := cError
                 EndIf
                 aAdd(aItensRes, oItemRes)
             Else
                 nErrors++
                 oItemRes := JsonObject():New()
-                oItemRes:Set("pedidoExterno", oPedido:GetJsonObject('C5_EXTERNO'))
-                oItemRes:Set("status", "erro")
-                oItemRes:Set("mensagem", cMsgLog)
+                oItemRes["pedidoExterno"] := oPedido['C5_EXTERNO']
+                oItemRes["status"] := "erro"
+                oItemRes["mensagem"] := cMsgLog
                 aAdd(aItensRes, oItemRes)
             EndIf
         Else
             nErrors++
             oItemRes := JsonObject():New()
-            oItemRes:Set("pedidoExterno", oPedido:GetJsonObject('C5_EXTERNO'))
-            oItemRes:Set("status", "erro")
-            oItemRes:Set("mensagem", cMsgLog)
+            oItemRes["pedidoExterno"] := oPedido['C5_EXTERNO']
+            oItemRes["status"] := "erro"
+            oItemRes["mensagem"] := cMsgLog
             aAdd(aItensRes, oItemRes)
         EndIf
     Next nX
 
-    oResponse:Set("sucesso", nSuccess)
-    oResponse:Set("erros", nErrors)
-    oResponse:Set("duplicados", nDuplicates)
-    oResponse:Set("itens", aItensRes)
+    oResponse["sucesso"] := nSuccess
+    oResponse["erros"] := nErrors
+    oResponse["duplicados"] := nDuplicates
+    oResponse["itens"] := aItensRes
 
     Self:SetResponse(oResponse:toJson())
 
     RestArea(aArea)
     FreeObj(oJson)
-    RpcClearEnv()
 
 Return .T.

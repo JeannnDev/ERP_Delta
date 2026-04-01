@@ -29,7 +29,8 @@
             "styles": ["src/styles.css"],
             "security": {
               "allowedHosts": ["192.168.1.28", "localhost", "127.0.0.1"]
-            }
+            },
+            "baseHref": "./"
           },
           "configurations": {
             "production": {
