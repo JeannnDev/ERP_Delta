@@ -13,9 +13,10 @@ export interface PedidoCsv {
     C6_QTDVEN: number;
     C6_PRCVEN: number;
     C6_DESCONTO?: number;
+    C6_TES?: string;
     invalid?: boolean;
     statusLabel?: string;
-    $selected?: boolean; 
+    $selected?: boolean;
 }
 
 /** Interface para a visão agrupada (Mestre/Detalhe) */
@@ -37,28 +38,21 @@ export interface PedidoAgrupado {
     detalhe: PedidoCsv[];
 }
 
+/** Retorno por pedido, espelhando exatamente o JSON do WS ADVPL */
 export interface ItemResultado {
-    PEDIDOEXTERNO?: string;
-    NUMEROPEDIDO?: string;
-    STATUS?: 'sucesso' | 'erro' | 'duplicado';
-    MENSAGEM?: string;
-    pedidoExterno?: string; // legatário
-    numeroPedido?: string; // legatário
-    status?: 'sucesso' | 'erro' | 'duplicado'; // legatário
-    mensagem?: string; // legatário
+    pedidoExterno: string;
+    numeroPedido?: string;
+    status: 'sucesso' | 'erro' | 'duplicado';
+    mensagem: string;
 }
 
+/** Retorno geral do WS ADVPL - campos em minúsculo */
 export interface ResultadoImportacao {
-    TOTAL: number;
-    SUCESSO: number;
-    ERROS: number;
-    DUPLICADOS: number;
-    ITENS: ItemResultado[];
-    total?: number; // legatário
-    sucesso?: number; // legatário
-    erros?: number; // legatário
-    duplicados?: number; // legatário
-    itens?: ItemResultado[]; // legatário
+    total: number;
+    sucesso: number;
+    erros: number;
+    duplicados: number;
+    itens: ItemResultado[];
 }
 
 /** 
@@ -91,5 +85,27 @@ export interface RawRecord {
     C6_PRCVEN?: number;
     DescontoPerc?: number;
     C6_DESCONTO?: number;
+    Tes?: string;
+    C6_TES?: string;
+}
+
+/** Payload de item enviado ao Protheus */
+export interface ItemPayload {
+    C6_ITEM?: string;
+    C6_PRODUTO: string;
+    C6_QTDVEN: number;
+    C6_PRCVEN: number;
+    C6_DESCONTO?: number;
+    C6_TES?: string;
+}
+
+/** Payload de pedido enviado ao Protheus (estrutura com itens aninhados) */
+export interface OrderPayload {
+    C5_EXTERNO: string;
+    C5_FILIAL?: string;
+    C5_EMISSAO?: string;
+    C5_CLIENTE: string;
+    C5_CONDPAG?: string;
+    itens: ItemPayload[];
 }
 

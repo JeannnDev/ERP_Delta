@@ -113,6 +113,7 @@ export class ConsultaDocumento implements OnInit {
     /* ------------------------------------------------------------------ *
      * Campos de visualização (Dynamic View)                              *
      * ------------------------------------------------------------------ */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public getViewFields(): any[] {
         return [
             { property: 'documento', label: this.labelDocumento, gridColumns: 3 },
@@ -220,7 +221,7 @@ export class ConsultaDocumento implements OnInit {
                 const msg = this.fornecedorService.message() || 'Nenhum fornecedor encontrado no Protheus.';
                 this.poNotification.error(msg);
             }
-        } catch (error) {
+        } catch {
             const serviceMsg = this.fornecedorService.message();
             if (serviceMsg) {
                 this.poNotification.error(serviceMsg);

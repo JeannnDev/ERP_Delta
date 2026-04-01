@@ -21,7 +21,7 @@ import {
   PoTagType
 } from '@po-ui/ng-components';
 import { ImportacaoService } from '../../services/importacao.service';
-import { PedidoCsv, PedidoAgrupado, ResultadoImportacao, RawRecord } from '../../models/importacao.model';
+import { PedidoCsv, PedidoAgrupado, OrderPayload, ResultadoImportacao, RawRecord } from '../../models/importacao.model';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -242,8 +242,9 @@ export class UploadComponent {
       const items: PedidoCsv[] = itensRaw.map((it: RawRecord) => {
         const isQtyZero = Number(it.Quantidade || it.C6_QTDVEN || 0) <= 0;
         const noProd = !(it.Produto || it.C6_PRODUTO || '').toString().trim();
-        const invalid = isQtyZero || noProd;
-        
+        const noTes  = !(it.Tes || it.C6_TES || '').toString().trim();
+        const invalid = isQtyZero || noProd || noTes;
+
         return {
           C5_EXTERNO: idStr,
           C5_FILIAL: (h.Filial || '').toString().trim(),
@@ -254,6 +255,7 @@ export class UploadComponent {
           C6_QTDVEN: Number(it.Quantidade || it.C6_QTDVEN || 0),
           C6_PRCVEN: Number(it.PrecoUnit || it.C6_PRCVEN || 0),
           C6_DESCONTO: Number(it.DescontoPerc || it.C6_DESCONTO || 0),
+          C6_TES: (it.Tes || it.C6_TES || '').toString().trim(),
           invalid: invalid,
           statusLabel: invalid ? 'Erro' : 'OK',
           $selected: true
@@ -365,10 +367,11 @@ export class UploadComponent {
   }
 
   baixarModeloItens(): void {
-    // Modelo Itens
+    // Modelo Itens — com campo Tes obrigatório
     const itemLinhas: (string | number)[][] = [
-      ['PedidoExterno', 'Item', 'Produto', 'Quantidade', 'PrecoUnit', 'DescontoPerc'],
-      ['P0001', '01', 'PROD001', 10, 150.50, 5]
+      ['PedidoExterno', 'Item', 'Produto', 'Quantidade', 'PrecoUnit', 'DescontoPerc', 'Tes'],
+      ['P0001', '01', 'PROD001', 10, 150.50, 5, '501'],
+      ['P0001', '02', 'SERV001', 2, 35.00, 0, '501']
     ];
     const wsIt = XLSX.utils.aoa_to_sheet(itemLinhas);
     const wbIt = XLSX.utils.book_new();
@@ -411,11 +414,11 @@ export class UploadComponent {
 
     this.isLoading = true;
 
-    // Mapeia os pedidos cabecalho e coloca os itens agrupados
-    const payload: any[] = [];
-    
+    // Mapeia os pedidos e itens com tipos explícitos
+    const payload: OrderPayload[] = [];
+
     this.pedidosSelecionados.forEach(order => {
-      const orderPayload: any = {
+      const orderPayload: OrderPayload = {
         C5_EXTERNO: order.C5_EXTERNO,
         C5_FILIAL: order.C5_FILIAL,
         C5_EMISSAO: order.C5_EMISSAO,
@@ -431,7 +434,8 @@ export class UploadComponent {
             C6_PRODUTO: item.C6_PRODUTO,
             C6_QTDVEN: item.C6_QTDVEN,
             C6_PRCVEN: item.C6_PRCVEN,
-            C6_DESCONTO: item.C6_DESCONTO
+            C6_DESCONTO: item.C6_DESCONTO,
+            C6_TES: item.C6_TES
           });
         });
       }
@@ -497,9 +501,10 @@ const MASTER_COLUMNS: PoTableColumn[] = [
     columns: [
       { property: 'C6_ITEM', label: 'Item' },
       { property: 'C6_PRODUTO', label: 'Produto' },
-      { property: 'C6_QTDVEN', label: 'Quantidade', type: 'number' },
+      { property: 'C6_QTDVEN', label: 'Qtd', type: 'number' },
       { property: 'C6_PRCVEN', label: 'Preço Unit.', type: 'currency', format: 'BRL' },
       { property: 'C6_DESCONTO', label: 'Desc. %', type: 'number' },
+      { property: 'C6_TES', label: 'TES' },
       { property: 'statusLabel', label: 'Status' }
     ],
     typeHeader: 'inline'

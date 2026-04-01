@@ -35,15 +35,20 @@ export class ResultadoComponent implements OnInit {
   private notification = inject(PoNotificationService);
 
   readonly tableColumns: PoTableColumn[] = [
-    { property: 'pedidoExterno', label: 'Ped. Externo' },
-    { property: 'numeroPedido', label: 'Nº SC5' },
-    { property: 'status', label: 'Status', type: 'label', labels: [
-      { value: 'sucesso', label: 'Sucesso', color: 'color-11', icon: 'po-icon-ok' },
-      { value: 'erro', label: 'Erro', color: 'color-07', icon: 'po-icon-close' },
+    { property: 'pedidoExterno', label: 'Ped. Externo', width: '160px' },
+    { property: 'numeroPedido', label: 'Nº Pedido SC5', width: '140px' },
+    { property: 'status', label: 'Status', width: '130px', type: 'label', labels: [
+      { value: 'sucesso',   label: 'Sucesso',   color: 'color-11', icon: 'po-icon-ok'      },
+      { value: 'erro',      label: 'Erro',      color: 'color-07', icon: 'po-icon-close'   },
       { value: 'duplicado', label: 'Duplicado', color: 'color-08', icon: 'po-icon-warning' }
     ]},
-    { property: 'mensagem', label: 'Mensagem' }
+    { property: 'mensagem', label: 'Mensagem / Detalhe' }
   ];
+
+  /** Itens garantidos como array (fallback: []) */
+  get itens() {
+    return this.resultado?.itens ?? [];
+  }
 
   constructor() {
     const navigation = this.router.getCurrentNavigation();

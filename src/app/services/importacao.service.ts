@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { PedidoCsv, ResultadoImportacao, RawRecord } from '../models/importacao.model';
+import { PedidoCsv, PedidoAgrupado, OrderPayload, ResultadoImportacao, RawRecord } from '../models/importacao.model';
 import * as XLSX from 'xlsx';
 import { ProtheusApiService } from './protheus-api.service';
 
@@ -115,7 +115,7 @@ export class ImportacaoService {
   /**
    * Envia os pedidos para o Protheus.
    */
-  importar(pedidos: any[], origem: string): Observable<ResultadoImportacao> {
+  importar(pedidos: PedidoCsv[] | PedidoAgrupado[] | OrderPayload[], origem: string): Observable<ResultadoImportacao> {
     const payload = { origem, pedidos };
     const url = ``; // Chamada POST direta para /WsPedidoVenda
     
