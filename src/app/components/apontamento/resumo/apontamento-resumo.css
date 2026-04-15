@@ -338,6 +338,8 @@ app-apontamento-step-indicator {
   border-radius: 6px;
   padding: 0 24px;
   height: 44px;
+  width: 180px; /* Mais esticados */
+  justify-content: center; /* Centraliza texto e ícone */
   font-size: 14px;
   font-weight: 700;
   display: flex;

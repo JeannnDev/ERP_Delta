@@ -163,13 +163,19 @@ app-apontamento-step-indicator {
 /* ── FOOTER ── */
 .login-card__footer {
   display: flex;
+  justify-content: space-between;
   gap: 16px;
   margin-top: 32px;
 }
 
 .btn-back,
 .btn-next {
-  flex: 1;
+  width: 180px;
+}
+
+::ng-deep .btn-back .po-button,
+::ng-deep .btn-next .po-button {
+  width: 100%;
 }
 
 /* Animação */

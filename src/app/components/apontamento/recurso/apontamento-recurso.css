@@ -333,8 +333,17 @@ app-apontamento-step-indicator {
 /* ── FOOTER ── */
 .page-footer {
   display: flex;
+  justify-content: space-between; /* Um em cada canto */
   gap: 12px;
   flex-shrink: 0;
+  margin-top: 16px;
 }
 
-.btn-back, .btn-next { flex: 1; }
+.btn-back, .btn-next {
+  width: 180px; /* Mais esticados */
+}
+
+::ng-deep .btn-back .po-button,
+::ng-deep .btn-next .po-button {
+  width: 100%;
+}
