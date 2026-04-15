@@ -204,9 +204,32 @@ export class ApontamentoApiService {
   }
 
   /**
+   * Busca lista de recursos de produção (WsRecursoAll com fallback para WsRecurso)
+   */
+  fetchRecursosAll(): Observable<RecursoApontamento[]> {
+    return this.protheusApi.resource('WsRecursoAll')
+      .get<unknown>()
+      .pipe(
+        map((response: unknown) => {
+          const raw = response as Record<string, unknown>;
+          const data = raw['RESPONSE'] || raw['response'] || raw['recursos'] || (Array.isArray(response) ? response : []);
+          if (Array.isArray(data)) {
+            return (data as Record<string, unknown>[]).map((r) => ({
+              codigo: ((r['Codigo'] || r['codigo'] || r['CODIGO'] || '') as string).trim(),
+              descricao: ((r['Descricao'] || r['descricao'] || r['DESCRICAO'] || '') as string).trim()
+            })).filter(r => r.codigo);
+          }
+          return [];
+        }),
+        catchError(() => this.fetchRecursos())
+      );
+  }
+
+  /**
    * Busca lista de recursos de produção
    */
   fetchRecursos(): Observable<RecursoApontamento[]> {
+
     return this.protheusApi.resource('WsRecurso')
       .get<unknown>()
       .pipe(

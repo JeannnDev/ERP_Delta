@@ -21,6 +21,8 @@ export class ApontamentoSetupComponent implements OnInit, OnDestroy {
   @ViewChild('finishModal', { static: true }) finishModal!: PoModalComponent;
 
   operatorName = '';
+  recursoCode = '';
+  recursoDescricao = '';
   status: SetupStatus = 'IDLE';
   secondsCounter = 0;
   timerInterval: ReturnType<typeof setInterval> | null = null;
@@ -74,7 +76,9 @@ export class ApontamentoSetupComponent implements OnInit, OnDestroy {
       return;
     }
     const operator = JSON.parse(operatorData);
-    this.operatorName = operator.name || operator.code || 'Operador Admin';
+    this.operatorName = operator.name || operator.code || 'Operador';
+    this.recursoCode = operator.recurso || '';
+    this.recursoDescricao = operator.recursoDescricao || '';
   }
 
   get formattedTime(): string {
