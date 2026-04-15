@@ -6,19 +6,20 @@ import { Observable } from 'rxjs';
  * Auxiliar para ler variáveis do .env (compatível com SSR/Browser)
  * No Angular com SSR (Node), o process existe no servidor, mas não no navegador.
  */
-const getEnv = (key: string, defaultValue: string): string => {
-  if (typeof process !== 'undefined' && process.env && process.env[key]) {
-    return process.env[key]!;
+const getEnv = (key: string, nextKey: string, defaultValue: string): string => {
+  if (typeof process !== 'undefined' && process.env) {
+    if (process.env[nextKey]) return process.env[nextKey]!;
+    if (process.env[key]) return process.env[key]!;
   }
   return defaultValue;
 };
 
 // Configurações globais extraídas do .env ou valores padrões
 export const PROTHEUS_CONFIG = {
-  apiBaseUrl: getEnv('apiBaseUrl', 'http://localhost:8080/rest').replace(/\/$/, ''),
-  authorization: getEnv('Authorization', 'YWRtaW46amVhbg=='),
-  empresa: getEnv('EMPRESA', '01'),
-  filial: getEnv('FILIAL', '99')
+  apiBaseUrl: getEnv('apiBaseUrl', 'NEXT_PUBLIC_API_BASE_URL', 'http://192.168.0.243:9094/rest01').replace(/\/$/, ''),
+  authorization: getEnv('Authorization', 'NEXT_PUBLIC_API_AUTHORIZATION', 'Basic U1VQT1JURS5QUk9USEVVUzpzdXBvcnRl'),
+  empresa: getEnv('EMPRESA', 'NEXT_PUBLIC_API_EMPRESA', '01'),
+  filial: getEnv('FILIAL', 'NEXT_PUBLIC_API_FILIAL', '09ALFA01')
 };
 
 @Injectable({
@@ -33,12 +34,15 @@ export class ProtheusApiService {
   getHeaders(customFilial?: string): HttpHeaders {
     const auth = PROTHEUS_CONFIG.authorization.trim();
     const finalAuth = auth.startsWith('Basic ') ? auth : `Basic ${auth}`;
+    const empresa = PROTHEUS_CONFIG.empresa.trim();
+    const filial = (customFilial || PROTHEUS_CONFIG.filial).trim();
 
     return new HttpHeaders({
       'Content-Type': 'application/json',
       'Authorization': finalAuth,
-      'EMPRESA': PROTHEUS_CONFIG.empresa.trim(),
-      'FILIAL': (customFilial || PROTHEUS_CONFIG.filial).trim()
+      'EMPRESA': empresa,
+      'FILIAL': filial,
+      'TenantId': `${empresa},${filial}`
     });
   }
 

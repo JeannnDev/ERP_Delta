@@ -1,0 +1,135 @@
+/* HIDE PO-PAGE HEADER */
+:host ::ng-deep .po-page-header {
+  display: none;
+}
+
+:host ::ng-deep .po-page-content {
+  padding: 0 !important;
+}
+
+.home-container {
+  min-height: 100vh;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  width: 100%;
+}
+
+
+
+.home-content {
+  width: 100%;
+  max-width: 900px;
+}
+
+.home-title {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 48px;
+  letter-spacing: -0.5px;
+}
+
+.home-options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+@media (min-width: 768px) {
+  .home-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.option-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.option-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+  border-color: #2563eb;
+}
+
+.icon-wrapper {
+  width: 110px;
+  height: 110px;
+  border-radius: 35% 65% 70% 30% / 30% 40% 60% 70%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  transition: all 0.5s ease;
+}
+
+.icon-wrapper .po-icon {
+  font-size: 48px;
+}
+
+.icon-wrapper.blue {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  color: #2563eb;
+}
+
+.icon-wrapper.dark {
+  background: linear-gradient(135deg, #f8fafc 0%, #334155 100%);
+  color: #fff;
+}
+
+.option-card:hover .icon-wrapper {
+  border-radius: 50%;
+  transform: scale(1.1);
+}
+
+.option-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #1e293b;
+}
+
+.option-card p {
+  font-size: 15px;
+  color: #64748b;
+  margin: 0;
+}
+
+.home-info-section {
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.info-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: white;
+  padding: 12px 24px;
+  border-radius: 100px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  color: #475569;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.info-badge .po-icon {
+  color: #3b82f6;
+  font-size: 18px;
+}

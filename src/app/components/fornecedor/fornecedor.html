@@ -1,15 +1,10 @@
 <po-page-default p-title="Cadastro de Fornecedor (Protheus)" [p-actions]="pageActions">
-  
   <!-- Formulário de Cadastro/Edição -->
   <div class="po-row">
-    <po-dynamic-form 
-      class="po-md-12"
-      [p-fields]="fields" 
-      [p-value]="fornecedor">
-    </po-dynamic-form>
+    <po-dynamic-form class="po-md-12" [p-fields]="fields" [p-value]="fornecedor"> </po-dynamic-form>
   </div>
 
-  
-  <po-loading-overlay *ngIf="isLoading()" p-text="Acessando o Protheus..."></po-loading-overlay>
-
+  @if (isLoading()) {
+    <po-loading-overlay p-text="Acessando o Protheus..."></po-loading-overlay>
+  }
 </po-page-default>

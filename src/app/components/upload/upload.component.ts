@@ -1,5 +1,5 @@
 import { Component, ViewChild, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
@@ -18,17 +18,22 @@ import {
   PoInfoModule,
   PoUploadFile,
   PoTableColumn,
-  PoTagType
+  PoTagType,
 } from '@po-ui/ng-components';
 import { ImportacaoService } from '../../services/importacao.service';
-import { PedidoCsv, PedidoAgrupado, OrderPayload, ResultadoImportacao, RawRecord } from '../../models/importacao.model';
+import {
+  PedidoCsv,
+  PedidoAgrupado,
+  OrderPayload,
+  ResultadoImportacao,
+  RawRecord,
+} from '../../models/importacao.model';
 import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-upload',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     PoPageModule,
     PoFieldModule,
@@ -39,10 +44,10 @@ import * as XLSX from 'xlsx';
     PoContainerModule,
     PoStepperModule,
     PoWidgetModule,
-    PoInfoModule
+    PoInfoModule,
   ],
   templateUrl: './upload.component.html',
-  styleUrls: ['./upload.component.css']
+  styleUrls: ['./upload.component.css'],
 })
 export class UploadComponent {
   @ViewChild('POItemsOri', { static: false }) poItemsOri!: PoTableComponent;
@@ -66,7 +71,7 @@ export class UploadComponent {
   tagWarning: PoTagType = PoTagType.Warning;
 
   // Dados
-  pedidos: PedidoAgrupado[] = [];           // Lista final processada (Agrupada)
+  pedidos: PedidoAgrupado[] = []; // Lista final processada (Agrupada)
   pedidosSelecionados: PedidoAgrupado[] = []; // Selecionados para envio
 
   // Suporte a dois arquivos
@@ -80,13 +85,11 @@ export class UploadComponent {
   readonly origens = [
     { label: 'CRM', value: 'CRM' },
     { label: 'E-commerce', value: 'Ecommerce' },
-    { label: 'Protheus', value: 'Protheus' }
+    { label: 'Protheus', value: 'Protheus' },
   ];
 
   // Configurações das colunas da tabela
   readonly masterColumns: PoTableColumn[] = MASTER_COLUMNS;
-
-
 
   // --- Funções de validação para o Stepper ---
 
@@ -96,11 +99,11 @@ export class UploadComponent {
   podeAvancarPasso1 = (): boolean => {
     // Se estiver em modo de arquivo único ou duplo, precisa ter pedidos processados
     return !!this.origem && this.pedidos.length > 0;
-  }
+  };
 
   podeAvancarPasso2 = (): boolean => {
     return this.pedidosSelecionados.length > 0;
-  }
+  };
 
   // --- Captura do arquivo via po-upload (Drag & Drop) ---
 
@@ -116,53 +119,61 @@ export class UploadComponent {
     this.pedidos = [];
     this.pedidosSelecionados = [];
 
-    this.service.lerArquivo(nativeFile).then((data: PedidoCsv[]) => {
-      this.isLoading = false;
-      
-      // Mapeia os dados brutos para o formato PedidoAgrupado
-      const map = new Map<string, PedidoCsv[]>();
-      data.forEach(item => {
-        const id = item.C5_EXTERNO || '';
-        if (!map.has(id)) map.set(id, []);
-        map.get(id)?.push(item);
-      });
+    this.service
+      .lerArquivo(nativeFile)
+      .then((data: PedidoCsv[]) => {
+        this.isLoading = false;
 
-      this.pedidos = Array.from(map.entries()).map(([key, items]) => {
-        const h = items[0];
-        const invalid = items.some(i => i.invalid) || !h.C5_CLIENTE;
-        return {
-          C5_EXTERNO: key,
-          C5_CLIENTE: (h.C5_CLIENTE || '').toString().trim(),
-          C5_EMISSAO: h.C5_EMISSAO || '',
-          C5_FILIAL: h.C5_FILIAL || '',
-          C5_LOJA: (h.C5_LOJA || '').toString().trim() || '01',
-          C5_OBS: h.C5_OBS || '',
-          C5_CONDPAG: (h.C5_CONDPAG || '').toString().trim(),
-          C5_TABELA: h.C5_TABELA || '',
-          C5_VENDEDO: h.C5_VENDEDO || '',
-          detalhe: items,
-          qtdItens: items.length,
-          valorTotal: items.reduce((acc, curr) => acc + ((curr.C6_QTDVEN || 0) * (curr.C6_PRCVEN || 0)), 0),
-          invalid: invalid,
-          statusLabel: invalid ? 'true' : 'false',
-          $selected: !invalid && items.length > 0
-        } as PedidoAgrupado;
-      });
-
-      // Garantir que os itens no detalhe também tenham statusLabel amigável
-      this.pedidos.forEach(p => {
-        p.detalhe.forEach(it => {
-          it.statusLabel = it.invalid ? 'Erro' : 'OK';
+        // Mapeia os dados brutos para o formato PedidoAgrupado
+        const map = new Map<string, PedidoCsv[]>();
+        data.forEach((item) => {
+          const id = item.C5_EXTERNO || '';
+          if (!map.has(id)) map.set(id, []);
+          map.get(id)?.push(item);
         });
-      });
 
-      this.pedidosSelecionados = this.pedidos.filter(p => p.$selected);
-      this.notification.success(`${data.length} itens carregados e agrupados em ${this.pedidos.length} pedidos.`);
-      if (this.origem && this.stepper) setTimeout(() => this.stepper.next(), 400);
-    }).catch((err) => {
-      this.isLoading = false;
-      this.notification.error('Erro: ' + err.message);
-    });
+        this.pedidos = Array.from(map.entries()).map(([key, items]) => {
+          const h = items[0];
+          const invalid = items.some((i) => i.invalid) || !h.C5_CLIENTE;
+          return {
+            C5_EXTERNO: key,
+            C5_CLIENTE: (h.C5_CLIENTE || '').toString().trim(),
+            C5_EMISSAO: h.C5_EMISSAO || '',
+            C5_FILIAL: h.C5_FILIAL || '',
+            C5_LOJA: (h.C5_LOJA || '').toString().trim() || '01',
+            C5_OBS: h.C5_OBS || '',
+            C5_CONDPAG: (h.C5_CONDPAG || '').toString().trim(),
+            C5_TABELA: h.C5_TABELA || '',
+            C5_VENDEDO: h.C5_VENDEDO || '',
+            detalhe: items,
+            qtdItens: items.length,
+            valorTotal: items.reduce(
+              (acc, curr) => acc + (curr.C6_QTDVEN || 0) * (curr.C6_PRCVEN || 0),
+              0,
+            ),
+            invalid: invalid,
+            statusLabel: invalid ? 'true' : 'false',
+            $selected: !invalid && items.length > 0,
+          } as PedidoAgrupado;
+        });
+
+        // Garantir que os itens no detalhe também tenham statusLabel amigável
+        this.pedidos.forEach((p) => {
+          p.detalhe.forEach((it) => {
+            it.statusLabel = it.invalid ? 'Erro' : 'OK';
+          });
+        });
+
+        this.pedidosSelecionados = this.pedidos.filter((p) => p.$selected);
+        this.notification.success(
+          `${data.length} itens carregados e agrupados em ${this.pedidos.length} pedidos.`,
+        );
+        if (this.origem && this.stepper) setTimeout(() => this.stepper.next(), 400);
+      })
+      .catch((err) => {
+        this.isLoading = false;
+        this.notification.error('Erro: ' + err.message);
+      });
     this.arquivosUpload = [];
   }
 
@@ -170,23 +181,26 @@ export class UploadComponent {
   onCabecalhoChange(files: PoUploadFile[]): void {
     if (!files || files.length === 0) return;
     const nativeFile: File = files[0].rawFile;
-    
+
     if (!nativeFile) return;
 
     this.nomeArquivoCabecalho = nativeFile.name;
-    
+
     // Pequeno delay para garantir que o Angular processe a adição do arquivo antes do loading
     setTimeout(() => {
       this.isLoading = true;
-      this.service.lerGenerico(nativeFile).then(data => {
-        this.dadosCabecalho = data;
-        this.isLoading = false;
-        this.notification.information('Cabeçalhos carregados. Agora carregue os Itens.');
-        this.processarArquivos();
-      }).catch(err => {
-        this.isLoading = false;
-        this.notification.error('Erro no cabeçalho: ' + err.message);
-      });
+      this.service
+        .lerGenerico(nativeFile)
+        .then((data) => {
+          this.dadosCabecalho = data;
+          this.isLoading = false;
+          this.notification.information('Cabeçalhos carregados. Agora carregue os Itens.');
+          this.processarArquivos();
+        })
+        .catch((err) => {
+          this.isLoading = false;
+          this.notification.error('Erro no cabeçalho: ' + err.message);
+        });
     });
   }
 
@@ -194,21 +208,24 @@ export class UploadComponent {
   onItensChange(files: PoUploadFile[]): void {
     if (!files || files.length === 0) return;
     const nativeFile: File = files[0].rawFile;
-    
+
     if (!nativeFile) return;
 
     this.nomeArquivoItens = nativeFile.name;
-    
+
     setTimeout(() => {
       this.isLoading = true;
-      this.service.lerGenerico(nativeFile).then(data => {
-        this.dadosItens = data;
-        this.isLoading = false;
-        this.processarArquivos();
-      }).catch(err => {
-        this.isLoading = false;
-        this.notification.error('Erro nos itens: ' + err.message);
-      });
+      this.service
+        .lerGenerico(nativeFile)
+        .then((data) => {
+          this.dadosItens = data;
+          this.isLoading = false;
+          this.processarArquivos();
+        })
+        .catch((err) => {
+          this.isLoading = false;
+          this.notification.error('Erro nos itens: ' + err.message);
+        });
     });
   }
 
@@ -221,7 +238,7 @@ export class UploadComponent {
 
     this.isLoading = true;
     const mapItens = new Map<string, RawRecord[]>();
-    this.dadosItens.forEach(it => {
+    this.dadosItens.forEach((it) => {
       const id = (it.PedidoExterno || it.C5_EXTERNO || '').toString().trim();
       if (id) {
         if (!mapItens.has(id)) mapItens.set(id, []);
@@ -232,7 +249,7 @@ export class UploadComponent {
     const agrupados: PedidoAgrupado[] = [];
     const headersUsados = new Set<string>();
 
-    this.dadosCabecalho.forEach(h => {
+    this.dadosCabecalho.forEach((h) => {
       const idStr = (h.PedidoExterno || h.C5_EXTERNO || '').toString().trim();
       if (!idStr) return;
 
@@ -242,7 +259,7 @@ export class UploadComponent {
       const items: PedidoCsv[] = itensRaw.map((it: RawRecord) => {
         const isQtyZero = Number(it.Quantidade || it.C6_QTDVEN || 0) <= 0;
         const noProd = !(it.Produto || it.C6_PRODUTO || '').toString().trim();
-        const noTes  = !(it.Tes || it.C6_TES || '').toString().trim();
+        const noTes = !(it.Tes || it.C6_TES || '').toString().trim();
         const invalid = isQtyZero || noProd || noTes;
 
         return {
@@ -258,7 +275,7 @@ export class UploadComponent {
           C6_TES: (it.Tes || it.C6_TES || '').toString().trim(),
           invalid: invalid,
           statusLabel: invalid ? 'Erro' : 'OK',
-          $selected: true
+          $selected: true,
         } as PedidoCsv;
       });
 
@@ -272,49 +289,52 @@ export class UploadComponent {
         C5_VENDEDO: (h.Vendedor || '').toString().trim(),
         C5_LOJA: (h.Loja || '').toString().trim(),
         C5_OBS: (h.Obs || '').toString().trim(),
-        detalhe: items, 
+        detalhe: items,
         qtdItens: items.length,
-        valorTotal: items.reduce((acc, curr) => acc + (curr.C6_QTDVEN * curr.C6_PRCVEN), 0),
-        invalid: items.length === 0 || items.some(i => i.invalid) || !h.Cliente,
-        statusLabel: (items.length === 0 || items.some(i => i.invalid) || !h.Cliente) ? 'true' : 'false',
-        $selected: items.length > 0 && !items.some(i => i.invalid) && !!h.Cliente
+        valorTotal: items.reduce((acc, curr) => acc + curr.C6_QTDVEN * curr.C6_PRCVEN, 0),
+        invalid: items.length === 0 || items.some((i) => i.invalid) || !h.Cliente,
+        statusLabel:
+          items.length === 0 || items.some((i) => i.invalid) || !h.Cliente ? 'true' : 'false',
+        $selected: items.length > 0 && !items.some((i) => i.invalid) && !!h.Cliente,
       };
 
       agrupados.push(pedidoAgrupado);
     });
 
     // Itens órfãos (sem cabeçalho)
-    this.dadosItens.forEach(it => {
+    this.dadosItens.forEach((it) => {
       const idStr = (it.PedidoExterno || it.C5_EXTERNO || '').toString().trim();
       if (idStr && !headersUsados.has(idStr)) {
         agrupados.push({
           C5_EXTERNO: idStr,
           C5_CLIENTE: '!!! CABEÇALHO NÃO ENCONTRADO !!!',
-          detalhe: [{
-            C5_EXTERNO: idStr,
-            C5_CLIENTE: 'ERR',
-            C6_PRODUTO: (it.Produto || it.C6_PRODUTO || '').toString().trim(),
-            C6_QTDVEN: Number(it.Quantidade || it.C6_QTDVEN || 0),
-            C6_PRCVEN: Number(it.PrecoUnit || it.C6_PRCVEN || 0),
-            C6_ITEM: (it.Item || '').toString().trim(),
-            invalid: true,
-            statusLabel: 'Erro',
-            $selected: false
-          }],
+          detalhe: [
+            {
+              C5_EXTERNO: idStr,
+              C5_CLIENTE: 'ERR',
+              C6_PRODUTO: (it.Produto || it.C6_PRODUTO || '').toString().trim(),
+              C6_QTDVEN: Number(it.Quantidade || it.C6_QTDVEN || 0),
+              C6_PRCVEN: Number(it.PrecoUnit || it.C6_PRCVEN || 0),
+              C6_ITEM: (it.Item || '').toString().trim(),
+              invalid: true,
+              statusLabel: 'Erro',
+              $selected: false,
+            },
+          ],
           qtdItens: 1,
           valorTotal: Number(it.Quantidade || 0) * Number(it.PrecoUnit || 0),
           invalid: true,
           statusLabel: 'true',
-          $selected: false
+          $selected: false,
         } as PedidoAgrupado);
       }
     });
 
     this.pedidos = agrupados; // Agora é uma lista de Pedidos Master
-    this.pedidosSelecionados = this.pedidos.filter(p => p.$selected);
+    this.pedidosSelecionados = this.pedidos.filter((p) => p.$selected);
     this.isLoading = false;
 
-    const countErros = this.pedidos.filter(p => p.invalid).length;
+    const countErros = this.pedidos.filter((p) => p.invalid).length;
     if (countErros > 0) {
       this.notification.warning(`Foram encontrados ${countErros} cabeçalhos com problemas.`);
     } else {
@@ -340,7 +360,7 @@ export class UploadComponent {
   }
 
   onItemSelecionado(item: PedidoAgrupado): void {
-    const exists = this.pedidosSelecionados.some(p => p.C5_EXTERNO === item.C5_EXTERNO);
+    const exists = this.pedidosSelecionados.some((p) => p.C5_EXTERNO === item.C5_EXTERNO);
     if (!exists) {
       this.pedidosSelecionados = [...this.pedidosSelecionados, item];
     }
@@ -348,7 +368,7 @@ export class UploadComponent {
 
   onItemRemovido(item: PedidoAgrupado): void {
     this.pedidosSelecionados = this.pedidosSelecionados.filter(
-      p => p.C5_EXTERNO !== item.C5_EXTERNO
+      (p) => p.C5_EXTERNO !== item.C5_EXTERNO,
     );
   }
 
@@ -357,8 +377,18 @@ export class UploadComponent {
   baixarModeloCabecalho(): void {
     // Modelo Cabeçalho
     const cabLinhas: (string | number)[][] = [
-      ['Filial', 'Emissao', 'Cliente', 'Loja', 'CondPag', 'TabelaPreco', 'Vendedor', 'Obs', 'PedidoExterno'],
-      ['01', '20240320', '000001', '01', '001', '001', '000001', 'Teste Importação', 'P0001']
+      [
+        'Filial',
+        'Emissao',
+        'Cliente',
+        'Loja',
+        'CondPag',
+        'TabelaPreco',
+        'Vendedor',
+        'Obs',
+        'PedidoExterno',
+      ],
+      ['01', '20240320', '000001', '01', '001', '001', '000001', 'Teste Importação', 'P0001'],
     ];
     const wsCab = XLSX.utils.aoa_to_sheet(cabLinhas);
     const wbCab = XLSX.utils.book_new();
@@ -370,8 +400,8 @@ export class UploadComponent {
     // Modelo Itens — com campo Tes obrigatório
     const itemLinhas: (string | number)[][] = [
       ['PedidoExterno', 'Item', 'Produto', 'Quantidade', 'PrecoUnit', 'DescontoPerc', 'Tes'],
-      ['P0001', '01', 'PROD001', 10, 150.50, 5, '501'],
-      ['P0001', '02', 'SERV001', 2, 35.00, 0, '501']
+      ['P0001', '01', 'PROD001', 10, 150.5, 5, '501'],
+      ['P0001', '02', 'SERV001', 2, 35.0, 0, '501'],
     ];
     const wsIt = XLSX.utils.aoa_to_sheet(itemLinhas);
     const wbIt = XLSX.utils.book_new();
@@ -406,9 +436,11 @@ export class UploadComponent {
       return;
     }
 
-    const hasInvalidSelected = this.pedidosSelecionados.some(p => p.invalid);
+    const hasInvalidSelected = this.pedidosSelecionados.some((p) => p.invalid);
     if (hasInvalidSelected) {
-      this.notification.error('Existem linhas inválidas selecionadas. Desmarque-as para continuar.');
+      this.notification.error(
+        'Existem linhas inválidas selecionadas. Desmarque-as para continuar.',
+      );
       return;
     }
 
@@ -417,14 +449,14 @@ export class UploadComponent {
     // Mapeia os pedidos e itens com tipos explícitos
     const payload: OrderPayload[] = [];
 
-    this.pedidosSelecionados.forEach(order => {
+    this.pedidosSelecionados.forEach((order) => {
       const orderPayload: OrderPayload = {
         C5_EXTERNO: order.C5_EXTERNO,
         C5_FILIAL: order.C5_FILIAL,
         C5_EMISSAO: order.C5_EMISSAO,
         C5_CLIENTE: order.C5_CLIENTE,
         C5_CONDPAG: order.C5_CONDPAG,
-        itens: []
+        itens: [],
       };
 
       if (order.detalhe && Array.isArray(order.detalhe)) {
@@ -435,7 +467,7 @@ export class UploadComponent {
             C6_QTDVEN: item.C6_QTDVEN,
             C6_PRCVEN: item.C6_PRCVEN,
             C6_DESCONTO: item.C6_DESCONTO,
-            C6_TES: item.C6_TES
+            C6_TES: item.C6_TES,
           });
         });
       }
@@ -456,63 +488,79 @@ export class UploadComponent {
       error: () => {
         this.isLoading = false;
         this.notification.error('Falha ao conectar com o servidor Protheus.');
-      }
+      },
     });
   }
 
   /** Formata data vindo do Excel (serial ou string ISO) */
   private formatarDataExcel(dataRaw: string | number | null | undefined): string {
     if (!dataRaw) return '';
-    
+
     // Converte para número se for uma string numérica
     const num = Number(dataRaw);
-    
+
     // Se for um número válido (serial Excel)
     if (!isNaN(num) && num > 10000) {
       const date = new Date(Math.round((num - 25569) * 86400 * 1000));
       return date.toISOString().split('T')[0];
     }
-    
+
     // Se for string YYYYMMDD (comum em Protheus)
     const str = dataRaw.toString().trim();
     if (str.length === 8 && !isNaN(Number(str))) {
       return `${str.substring(0, 4)}-${str.substring(4, 6)}-${str.substring(6, 8)}`;
     }
-    
+
     return str;
   }
 
   get pedidosValidosCount(): number {
-    return this.pedidos.filter(p => !p.invalid).length;
+    return this.pedidos.filter((p) => !p.invalid).length;
   }
 
   get pedidosInvalidosCount(): number {
-    return this.pedidos.filter(p => p.invalid).length;
+    return this.pedidos.filter((p) => p.invalid).length;
   }
 }
 
 /** Definição estática das colunas para manter o componente organizado */
 const MASTER_COLUMNS: PoTableColumn[] = [
-  { property: 'statusLabel', label: 'Status', type: 'label', width: '110px', labels: [
-    { value: 'false', color: 'color-11', label: 'Válido', icon: 'po-icon-ok' },
-    { value: 'true', color: 'color-07', label: 'Inválido', icon: 'po-icon-danger' }
-  ]},
-  { property: 'detalhe', type: 'detail', detail: {
-    columns: [
-      { property: 'C6_ITEM', label: 'Item' },
-      { property: 'C6_PRODUTO', label: 'Produto' },
-      { property: 'C6_QTDVEN', label: 'Qtd', type: 'number' },
-      { property: 'C6_PRCVEN', label: 'Preço Unit.', type: 'currency', format: 'BRL' },
-      { property: 'C6_DESCONTO', label: 'Desc. %', type: 'number' },
-      { property: 'C6_TES', label: 'TES' },
-      { property: 'statusLabel', label: 'Status' }
+  {
+    property: 'statusLabel',
+    label: 'Status',
+    type: 'label',
+    width: '110px',
+    labels: [
+      { value: 'false', color: 'color-11', label: 'Válido', icon: 'po-icon-ok' },
+      { value: 'true', color: 'color-07', label: 'Inválido', icon: 'po-icon-danger' },
     ],
-    typeHeader: 'inline'
-  } },
+  },
+  {
+    property: 'detalhe',
+    type: 'detail',
+    detail: {
+      columns: [
+        { property: 'C6_ITEM', label: 'Item' },
+        { property: 'C6_PRODUTO', label: 'Produto' },
+        { property: 'C6_QTDVEN', label: 'Qtd', type: 'number' },
+        { property: 'C6_PRCVEN', label: 'Preço Unit.', type: 'currency', format: 'BRL' },
+        { property: 'C6_DESCONTO', label: 'Desc. %', type: 'number' },
+        { property: 'C6_TES', label: 'TES' },
+        { property: 'statusLabel', label: 'Status' },
+      ],
+      typeHeader: 'inline',
+    },
+  },
   { property: 'C5_EXTERNO', label: 'Pedido Externo', width: '160px' },
   { property: 'C5_CLIENTE', label: 'ID Cliente', width: '120px' },
-  { property: 'C5_EMISSAO', label: 'Dt. Emissão', width: '120px', type: 'date', format: 'dd/MM/yyyy' },
+  {
+    property: 'C5_EMISSAO',
+    label: 'Dt. Emissão',
+    width: '120px',
+    type: 'date',
+    format: 'dd/MM/yyyy',
+  },
   { property: 'valorTotal', label: 'Valor Total', type: 'currency', format: 'BRL', width: '140px' },
   { property: 'qtdItens', label: 'Qtd Itens', width: '90px' },
-  { property: 'C5_OBS', label: 'Observações' }
+  { property: 'C5_OBS', label: 'Observações' },
 ];

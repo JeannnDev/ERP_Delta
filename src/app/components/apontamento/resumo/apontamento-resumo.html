@@ -1,0 +1,243 @@
+<div class="wizard-container">
+  <aside class="wizard-sidebar">
+    <app-apontamento-step-indicator 
+      [currentStep]="4"
+      [totalSteps]="4"
+      (stepClick)="onStepClick($event)">
+    </app-apontamento-step-indicator>
+  </aside>
+
+  <main class="wizard-content">
+    <!-- Alerta OP Encerrada -->
+    @if (isOpEncerrada()) {
+      <div class="op-closed-alert">
+        <div class="alert-icon">
+          <po-icon p-icon="an an-warning"></po-icon>
+        </div>
+        <div class="alert-text">
+          <strong>OP Encerrada</strong>
+          <p>Esta Ordem de Produção já foi encerrada. Você está visualizando os dados em modo consulta.</p>
+        </div>
+      </div>
+    }
+
+    <!-- BARRA DE INFO -->
+    <div class="page-info-bar">
+      <div class="page-info-bar__item">
+        <span class="page-info-bar__label">OP</span>
+        <strong class="page-info-bar__value">{{ apontamentoService.data().opNumber }}</strong>
+      </div>
+      <div class="page-info-bar__divider"></div>
+      <div class="page-info-bar__item">
+        <span class="page-info-bar__label">Roteiro</span>
+        <strong class="page-info-bar__value">{{ apontamentoService.data().apiData?.roteiroUtilizado || '-' }}</strong>
+      </div>
+      <div class="page-info-bar__divider"></div>
+      <div class="page-info-bar__item">
+        <span class="page-info-bar__label">Operador <po-icon p-icon="an an-qr-code"></po-icon></span>
+        <strong class="page-info-bar__value">{{ apontamentoService.data().operatorName || '-' }}</strong>
+      </div>
+    </div>
+
+    <!-- Bloco de Apontamento Realizado -->
+    @if (apontamentoService.hasApontado()) {
+      <div class="summary-card last-pointing-alert">
+        <div class="section-title">
+          <po-icon p-icon="an an-check"></po-icon>
+          <h3>Apontamento Realizado Com Sucesso</h3>
+        </div>
+        <div class="last-pointing-grid">
+          <div class="last-stat">
+            <span class="label">Qtd. Produzida</span>
+            <strong class="value">{{ apontamentoService.data().quantityProduced }}</strong>
+          </div>
+          <div class="last-stat">
+            <span class="label">Qtd. Perda</span>
+            <strong class="value">{{ apontamentoService.data().loss || '0' }}</strong>
+          </div>
+          <div class="last-stat">
+            <span class="label">Tempo Registrado</span>
+            <strong class="value">{{ apontamentoService.formattedElapsedTime() }}</strong>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- GRID SUPERIOR -->
+    <div class="summary-top-grid">
+      <div class="summary-card product-detail">
+        <div class="product-detail__header">
+          <div class="product-detail__info">
+            <div class="flex-row">
+              <span class="label">PRODUTO: <strong class="code">{{ apontamentoService.data().apiData?.produto }}</strong></span>
+            </div>
+            <p class="desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
+          </div>
+        </div>
+        <div class="dates-grid">
+          <div class="date-box">
+            <span class="date-box__label">Data de Emissão</span>
+            <span class="date-box__value">{{ formatDate(apontamentoService.data().apiData?.dtEmissao) }}</span>
+          </div>
+          <div class="date-box">
+            <span class="date-box__label">Data de Entrega</span>
+            <span class="date-box__value">{{ formatDate(apontamentoService.data().apiData?.dtEntrega) }}</span>
+          </div>
+          <div class="date-box">
+            <span class="date-box__label">Prev. Início</span>
+            <span class="date-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoIni) }}</span>
+          </div>
+          <div class="date-box">
+            <span class="date-box__label">Prev. Entrega</span>
+            <span class="date-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoEntrega) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-card stats-overview">
+        <div class="stats-row">
+          <div class="stat-item">
+            <span class="stat-item__label">Solicitada</span>
+            <strong class="stat-item__value">{{ apontamentoService.data().apiData?.quantidade }}</strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Produzida</span>
+            <strong class="stat-item__value text--green">{{ apontamentoService.data().apiData?.qtdProduzida }}</strong>
+          </div>
+          <div class="stat-item">
+            <span class="stat-item__label">Perda Total</span>
+            <strong class="stat-item__value text--red">{{ getQuantidadePerdidaTotal() }}</strong>
+          </div>
+        </div>
+        <div class="total-time-box">
+          <span class="total-time-label">Tempo Total:</span>
+          <strong class="total-time-value">{{ getTotalOpTimeFormatted() }}</strong>
+        </div>
+      </div>
+    </div>
+
+    <!-- SEÇÃO OPERAÇÕES -->
+    <div class="summary-card operations-section">
+      <div class="section-title">
+        <po-icon p-icon="an an-clock"></po-icon>
+        <h3>Operações</h3>
+      </div>
+
+      <div class="operations-accordion">
+        @for (op of (apontamentoService.data().apiData?.operacoes || []); track op.recno; let i = $index) {
+          <div class="op-item-wrapper">
+            <div 
+              class="op-header" 
+              tabindex="0"
+              (click)="toggleOp(i)"
+              (keyup.enter)="toggleOp(i)">
+              <div class="op-header__left">
+                <po-icon [p-icon]="expandedOps[i] ? 'an an-caret-down' : 'an an-caret-right'" class="arrow"></po-icon>
+                <span class="op-name">{{ op.operac }} - {{ op.descricao }}</span>
+              </div>
+              <div class="op-header__right">
+                <span class="op-total-time">{{ getOperationTime(op) }}</span>
+              </div>
+            </div>
+
+            @if (expandedOps[i]) {
+              <div class="op-details">
+                <div class="details-header-row">
+                  <span class="h-col">Recurso</span>
+                  <span class="h-col">Qtd/Perdas</span>
+                  <span class="h-col">Tempo</span>
+                  <span class="h-col">Operador</span>
+                  <span class="h-col">Início</span>
+                  <span class="h-col">Fim</span>
+                </div>
+                @for (hist of op.historico; track $index) {
+                  <div class="details-data-row">
+                    <span class="d-col"><strong>{{ hist.recurso }}</strong></span>
+                    <span class="d-col"><span class="text--green">{{ hist.qtdProd }}</span> / <span class="text--red">{{ hist.qtdPerd }}</span></span>
+                    <span class="d-col"><strong>{{ formatTimeValue(hist.tempoApont) }}</strong></span>
+                    <span class="d-col truncate">{{ getOperadorName(hist) }}</span>
+                    <span class="d-col text--small">{{ formatDateWithTime(hist.dtIni, hist.hrIni) }}</span>
+                    <span class="d-col text--small">{{ formatDateWithTime(hist.dtFim, hist.hrFim) }}</span>
+                  </div>
+                } @empty {
+                  <div class="no-history">
+                    Nenhum histórico de apontamento para esta operação.
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        } @empty {
+          <div class="no-ops-message">
+            Nenhuma operação encontrada para esta OP.
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- BLOCO DE IMPRESSÃO -->
+    <div class="summary-card print-card">
+      <div class="print-controls-grid">
+        <po-select 
+          class="print-input"
+          name="layout"
+          p-label="Etiqueta"
+          [ngModel]="selectedLabel"
+          (p-change)="selectedLabel = $event"
+          [p-options]="labelsOptions"
+          p-placeholder="Selecione a etiqueta">
+        </po-select>
+        <po-select 
+          class="print-input"
+          name="impressora"
+          p-label="Impressora"
+          [ngModel]="selectedPrinter"
+          (p-change)="selectedPrinter = $event"
+          [p-options]="printersOptions"
+          p-placeholder="Selecione a impressora">
+        </po-select>
+        <po-number
+          class="print-input copies-input"
+          name="copias"
+          p-label="Cópias"
+          [ngModel]="1"
+          [p-min]="1"
+          [p-max]="999">
+        </po-number>
+        <button 
+          class="btn-custom-print" 
+          [disabled]="!canPrint"
+          (click)="handlePrint()">
+          <po-icon p-icon="an an-printer"></po-icon> Imprimir
+        </button>
+      </div>
+    </div>
+
+    <!-- RODAPÉ DE NAVEGAÇÃO -->
+    <div class="page-navigation-actions">
+      <button class="btn-custom-outline" (click)="goBack()">Voltar</button>
+      <button class="btn-custom-outline" (click)="handleNovaOP()">
+        <po-icon p-icon="an an-house"></po-icon> Voltar ao Início
+      </button>
+    </div>
+  </main>
+</div>
+
+<!-- MODAIS -->
+<po-modal #newOpModal p-title="Nova Ordem de Produção" [p-primary-action]="newOpPrimaryAction" [p-secondary-action]="newOpSecondaryAction">
+  Deseja realmente iniciar o apontamento de uma nova Ordem de Produção?
+</po-modal>
+
+<po-modal #printSuccessModal p-title="Sucesso" [p-primary-action]="printSuccessAction">
+  <div class="modal-content-center">
+    <po-icon p-icon="an an-check" class="modal-icon modal-icon--success"></po-icon>
+    <p>Impressão enviada com sucesso!</p>
+  </div>
+</po-modal>
+
+<po-modal #printErrorModal p-title="Erro" [p-primary-action]="printErrorAction">
+  <div class="modal-content-center">
+    <po-icon p-icon="an an-warning" class="modal-icon modal-icon--error"></po-icon>
+    <p>{{ printErrorMessage }}</p>
+  </div>
+</po-modal>

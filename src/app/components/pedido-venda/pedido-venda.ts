@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import {
   PoPageModule,
@@ -10,7 +10,7 @@ import {
   PoTableModule,
   PoTableColumn,
   PoButtonModule,
-  PoDividerModule
+  PoDividerModule,
 } from '@po-ui/ng-components';
 
 export interface PedidoHeader {
@@ -31,24 +31,30 @@ export interface PedidoItem {
   selector: 'app-pedido-venda',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     PoPageModule,
     PoDynamicModule,
     PoTableModule,
     PoButtonModule,
-    PoDividerModule
+    PoDividerModule,
   ],
   templateUrl: './pedido-venda.html',
-  styles: [`
-    .container-itens { padding: 16px; background: #fdfdfd; border: 1px solid #eeeeee; border-radius: 4px; }
-  `]
+  styles: [
+    `
+      .container-itens {
+        padding: 16px;
+        background: #fdfdfd;
+        border: 1px solid #eeeeee;
+        border-radius: 4px;
+      }
+    `,
+  ],
 })
 export class PedidoVendaComponent {
   private notification: PoNotificationService = inject(PoNotificationService);
 
   public readonly breadcrumb: PoBreadcrumb = {
-    items: [{ label: 'Home', link: '/' }, { label: 'Pedido de Venda' }]
+    items: [{ label: 'Home', link: '/' }, { label: 'Pedido de Venda' }],
   };
 
   // Cabeçalho do Pedido (SC5)
@@ -56,23 +62,30 @@ export class PedidoVendaComponent {
     C5_CLIENTE: '',
     C5_LOJA: '01',
     C5_XORIG: 'Protheus',
-    C5_EMISSAO: new Date().toISOString().substring(0, 10)
+    C5_EMISSAO: new Date().toISOString().substring(0, 10),
   };
 
   public readonly fields: PoDynamicFormField[] = [
-    { property: 'C5_CLIENTE', label: 'Cliente (Cód)', gridColumns: 4, required: true, minLength: 6, maxLength: 6 },
+    {
+      property: 'C5_CLIENTE',
+      label: 'Cliente (Cód)',
+      gridColumns: 4,
+      required: true,
+      minLength: 6,
+      maxLength: 6,
+    },
     { property: 'C5_LOJA', label: 'Loja', gridColumns: 2, required: true, maxLength: 2 },
     { property: 'C5_EMISSAO', label: 'Data Emissão', type: 'date', gridColumns: 3, required: true },
-    { 
-      property: 'C5_XORIG', 
-      label: 'Origem', 
-      gridColumns: 3, 
+    {
+      property: 'C5_XORIG',
+      label: 'Origem',
+      gridColumns: 3,
       options: [
         { label: 'Protheus', value: 'Protheus' },
         { label: 'CRM', value: 'CRM' },
-        { label: 'E-commerce', value: 'Ecommerce' }
-      ] 
-    }
+        { label: 'E-commerce', value: 'Ecommerce' },
+      ],
+    },
   ];
 
   // Itens do Pedido (SC6)
@@ -82,14 +95,20 @@ export class PedidoVendaComponent {
   public readonly itemFields: PoDynamicFormField[] = [
     { property: 'C6_PRODUTO', label: 'Produto (Cód)', gridColumns: 6, required: true },
     { property: 'C6_QTDVEN', label: 'Quantidade', type: 'number', gridColumns: 3, required: true },
-    { property: 'C6_PRCVEN', label: 'Preço Venda', type: 'currency', gridColumns: 3, required: true }
+    {
+      property: 'C6_PRCVEN',
+      label: 'Preço Venda',
+      type: 'currency',
+      gridColumns: 3,
+      required: true,
+    },
   ];
 
   public readonly columns: PoTableColumn[] = [
     { property: 'C6_PRODUTO', label: 'Produto' },
     { property: 'C6_QTDVEN', label: 'Qtd', type: 'number' },
     { property: 'C6_PRCVEN', label: 'Preço', type: 'currency', format: 'BRL' },
-    { property: 'total', label: 'Total', type: 'currency', format: 'BRL' }
+    { property: 'total', label: 'Total', type: 'currency', format: 'BRL' },
   ];
 
   adicionarItem() {
@@ -98,9 +117,9 @@ export class PedidoVendaComponent {
       return;
     }
 
-    const novoItem: PedidoItem = { 
-      ...this.itemSendoEditado, 
-      total: this.itemSendoEditado.C6_QTDVEN * this.itemSendoEditado.C6_PRCVEN
+    const novoItem: PedidoItem = {
+      ...this.itemSendoEditado,
+      total: this.itemSendoEditado.C6_QTDVEN * this.itemSendoEditado.C6_PRCVEN,
     };
 
     this.itens = [...this.itens, novoItem];
@@ -118,7 +137,12 @@ export class PedidoVendaComponent {
   }
 
   limpar() {
-    this.pedido = { C5_CLIENTE: '', C5_LOJA: '01', C5_XORIG: 'Protheus', C5_EMISSAO: new Date().toISOString().substring(0, 10) };
+    this.pedido = {
+      C5_CLIENTE: '',
+      C5_LOJA: '01',
+      C5_XORIG: 'Protheus',
+      C5_EMISSAO: new Date().toISOString().substring(0, 10),
+    };
     this.itens = [];
   }
 }

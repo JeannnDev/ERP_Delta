@@ -1,0 +1,55 @@
+<div class="setup-container">
+  <div class="setup-card fade-in">
+    <div class="card-header">
+      <div class="icon-circle admin">
+        <po-icon p-icon="an an-gear"></po-icon>
+      </div>
+      <h1>Configurações Admin</h1>
+      <p>Setup do Sistema de Apontamento</p>
+    </div>
+
+    <div class="card-body">
+      <div class="form-group">
+        <po-input
+          p-label="Código do Operador Admin *"
+          p-placeholder="Código admin"
+          [(ngModel)]="operatorCode"
+          [p-maxlength]="6"
+          (p-enter)="onOperatorEnter()">
+        </po-input>
+      </div>
+
+      @if (isOperatorConfirmed) {
+        <div class="form-group animate-fade-in">
+          <po-input
+            p-label="Senha Admin *"
+            p-placeholder="Senha"
+            [(ngModel)]="operatorPassword"
+            p-type="password"
+            (p-enter)="handleNext()">
+          </po-input>
+        </div>
+      }
+    </div>
+
+    <div class="card-actions">
+      <po-button
+        class="btn-back"
+        p-label="Voltar"
+        p-kind="secondary"
+        p-icon="an an-arrow-left"
+        (p-click)="goBack()">
+      </po-button>
+
+      <po-button
+        class="btn-next"
+        p-label="Acessar"
+        p-kind="primary"
+        p-icon="an an-lock"
+        [p-disabled]="!canProceed"
+        [p-loading]="isLoading"
+        (p-click)="handleNext()">
+      </po-button>
+    </div>
+  </div>
+</div>

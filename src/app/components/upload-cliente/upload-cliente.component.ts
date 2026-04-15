@@ -1,7 +1,6 @@
 import { Component, ViewChild, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import {
   PoPageModule,
   PoTableModule,
@@ -17,7 +16,7 @@ import {
   PoStepperModule,
   PoWidgetModule,
   PoInfoModule,
-  PoUploadFile
+  PoUploadFile,
 } from '@po-ui/ng-components';
 import * as XLSX from 'xlsx';
 
@@ -38,7 +37,6 @@ export interface ClienteCsv {
   selector: 'app-upload-cliente',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     PoPageModule,
     PoFieldModule,
@@ -49,10 +47,10 @@ export interface ClienteCsv {
     PoContainerModule,
     PoStepperModule,
     PoWidgetModule,
-    PoInfoModule
+    PoInfoModule,
   ],
   templateUrl: './upload-cliente.component.html',
-  styleUrls: ['./upload-cliente.component.css']
+  styleUrls: ['./upload-cliente.component.css'],
 })
 export class UploadClienteComponent {
   @ViewChild('tabelaClientes', { static: false }) tabelaClientes!: PoTableComponent;
@@ -69,11 +67,11 @@ export class UploadClienteComponent {
   clientesSelecionados: ClienteCsv[] = [];
 
   readonly columns: PoTableColumn[] = [
-    { property: 'A1_CGC',    label: 'CNPJ/CPF',  width: '20%' },
-    { property: 'A1_NOME',   label: 'Nome',       width: '30%' },
-    { property: 'A1_EMAIL',  label: 'E-mail',     width: '25%' },
-    { property: 'A1_EST',    label: 'UF',         width: '10%' },
-    { property: 'A1_TEL',    label: 'Telefone',   width: '15%' }
+    { property: 'A1_CGC', label: 'CNPJ/CPF', width: '20%' },
+    { property: 'A1_NOME', label: 'Nome', width: '30%' },
+    { property: 'A1_EMAIL', label: 'E-mail', width: '25%' },
+    { property: 'A1_EST', label: 'UF', width: '10%' },
+    { property: 'A1_TEL', label: 'Telefone', width: '15%' },
   ];
 
   podeAvancarPasso1 = (): boolean => this.clientes.length > 0;
@@ -83,7 +81,8 @@ export class UploadClienteComponent {
     if (!files || files.length === 0) return;
 
     const poFile = files[0];
-    const nativeFile: File = (poFile as unknown as { rawFile: File }).rawFile || (poFile as unknown as File);
+    const nativeFile: File =
+      (poFile as unknown as { rawFile: File }).rawFile || (poFile as unknown as File);
     if (!nativeFile) return;
 
     const ext = nativeFile.name.split('.').pop()?.toLowerCase();
@@ -113,17 +112,20 @@ export class UploadClienteComponent {
           return;
         }
 
-        const parsed: ClienteCsv[] = rows.slice(1).map(row => ({
-          A1_CGC:    String(row[0] || '').trim(),
-          A1_NOME:   String(row[1] || '').trim(),
-          A1_END:    String(row[2] || '').trim(),
-          A1_BAIRRO: String(row[3] || '').trim(),
-          A1_EST:    String(row[4] || '').trim(),
-          A1_CEP:    String(row[5] || '').trim(),
-          A1_TEL:    String(row[6] || '').trim(),
-          A1_EMAIL:  String(row[7] || '').trim(),
-          $selected: true
-        })).filter(c => c.A1_CGC && c.A1_NOME);
+        const parsed: ClienteCsv[] = rows
+          .slice(1)
+          .map((row) => ({
+            A1_CGC: String(row[0] || '').trim(),
+            A1_NOME: String(row[1] || '').trim(),
+            A1_END: String(row[2] || '').trim(),
+            A1_BAIRRO: String(row[3] || '').trim(),
+            A1_EST: String(row[4] || '').trim(),
+            A1_CEP: String(row[5] || '').trim(),
+            A1_TEL: String(row[6] || '').trim(),
+            A1_EMAIL: String(row[7] || '').trim(),
+            $selected: true,
+          }))
+          .filter((c) => c.A1_CGC && c.A1_NOME);
 
         this.clientes = parsed;
         this.clientesSelecionados = [...parsed];
@@ -144,12 +146,12 @@ export class UploadClienteComponent {
   }
 
   onItemSelecionado(item: ClienteCsv): void {
-    const exists = this.clientesSelecionados.some(c => c.A1_CGC === item.A1_CGC);
+    const exists = this.clientesSelecionados.some((c) => c.A1_CGC === item.A1_CGC);
     if (!exists) this.clientesSelecionados = [...this.clientesSelecionados, item];
   }
 
   onItemRemovido(item: ClienteCsv): void {
-    this.clientesSelecionados = this.clientesSelecionados.filter(c => c.A1_CGC !== item.A1_CGC);
+    this.clientesSelecionados = this.clientesSelecionados.filter((c) => c.A1_CGC !== item.A1_CGC);
   }
 
   avancarParaImportar(): void {
@@ -163,7 +165,16 @@ export class UploadClienteComponent {
   baixarModelo(): void {
     const linhas = [
       ['A1_CGC', 'A1_NOME', 'A1_END', 'A1_BAIRRO', 'A1_EST', 'A1_CEP', 'A1_TEL', 'A1_EMAIL'],
-      ['12345678000195', 'Cliente Exemplo LTDA', 'Rua das Flores, 100', 'Centro', 'SP', '01000-000', '1133334444', 'cliente@email.com']
+      [
+        '12345678000195',
+        'Cliente Exemplo LTDA',
+        'Rua das Flores, 100',
+        'Centro',
+        'SP',
+        '01000-000',
+        '1133334444',
+        'cliente@email.com',
+      ],
     ];
     const ws = XLSX.utils.aoa_to_sheet(linhas);
     const wb = XLSX.utils.book_new();

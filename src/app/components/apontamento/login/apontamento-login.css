@@ -1,0 +1,252 @@
+/* ── HIDE PO-PAGE HEADER FOR SPACE ── */
+:host ::ng-deep .po-page-header {
+  display: none;
+}
+
+/* ── REMOVE PAGE PADDING ── */
+:host ::ng-deep .po-page-content {
+  padding: 0 !important;
+}
+
+/* ── WIZARD LAYOUT ── */
+.wizard-container {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+
+  /* Respeita o menu lateral com um respiro extra de 30px */
+  padding-left: calc(var(--po-menu-width, 256px) + 30px);
+}
+
+@media (max-width: 950px) {
+  .wizard-container {
+    padding-left: calc(64px + 15px);
+  }
+}
+
+@media (max-width: 768px) {
+  .wizard-container {
+    padding-left: 0;
+  }
+}
+
+.wizard-sidebar {
+  width: 120px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.03);
+}
+
+@media (min-width: 768px) {
+  .wizard-sidebar {
+    width: 140px;
+  }
+}
+
+app-apontamento-step-indicator {
+  width: 100%;
+}
+
+.wizard-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+.wizard-content--centered {
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── LOGIN CARD ── */
+.login-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  padding: 40px;
+  width: 100%;
+  max-width: 560px;
+}
+
+.login-card__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  background-color: #14253d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.icon-circle po-icon {
+  font-size: 40px;
+  color: white;
+}
+
+.login-card__header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px 0;
+}
+
+.login-card__header p {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* ── FORM GROUPS ── */
+.form-group {
+  margin-bottom: 24px;
+}
+
+.input-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.input-wrapper {
+  display: flex;
+  gap: 8px;
+}
+
+.input-wrapper po-input {
+  flex: 1;
+}
+
+.icon-btn {
+  width: 52px;
+  height: 52px;
+  background-color: #14253d;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover {
+  background-color: #1e3a5f;
+}
+
+.icon-btn po-icon {
+  font-size: 22px;
+}
+
+/* ── FOOTER ── */
+.login-card__footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.btn-back,
+.btn-next {
+  width: 180px;
+}
+
+::ng-deep .btn-back .po-button,
+::ng-deep .btn-next .po-button {
+  width: 100%;
+}
+
+/* Animação */
+.fade-in {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── MODAIS ── */
+.modal-content-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 16px 24px;
+}
+
+.modal-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.modal-icon--error {
+  color: #ef4444;
+}
+
+.modal-icon--warning {
+  color: #f59e0b;
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.modal-text-bold {
+  color: #334155;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 16px 0 0;
+}
+
+.modal-footer-custom {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  padding-top: 16px;
+}
+
+.modal-footer-custom po-button {
+  flex: 1;
+}
+
+/* Ocultar rodapé padrão do modal para usar customizado */
+::ng-deep .po-modal-footer {
+  display: none !important;
+}

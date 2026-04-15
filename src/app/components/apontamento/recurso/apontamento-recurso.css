@@ -1,0 +1,349 @@
+/* HIDE PO-PAGE HEADER FOR SPACE */
+:host ::ng-deep .po-page-header {
+  display: none;
+}
+
+/* REMOVE PAGE PADDING */
+:host ::ng-deep .po-page-content {
+  padding: 0 !important;
+}
+
+/* Layout compartilhado - reutiliza padrões do projeto */
+.wizard-container {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+
+  /* Respeita o menu lateral com um respiro extra de 30px */
+  padding-left: calc(var(--po-menu-width, 256px) + 30px);
+}
+
+@media (max-width: 950px) {
+  .wizard-container {
+    padding-left: calc(64px + 15px);
+  }
+}
+
+@media (max-width: 768px) {
+  .wizard-container {
+    padding-left: 0;
+  }
+}
+
+.wizard-sidebar {
+  width: 120px;
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 4px 0 15px rgba(0, 0, 0, 0.03);
+}
+
+@media (min-width: 768px) {
+  .wizard-sidebar {
+    width: 140px;
+  }
+}
+
+app-apontamento-step-indicator {
+  width: 100%;
+}
+
+.wizard-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 16px;
+  overflow-y: auto;
+}
+
+/* ── BARRA DE INFO ── */
+.page-info-bar {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 14px 20px;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+.page-info-bar__item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 16px;
+}
+
+.page-info-bar__item:first-child { padding-left: 0; }
+.page-info-bar__item:last-child { padding-right: 0; }
+
+.page-info-bar__label {
+  font-size: 10px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.page-info-bar__value {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.page-info-bar__divider {
+  width: 1px;
+  height: 36px;
+  background: #e2e8f0;
+  flex-shrink: 0;
+}
+
+/* ── PRODUCT CARD ── */
+.product-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.product-card__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.product-card__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.product-card__code {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+  text-transform: none;
+  margin-left: 6px;
+}
+
+.product-card__desc {
+  font-size: 13px;
+  color: #64748b;
+  margin: 2px 0 0;
+}
+
+.product-card__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 12px;
+  padding: 16px 20px;
+  align-items: stretch;
+}
+
+/* ── STAT BOX ── */
+.stat-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #f8fafc;
+}
+
+.stat-box__label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.stat-box__value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.stat-box--action {
+  border: none;
+  background: transparent;
+  padding: 0;
+  min-width: 140px;
+}
+
+/* ── OPERATIONS CONTAINER ── */
+.ops-container {
+  background: white;
+  border: 2px solid #14253d;
+  border-radius: 8px;
+  padding: 20px;
+  flex: 1;
+}
+
+.ops-container__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ops-container__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ops-container__icon {
+  width: 36px;
+  height: 36px;
+  background: #14253d;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.ops-container__icon po-icon { font-size: 18px; }
+
+.ops-container__title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.ops-container__total {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* ── OP CARDS GRID ── */
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.op-card {
+  position: relative;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 24px 14px 18px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: white;
+  overflow: hidden;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.op-card:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.op-card.op-card--selected {
+  border-color: #14253d;
+  box-shadow: 0 0 0 2px rgba(20, 37, 61, 0.06);
+}
+
+.op-card.op-card--done .op-card__name { color: #94a3b8; }
+
+.op-card__badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 9px;
+  font-weight: 700;
+  background: #f1f5f9;
+  color: #94a3b8;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.op-card__icon {
+  width: 40px;
+  height: 40px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+.op-card__icon po-icon { font-size: 20px; }
+
+.op-card__icon.op-card__icon--done {
+  border-color: #10b981;
+  color: #10b981;
+  background: #f0fdf4;
+}
+
+.op-card--selected .op-card__icon:not(.op-card__icon--done) {
+  border-color: #14253d;
+  color: #14253d;
+}
+
+.op-card__name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.op-card__status {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.op-card__bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #10b981;
+}
+
+/* ── FOOTER ── */
+.page-footer {
+  display: flex;
+  justify-content: space-between; /* Um em cada canto */
+  gap: 12px;
+  flex-shrink: 0;
+  margin-top: 16px;
+}
+
+.btn-back, .btn-next {
+  width: 180px; /* Mais esticados */
+}
+
+::ng-deep .btn-back .po-button,
+::ng-deep .btn-next .po-button {
+  width: 100%;
+}

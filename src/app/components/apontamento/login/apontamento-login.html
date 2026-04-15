@@ -1,0 +1,154 @@
+<div class="wizard-container">
+  <aside class="wizard-sidebar">
+    <app-apontamento-step-indicator 
+      [currentStep]="1"
+      [totalSteps]="4"
+      (stepClick)="onStepClick()">
+    </app-apontamento-step-indicator>
+  </aside>
+
+  <main class="wizard-content wizard-content--centered">
+    <div class="login-card fade-in">
+      <div class="login-card__header">
+        <div class="icon-circle">
+          <po-icon p-icon="an an-factory" style="font-size: 48px;"></po-icon>
+        </div>
+        <h1>Apontamento de Produção</h1>
+        <p>Sistema de Controle de Ordem de Produção</p>
+      </div>
+
+      <div class="login-card__body">
+        <div class="form-group">
+          <label class="input-label" for="op-input">Ordem de Produção <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <po-input
+              id="op-input"
+              name="op"
+              [(ngModel)]="opNumber"
+              p-placeholder="Digite o número da OP ou escaneie o código"
+              p-clean
+              [p-maxlength]="12"
+              (p-enter)="onOpEnter()">
+            </po-input>
+            <button class="icon-btn" (click)="openDeviceSpecificInput('op')">
+              <po-icon p-icon="an an-magnifying-glass"></po-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="operator-input">Código do Operador <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <po-input
+              id="operator-input"
+              name="operador"
+              [(ngModel)]="operatorCode"
+              (ngModelChange)="onOperatorCodeChange($event)"
+              p-placeholder="Digite o código do operador ou escaneie"
+              p-clean
+              (p-enter)="onOperatorEnter()">
+            </po-input>
+            <button class="icon-btn" (click)="openDeviceSpecificInput('operator')">
+              <po-icon p-icon="an an-barcode"></po-icon>
+            </button>
+          </div>
+        </div>
+
+        @if (isOperatorConfirmed) {
+          <div class="form-group animate-fade-in">
+            <label class="input-label" for="password-input">Senha do Operador <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <po-input
+                id="password-input"
+                name="senha"
+                [(ngModel)]="operatorPassword"
+                p-placeholder="Digite a senha"
+                p-clean
+                p-type="password"
+                (p-enter)="onPasswordEnter()">
+              </po-input>
+              <button class="icon-btn" (click)="openDeviceSpecificInput('password')">
+                <po-icon p-icon="an an-lock"></po-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="login-card__footer">
+        <po-button p-label="VOLTAR" class="btn-back" (p-click)="goBack()"></po-button>
+        <po-button
+          p-label="AVANÇAR"
+          p-kind="primary"
+          class="btn-next"
+          [p-disabled]="!canProceed"
+          [p-loading]="isValidating || isLoading"
+          (p-click)="handleNext()">
+        </po-button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<po-modal #keyboardModal p-title="Teclado Numérico" [p-hide-close]="false">
+  <app-numeric-keyboard
+    [value]="getActiveFieldValue()"
+    (valueChange)="onKeyboardValueChange($event)"
+    (confirm)="onKeyboardConfirm()"
+    (keyboardClose)="keyboardModal.close()">
+  </app-numeric-keyboard>
+</po-modal>
+
+<po-modal #scannerModal p-title="Leitor de Código" [p-hide-close]="false">
+  <div class="scanner-container">
+    <po-icon p-icon="an an-barcode" style="font-size: 48px; color: #14253d; display: block; margin: 0 auto 16px; text-align: center;"></po-icon>
+    <p style="text-align: center; margin-bottom: 24px; color: #6b7280;">Aponte a câmera para o QR Code ou Código de Barras</p>
+    <po-input
+      name="scannerSimulator"
+      p-label="Simulador de Leitura"
+      [(ngModel)]="scannerSimulatorValue"
+      (p-enter)="onScannerSimulatorEnter(scannerSimulatorValue)">
+    </po-input>
+  </div>
+</po-modal>
+
+<po-modal #operatorNotFoundModal p-title="Operador não encontrado" [p-primary-action]="operatorNotFoundAction">
+  <div class="modal-content-center">
+    <po-icon p-icon="an an-user" class="modal-icon modal-icon--error"></po-icon>
+    <p>O código de operador informado não foi encontrado no sistema ou não possui permissão. Verifique os dados e tente novamente.</p>
+  </div>
+</po-modal>
+
+<po-modal #incorrectPasswordModal p-title="Senha Incorreta" [p-primary-action]="incorrectPasswordAction">
+  <div class="modal-content-center">
+    <po-icon p-icon="an an-lock" class="modal-icon modal-icon--error"></po-icon>
+    <p>A senha digitada está incorreta. Verifique e tente novamente.</p>
+  </div>
+</po-modal>
+
+<po-modal #opEncerradaModal p-title="OP Já Encerrada">
+  <div class="modal-content-center">
+    <po-icon p-icon="an an-warning" class="modal-icon modal-icon--warning"></po-icon>
+    <h2 class="modal-title">Atenção! Ordem de Produção Finalizada</h2>
+    <p>Esta OP já possui o status de encerramento total no Protheus.</p>
+    <p class="modal-text-bold">Deseja continuar apenas para conferência de dados em modo de consulta?</p>
+  </div>
+  <div class="modal-footer-custom">
+    <po-button p-label="VOLTAR" class="btn-back" (p-click)="opEncerradaModal.close()"></po-button>
+    <po-button p-label="PROSSEGUIR" class="btn-next" p-kind="primary" (p-click)="onProsseguirParaConsulta()"></po-button>
+  </div>
+</po-modal>
+
+<po-modal #errorModal p-title="Erro" [p-primary-action]="errorAction">
+  <div class="modal-content-center">
+    <po-icon p-icon="an an-warning" class="modal-icon modal-icon--error"></po-icon>
+    <p>{{ errorMessage }}</p>
+  </div>
+</po-modal>
+
+@if (isValidating || isLoading) {
+  <po-loading-overlay
+    [p-screen-lock]="true"
+    p-text="Processando dados">
+  </po-loading-overlay>
+}

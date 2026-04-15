@@ -1,0 +1,28 @@
+<po-page-default p-title="Produção & Chão de Fábrica">
+  <div class="home-container">
+    <div class="home-content">
+      <h1 class="home-title">Selecione uma operação:</h1>
+
+      <div class="home-options">
+        <div class="option-card" tabindex="0" (click)="iniciarApontamento()" (keyup.enter)="iniciarApontamento()">
+          <div class="icon-wrapper blue">
+            <po-icon p-icon="an an-factory" style="font-size: 48px;"></po-icon>
+          </div>
+          <h2>Apontamento</h2>
+          <p>Iniciar ciclo de produção e chapa</p>
+        </div>
+
+        <div class="option-card" tabindex="0" (click)="abrirConfiguracoes()" (keyup.enter)="abrirConfiguracoes()">
+          <div class="icon-wrapper dark">
+            <po-icon p-icon="an an-gear" style="font-size: 48px;"></po-icon>
+          </div>
+          <h2>Configurações</h2>
+          <p>Setup de impressoras e etiquetas</p>
+        </div>
+      </div>
+
+      <div class="home-info-section">
+      </div>
+    </div>
+  </div>
+</po-page-default>

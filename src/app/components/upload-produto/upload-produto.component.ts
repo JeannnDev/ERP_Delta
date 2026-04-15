@@ -1,5 +1,5 @@
 import { Component, ViewChild, ChangeDetectorRef, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import {
   PoPageModule,
@@ -16,7 +16,7 @@ import {
   PoStepperModule,
   PoWidgetModule,
   PoInfoModule,
-  PoUploadFile
+  PoUploadFile,
 } from '@po-ui/ng-components';
 import * as XLSX from 'xlsx';
 
@@ -33,7 +33,6 @@ export interface ProdutoCsv {
   selector: 'app-upload-produto',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     PoPageModule,
     PoFieldModule,
@@ -44,10 +43,10 @@ export interface ProdutoCsv {
     PoContainerModule,
     PoStepperModule,
     PoWidgetModule,
-    PoInfoModule
+    PoInfoModule,
   ],
   templateUrl: './upload-produto.component.html',
-  styleUrls: ['./upload-produto.component.css']
+  styleUrls: ['./upload-produto.component.css'],
 })
 export class UploadProdutoComponent {
   @ViewChild('tabelaProdutos', { static: false }) tabelaProdutos!: PoTableComponent;
@@ -64,11 +63,11 @@ export class UploadProdutoComponent {
   produtosSelecionados: ProdutoCsv[] = [];
 
   readonly columns: PoTableColumn[] = [
-    { property: 'B1_COD',   label: 'Código',      width: '20%' },
-    { property: 'B1_DESC',  label: 'Descrição',   width: '35%' },
-    { property: 'B1_UM',    label: 'Unid. Med.',  width: '15%' },
-    { property: 'B1_GRUPO', label: 'Grupo',       width: '15%' },
-    { property: 'B1_LOCPAD',label: 'Local Padrão',width: '15%' }
+    { property: 'B1_COD', label: 'Código', width: '20%' },
+    { property: 'B1_DESC', label: 'Descrição', width: '35%' },
+    { property: 'B1_UM', label: 'Unid. Med.', width: '15%' },
+    { property: 'B1_GRUPO', label: 'Grupo', width: '15%' },
+    { property: 'B1_LOCPAD', label: 'Local Padrão', width: '15%' },
   ];
 
   podeAvancarPasso1 = (): boolean => this.produtos.length > 0;
@@ -78,7 +77,8 @@ export class UploadProdutoComponent {
     if (!files || files.length === 0) return;
 
     const poFile = files[0];
-    const nativeFile: File = (poFile as unknown as { rawFile: File }).rawFile || (poFile as unknown as File);
+    const nativeFile: File =
+      (poFile as unknown as { rawFile: File }).rawFile || (poFile as unknown as File);
     if (!nativeFile) return;
 
     const ext = nativeFile.name.split('.').pop()?.toLowerCase();
@@ -108,14 +108,17 @@ export class UploadProdutoComponent {
           return;
         }
 
-        const parsed: ProdutoCsv[] = rows.slice(1).map(row => ({
-          B1_COD:    String(row[0] || '').trim(),
-          B1_DESC:   String(row[1] || '').trim(),
-          B1_UM:     String(row[2] || '').trim(),
-          B1_GRUPO:  String(row[3] || '').trim(),
-          B1_LOCPAD: String(row[4] || '').trim(),
-          $selected: true
-        })).filter(p => p.B1_COD && p.B1_DESC);
+        const parsed: ProdutoCsv[] = rows
+          .slice(1)
+          .map((row) => ({
+            B1_COD: String(row[0] || '').trim(),
+            B1_DESC: String(row[1] || '').trim(),
+            B1_UM: String(row[2] || '').trim(),
+            B1_GRUPO: String(row[3] || '').trim(),
+            B1_LOCPAD: String(row[4] || '').trim(),
+            $selected: true,
+          }))
+          .filter((p) => p.B1_COD && p.B1_DESC);
 
         this.produtos = parsed;
         this.produtosSelecionados = [...parsed];
@@ -136,12 +139,12 @@ export class UploadProdutoComponent {
   }
 
   onItemSelecionado(item: ProdutoCsv): void {
-    const exists = this.produtosSelecionados.some(p => p.B1_COD === item.B1_COD);
+    const exists = this.produtosSelecionados.some((p) => p.B1_COD === item.B1_COD);
     if (!exists) this.produtosSelecionados = [...this.produtosSelecionados, item];
   }
 
   onItemRemovido(item: ProdutoCsv): void {
-    this.produtosSelecionados = this.produtosSelecionados.filter(p => p.B1_COD !== item.B1_COD);
+    this.produtosSelecionados = this.produtosSelecionados.filter((p) => p.B1_COD !== item.B1_COD);
   }
 
   avancarParaImportar(): void {
@@ -156,7 +159,7 @@ export class UploadProdutoComponent {
     const linhas = [
       ['B1_COD', 'B1_DESC', 'B1_UM', 'B1_GRUPO', 'B1_LOCPAD'],
       ['PROD001', 'Produto Exemplo 1', 'UN', '001', '01'],
-      ['PROD002', 'Produto Exemplo 2', 'KG', '002', '01']
+      ['PROD002', 'Produto Exemplo 2', 'KG', '002', '01'],
     ];
     const ws = XLSX.utils.aoa_to_sheet(linhas);
     const wb = XLSX.utils.book_new();
