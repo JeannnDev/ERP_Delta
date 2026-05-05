@@ -92,6 +92,8 @@ export class ApontamentoApiService {
             tipoOp: (response['tipoOp'] as string) || '',
             tpProducao: (response['tpProducao'] as string) || '',
             opTerceiro: (response['opTerceiro'] as string) || '',
+            nf: (response['C2_XNFISC'] as string) || (response['nf'] as string) || '',
+            armazem: (response['armazem'] as string) || (response['armzPadrao'] as string) || (response['C2_LOCAL'] as string) || '',
             operacoes: todasOperacoes
               .filter((op) => op && op['operac'])
               .map((op) => ({
@@ -351,6 +353,30 @@ export class ApontamentoApiService {
         catchError(error => {
           console.error('Erro ao imprimir etiqueta:', error);
           return of({ success: false, error: error.message || 'Erro ao imprimir etiqueta' });
+        })
+      );
+  }
+
+  /**
+   * Atualiza a NF da OP via QueryString
+   */
+  updateNF(op: string, nf: string): Observable<ApontamentoApiResponse> {
+    return this.protheusApi.resource(`WsFuncApontamento?OP=${op}&NF=${nf}`)
+      .post<unknown>('', {})
+      .pipe(
+        map((response: unknown) => {
+          const raw = response as Record<string, unknown>;
+          if (raw['status'] === false || raw['success'] === false) {
+            const errorMessage = (raw['response'] as Record<string, unknown>)?.['errorMessage'] as string ||
+              raw['response'] as string ||
+              'Erro ao atualizar NF';
+            return { success: false, error: errorMessage };
+          }
+          return { success: true, data: response };
+        }),
+        catchError(error => {
+          console.error('Erro ao atualizar NF:', error);
+          return of({ success: false, error: error.message || 'Erro ao atualizar NF' });
         })
       );
   }

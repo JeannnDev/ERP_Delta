@@ -71,6 +71,8 @@ export interface OPApiData {
   tipoOp: string;
   tpProducao: string;
   opTerceiro: string;
+  nf?: string;
+  armazem?: string;
   operacoes: Operacao[];
   saldo_item: SaldoItem[];
   roteiro?: Record<string, Operacao[]>;
