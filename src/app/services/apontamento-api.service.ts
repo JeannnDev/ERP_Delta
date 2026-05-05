@@ -108,7 +108,20 @@ export class ApontamentoApiService {
                 parcialTotal: (op['parcialTotal'] as string) || '',
                 status: (op['status'] as string) || '',
                 encerrada: op['status'] === 'Finalizado' || op['parcialTotal'] === 'T',
-                historico: (op['historico'] as never[]) || [],
+                historico: Array.isArray(op['historico'])
+                  ? (op['historico'] as Record<string, unknown>[]).map(h => ({
+                      tempoApont: h['tempoApont'] as string | number,
+                      recurso: h['recurso'] as string,
+                      qtdProd: h['qtdProd'] as number,
+                      qtdPerd: h['qtdPerd'] as number,
+                      hrIni: h['hrIni'] as string,
+                      dtIni: h['dtIni'] as string,
+                      dtFim: h['dtFim'] as string,
+                      hrFim: h['hrFim'] as string,
+                      operadorCod: h['operadorCod'] as string,
+                      operadorNome: h['operadorNome'] as string
+                    }))
+                  : [],
                 registros: (op['registros'] as never[]) || []
               })),
             saldo_item: Array.isArray(response['saldo_item'])
@@ -120,9 +133,13 @@ export class ApontamentoApiService {
                   armz: item['armz'] as string,
                   endereco: item['endereco'] as string,
                   status: item['status'] as boolean,
-                  descricao: item['descricao'] as string
+                  descricao: item['descricao'] as string,
+                  qtOriginal: item['qtOriginal'] as number
                 }))
-              : []
+              : [],
+            roteiro: (response['roteiro'] && typeof response['roteiro'] === 'object')
+              ? response['roteiro'] as Record<string, import('../models/apontamento.model').Operacao[]>
+              : undefined
           };
 
           return { success: true, data: opData };

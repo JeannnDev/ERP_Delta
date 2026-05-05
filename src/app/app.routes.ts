@@ -16,6 +16,7 @@ import { ApontamentoResumoComponent } from './components/apontamento/resumo/apon
 import { ApontamentoSetupComponent } from './components/apontamento/setup/apontamento-setup';
 import { ApontamentoSetupLoginComponent } from './components/apontamento/setup-login/apontamento-setup-login';
 import { EtiquetaComponent } from './components/etiqueta/etiqueta';
+import { HistoricoOPComponent } from './components/historico-op/historico-op';
 
 export const routes: Routes = [
     { path: '', redirectTo: 'consulta', pathMatch: 'full' },
@@ -36,4 +37,5 @@ export const routes: Routes = [
     { path: 'apontamento/setup', component: ApontamentoSetupComponent },
     { path: 'apontamento/setup-login', component: ApontamentoSetupLoginComponent },
     { path: 'etiqueta', component: EtiquetaComponent },
+    { path: 'historico-op', component: HistoricoOPComponent },
 ];

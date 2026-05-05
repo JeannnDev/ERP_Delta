@@ -77,6 +77,7 @@ export class App {
       subItems: [
         { label: 'Apontamento', link: '/apontamento', icon: 'an an-desktop' },
         { label: 'Imprimir Etiqueta', link: '/etiqueta', icon: 'an an-printer' },
+        { label: 'Histórico de OP', link: '/historico-op', icon: 'an an-clock-counter-clockwise' },
       ],
     },
   ];

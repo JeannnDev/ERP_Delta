@@ -1,0 +1,113 @@
+<po-page-default p-title="Histórico de OP">
+
+  @if (isLoading) {
+  <po-loading-overlay p-text="Consultando OP"></po-loading-overlay>
+  }
+
+  <!-- Busca -->
+  <div class="search-card">
+    <div class="search-row">
+      <div class="search-input">
+        <po-input name="opSearch" [(ngModel)]="opSearch" p-label="Ordem de Produção" p-placeholder="Ex: 53204801001"
+          [p-disabled]="(isLoading || !!opData) ? 'true' : 'false'" p-clean (p-enter)="validateOP()">
+        </po-input>
+      </div>
+      <div class="search-buttons">
+        @if (!opData) {
+          <po-button p-icon="an an-keyboard" p-label="Teclado" [p-disabled]="isLoading" (p-click)="openKeyboard()">
+          </po-button>
+          <po-button p-icon="an an-magnifying-glass" p-label="Consultar" p-kind="primary" [p-disabled]="isLoading"
+            (p-click)="validateOP()">
+          </po-button>
+        } @else {
+          <po-button p-icon="an an-arrows-clockwise" p-label="Trocar OP" p-kind="danger" [p-disabled]="isLoading"
+            (p-click)="clearSearch()">
+          </po-button>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (opData) {
+
+  <!-- Cabeçalho da OP -->
+  <div class="op-header">
+    <div class="op-header-left">
+      <span class="op-tag">OP {{ opData.op }}</span>
+      <h2>{{ opData.produto }} — {{ opData.descProduto }}</h2>
+      @if (opData.observacao && opData.observacao.trim()) {
+      <p class="op-obs">{{ opData.observacao }}</p>
+      }
+    </div>
+    <div class="op-header-right">
+      <po-tag p-label="{{ opData.status }}" [p-color]="getStatusColor(opData.status)"></po-tag>
+    </div>
+  </div>
+
+  <!-- Dados Gerais -->
+  <div class="info-grid">
+    <div class="info-item">
+      <span class="info-label">Emissão</span>
+      <span class="info-value">{{ formatProtheusDate(opData.dtEmissao) }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Previsão Início</span>
+      <span class="info-value">{{ formatProtheusDate(opData.previsaoIni) }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Previsão Entrega</span>
+      <span class="info-value">{{ formatProtheusDate(opData.previsaoEntrega) }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Qtd. Solicitada</span>
+      <span class="info-value">{{ opData.quantidadeSolicitada }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Qtd. Produzida</span>
+      <span class="info-value highlight">{{ opData.qtdProduzida }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Armazém</span>
+      <span class="info-value">{{ opData.armazem }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Roteiro</span>
+      <span class="info-value">{{ opData.roteiroUtilizado }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Situação</span>
+      <span class="info-value">{{ opData.situacao }}</span>
+    </div>
+  </div>
+
+
+  <!-- Roteiro de Operações -->
+  <div class="section-card">
+    <h3 class="section-title">Roteiro de Operações</h3>
+    <po-table [p-columns]="operacaoColumns" [p-items]="roteiro" [p-striped]="true" p-container="shadow">
+    </po-table>
+  </div>
+
+  <!-- Saldo de Materiais -->
+  <div class="section-card">
+    <h3 class="section-title">Materiais Empenhados</h3>
+    <po-table [p-columns]="materiaisColumns" [p-items]="items" [p-striped]="true" p-container="shadow">
+    </po-table>
+  </div>
+
+  } @else if (!isLoading) {
+  <div class="empty-state">
+    <po-info p-label="Aguardando" p-value="Digite o número da OP e clique em Consultar."></po-info>
+  </div>
+  }
+
+  <!-- Overlay do Teclado -->
+  @if (showKeyboard) {
+  <div class="keyboard-overlay">
+    <app-numeric-keyboard [label]="'Consultar OP'" [value]="keyboardValue" [maxLength]="11"
+      (confirm)="onKeyboardConfirm($event)" (keyboardClose)="showKeyboard = false">
+    </app-numeric-keyboard>
+  </div>
+  }
+
+</po-page-default>

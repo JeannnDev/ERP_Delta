@@ -124,9 +124,10 @@ import { PoModule } from '@po-ui/ng-components';
 })
 export class NumericKeyboardComponent {
   @Input() value = '';
+  @Input() label = 'Informe o valor';
   @Input() maxLength = 12;
   @Output() valueChange = new EventEmitter<string>();
-  @Output() confirm = new EventEmitter<void>();
+  @Output() confirm = new EventEmitter<string>();
   @Output() keyboardClose = new EventEmitter<void>();
 
   @HostListener('window:keydown', ['$event'])
@@ -172,7 +173,7 @@ export class NumericKeyboardComponent {
   }
 
   onConfirm(): void {
-    this.confirm.emit();
+    this.confirm.emit(this.value);
   }
   onCancel(): void {
     this.keyboardClose.emit();
