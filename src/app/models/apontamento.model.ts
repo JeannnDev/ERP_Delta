@@ -42,13 +42,14 @@ export interface RegistroApontamento {
 
 export interface SaldoItem {
   produto: string;
+  descricao?: string;
   um: string;
+  qtOriginal?: number;
   qtdeEmp: number;
   saldoEstq: number;
   armz: string;
   endereco: string;
   status: boolean;
-  descricao?: string;
 }
 
 export interface OPApiData {
@@ -71,6 +72,8 @@ export interface OPApiData {
   tipoOp: string;
   tpProducao: string;
   opTerceiro: string;
+  nf?: string;
+  armazem?: string;
   operacoes: Operacao[];
   saldo_item: SaldoItem[];
   roteiro?: Record<string, Operacao[]>;

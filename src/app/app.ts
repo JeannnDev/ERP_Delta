@@ -74,7 +74,11 @@ export class App {
     {
       label: 'Controle de Produção',
       icon: 'an an-factory',
-      subItems: [{ label: 'Apontamento', link: '/apontamento', icon: 'an an-desktop' }],
+      subItems: [
+        { label: 'Apontamento', link: '/apontamento', icon: 'an an-desktop' },
+        { label: 'Imprimir Etiqueta', link: '/etiqueta', icon: 'an an-printer' },
+        { label: 'Histórico de OP', link: '/historico-op', icon: 'an an-clock-counter-clockwise' },
+      ],
     },
   ];
 }

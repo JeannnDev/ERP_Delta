@@ -1,0 +1,127 @@
+<po-page-default p-title="Impressão de Etiquetas">
+  @if (isLoading) {
+    <po-loading-overlay p-text="Processando"></po-loading-overlay>
+  }
+
+  <div class="kiosk-container">
+
+    <!-- Busca de OP -->
+    <div class="section search-section">
+      <div class="search-flex-container">
+        <div class="search-field">
+          <po-input name="opSearch" [(ngModel)]="opSearch" p-label="Ordem de Produção (OP)"
+            p-placeholder="Digite ou use o teclado" p-help="Ex: 00000101001" 
+            [p-disabled]="(isLoading || !!opData) ? 'true' : 'false'"
+            p-clean (p-enter)="validateOP()">
+          </po-input>
+        </div>
+
+        <div class="search-actions">
+          @if (!opData) {
+            <po-button p-icon="an an-keyboard" p-label="Teclado" (p-click)="openKeyboard('OP')" [p-disabled]="isLoading"
+              class="btn-search">
+            </po-button>
+
+            <po-button p-icon="an an-magnifying-glass" p-label="Validar OP" p-kind="primary" (p-click)="validateOP()"
+              [p-disabled]="isLoading" class="btn-search btn-validate">
+            </po-button>
+          } @else {
+            <po-button p-icon="an an-arrows-clockwise" p-label="Trocar OP" p-kind="danger" (p-click)="clearSearch()"
+              [p-disabled]="isLoading" class="btn-search btn-change">
+            </po-button>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (opData) {
+      <!-- Dados da OP (Cards) -->
+      <div class="section data-section animate-fade-in">
+        <div class="data-grid">
+          <div class="data-card">
+            <div class="card-header">
+              <po-icon p-icon="an an-package"></po-icon>
+              <span class="card-label">Produto</span>
+            </div>
+            <div class="card-body">
+              <span class="card-value">{{ opData.produto }}</span>
+              <span class="card-sub">{{ opData.descProduto }}</span>
+            </div>
+          </div>
+
+          <div class="data-card" [ngClass]="statusClass">
+            <div class="card-header">
+              <po-icon p-icon="an an-info"></po-icon>
+              <span class="card-label">Status</span>
+            </div>
+            <div class="card-body">
+              <span class="card-value">{{ opData.status }}</span>
+            </div>
+          </div>
+
+          <div class="data-card">
+            <div class="card-header">
+              <po-icon p-icon="an an-house"></po-icon>
+              <span class="card-label">Armazém</span>
+            </div>
+            <div class="card-body">
+              <span class="card-value">{{ opData.armazem || 'N/A' }}</span>
+            </div>
+          </div>
+
+          <div class="data-card nf-card">
+            <div class="card-header">
+              <po-icon p-icon="an an-file-text"></po-icon>
+              <span class="card-label">Nota Fiscal</span>
+            </div>
+            <div class="card-body">
+              <div class="nf-display">
+                <span class="card-value">{{ opData.nf || 'Não informada' }}</span>
+                <po-button p-small p-label="ALTERAR" p-kind="tertiary" (p-click)="openKeyboard('NF')"
+                  class="btn-alterar-nf">
+                </po-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurações de Impressão -->
+      <div class="section print-config-section animate-fade-in">
+        <div class="po-row">
+          <po-select name="printer" [ngModel]="selectedPrinter" (p-change)="selectedPrinter = $event" p-label="Impressora"
+            [p-options]="printers" class="po-md-5"></po-select>
+
+          <po-select name="layout" [ngModel]="selectedLayout" (p-change)="selectedLayout = $event"
+            p-label="Modelo de Etiqueta" [p-options]="layouts" class="po-md-4"></po-select>
+
+          <po-number name="quant" [(ngModel)]="quantidade" p-label="Cópias" class="po-md-3"
+            (click)="openKeyboard('QUANT')"></po-number>
+        </div>
+
+        <div class="print-action">
+          <po-button p-label="INICIAR IMPRESSÃO" p-kind="primary" p-icon="an an-printer" (p-click)="printLabel()"
+            class="btn-print-huge">
+          </po-button>
+        </div>
+      </div>
+    }
+
+  </div>
+
+  <!-- Teclado Numérico Modal/Overlay -->
+  @if (showKeyboard) {
+    <div class="keyboard-overlay">
+      <div class="keyboard-wrapper">
+        <h3>{{ keyboardTarget === 'OP' ? 'Informe a OP' : (keyboardTarget === 'NF' ? 'Informe a NF' : 'Quantidade de
+          Cópias') }}</h3>
+        <app-numeric-keyboard [value]="keyboardValue"
+          [maxLength]="keyboardTarget === 'NF' ? 9 : (keyboardTarget === 'OP' ? 11 : 5)"
+          (valueChange)="onKeyboardValueChange($event)" (confirm)="onKeyboardConfirm()"
+          (keyboardClose)="showKeyboard = false">
+        </app-numeric-keyboard>
+      </div>
+    </div>
+  }
+
+</po-page-default>
