@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 
 import { PoModule } from '@po-ui/ng-components';
 
@@ -128,6 +128,29 @@ export class NumericKeyboardComponent {
   @Output() valueChange = new EventEmitter<string>();
   @Output() confirm = new EventEmitter<void>();
   @Output() keyboardClose = new EventEmitter<void>();
+
+  @HostListener('window:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key >= '0' && event.key <= '9') {
+      this.onKeyPress(event.key);
+    } else if (event.key === 'Backspace') {
+      this.onBackspace();
+    } else if (event.key === 'Enter') {
+      this.onConfirm();
+    }
+  }
+
+  @HostListener('window:paste', ['$event'])
+  handlePaste(event: ClipboardEvent) {
+    const pastedText = event.clipboardData?.getData('text');
+    if (pastedText) {
+      const numbersOnly = pastedText.replace(/\D/g, '');
+      if (numbersOnly) {
+        this.value = (this.value + numbersOnly).substring(0, this.maxLength);
+        this.valueChange.emit(this.value);
+      }
+    }
+  }
 
   onKeyPress(key: string): void {
     if (this.value.length < this.maxLength) {

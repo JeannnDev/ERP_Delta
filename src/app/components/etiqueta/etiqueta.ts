@@ -12,7 +12,7 @@ import {
 import { ApontamentoApiService } from '../../services/apontamento-api.service';
 import { NumericKeyboardComponent } from '../apontamento/numeric-keyboard/numeric-keyboard.component';
 import { OPApiData, ImpressaoPayload, ApontamentoApiResponse } from '../../models/apontamento.model';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 @Component({
   selector: 'app-etiqueta',
@@ -134,7 +134,10 @@ export class EtiquetaComponent implements OnInit {
     this.cdr.detectChanges();
 
     try {
-      const result = await firstValueFrom(this.apiService.fetchOPData(this.opSearch, '000001')) as ApontamentoApiResponse<OPApiData>;
+      // Timeout de 15 segundos para não travar a tela
+      const result = await firstValueFrom(
+        this.apiService.fetchOPData(this.opSearch, '000001').pipe(timeout(15000))
+      ) as ApontamentoApiResponse<OPApiData>;
       
       if (result.success && result.data) {
         this.opData = result.data as OPApiData;
@@ -143,14 +146,25 @@ export class EtiquetaComponent implements OnInit {
         this.opData = null;
         this.notification.error(result.error || 'OP não encontrada.');
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Erro na validação:', error);
       this.opData = null;
-      this.notification.error('Erro de conexão com o servidor.');
+      
+      const isTimeout = error instanceof Error && error.name === 'TimeoutError';
+      const msg = isTimeout ? 'Tempo esgotado (Timeout).' : 'Erro de conexão com o servidor.';
+      
+      this.notification.error(msg);
     } finally {
       this.isLoading = false;
       this.cdr.detectChanges();
     }
+  }
+
+  clearSearch() {
+    this.opSearch = '';
+    this.opData = null;
+    this.isLoading = false;
+    this.cdr.detectChanges();
   }
 
   async updateNF() {
