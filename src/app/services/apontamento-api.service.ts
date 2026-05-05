@@ -92,6 +92,8 @@ export class ApontamentoApiService {
             tipoOp: (response['tipoOp'] as string) || '',
             tpProducao: (response['tpProducao'] as string) || '',
             opTerceiro: (response['opTerceiro'] as string) || '',
+            nf: (response['C2_XNFISC'] as string) || (response['nf'] as string) || '',
+            armazem: (response['armazem'] as string) || (response['armzPadrao'] as string) || (response['C2_LOCAL'] as string) || '',
             operacoes: todasOperacoes
               .filter((op) => op && op['operac'])
               .map((op) => ({
@@ -106,7 +108,20 @@ export class ApontamentoApiService {
                 parcialTotal: (op['parcialTotal'] as string) || '',
                 status: (op['status'] as string) || '',
                 encerrada: op['status'] === 'Finalizado' || op['parcialTotal'] === 'T',
-                historico: (op['historico'] as never[]) || [],
+                historico: Array.isArray(op['historico'])
+                  ? (op['historico'] as Record<string, unknown>[]).map(h => ({
+                      tempoApont: h['tempoApont'] as string | number,
+                      recurso: h['recurso'] as string,
+                      qtdProd: h['qtdProd'] as number,
+                      qtdPerd: h['qtdPerd'] as number,
+                      hrIni: h['hrIni'] as string,
+                      dtIni: h['dtIni'] as string,
+                      dtFim: h['dtFim'] as string,
+                      hrFim: h['hrFim'] as string,
+                      operadorCod: h['operadorCod'] as string,
+                      operadorNome: h['operadorNome'] as string
+                    }))
+                  : [],
                 registros: (op['registros'] as never[]) || []
               })),
             saldo_item: Array.isArray(response['saldo_item'])
@@ -118,9 +133,13 @@ export class ApontamentoApiService {
                   armz: item['armz'] as string,
                   endereco: item['endereco'] as string,
                   status: item['status'] as boolean,
-                  descricao: item['descricao'] as string
+                  descricao: item['descricao'] as string,
+                  qtOriginal: item['qtOriginal'] as number
                 }))
-              : []
+              : [],
+            roteiro: (response['roteiro'] && typeof response['roteiro'] === 'object')
+              ? response['roteiro'] as Record<string, import('../models/apontamento.model').Operacao[]>
+              : undefined
           };
 
           return { success: true, data: opData };
@@ -204,9 +223,32 @@ export class ApontamentoApiService {
   }
 
   /**
+   * Busca lista de recursos de produção (WsRecursoAll com fallback para WsRecurso)
+   */
+  fetchRecursosAll(): Observable<RecursoApontamento[]> {
+    return this.protheusApi.resource('WsRecursoAll')
+      .get<unknown>()
+      .pipe(
+        map((response: unknown) => {
+          const raw = response as Record<string, unknown>;
+          const data = raw['RESPONSE'] || raw['response'] || raw['recursos'] || (Array.isArray(response) ? response : []);
+          if (Array.isArray(data)) {
+            return (data as Record<string, unknown>[]).map((r) => ({
+              codigo: ((r['Codigo'] || r['codigo'] || r['CODIGO'] || '') as string).trim(),
+              descricao: ((r['Descricao'] || r['descricao'] || r['DESCRICAO'] || '') as string).trim()
+            })).filter(r => r.codigo);
+          }
+          return [];
+        }),
+        catchError(() => this.fetchRecursos())
+      );
+  }
+
+  /**
    * Busca lista de recursos de produção
    */
   fetchRecursos(): Observable<RecursoApontamento[]> {
+
     return this.protheusApi.resource('WsRecurso')
       .get<unknown>()
       .pipe(
@@ -328,6 +370,30 @@ export class ApontamentoApiService {
         catchError(error => {
           console.error('Erro ao imprimir etiqueta:', error);
           return of({ success: false, error: error.message || 'Erro ao imprimir etiqueta' });
+        })
+      );
+  }
+
+  /**
+   * Atualiza a NF da OP via QueryString
+   */
+  updateNF(op: string, nf: string): Observable<ApontamentoApiResponse> {
+    return this.protheusApi.resource(`WsFuncApontamento?OP=${op}&NF=${nf}`)
+      .post<unknown>('', {})
+      .pipe(
+        map((response: unknown) => {
+          const raw = response as Record<string, unknown>;
+          if (raw['status'] === false || raw['success'] === false) {
+            const errorMessage = (raw['response'] as Record<string, unknown>)?.['errorMessage'] as string ||
+              raw['response'] as string ||
+              'Erro ao atualizar NF';
+            return { success: false, error: errorMessage };
+          }
+          return { success: true, data: response };
+        }),
+        catchError(error => {
+          console.error('Erro ao atualizar NF:', error);
+          return of({ success: false, error: error.message || 'Erro ao atualizar NF' });
         })
       );
   }

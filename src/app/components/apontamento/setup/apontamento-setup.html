@@ -5,15 +5,12 @@
         <po-icon p-icon="an an-clock"></po-icon>
       </div>
       <div class="text">
-        <h1>Setup de Máquina</h1>
-        <p>Operador Admin: <strong>{{ operatorName }}</strong></p>
+        <h1>Setup do Tempo da Máquina</h1>
+        <p>Recurso: <strong>{{ recursoCode }}{{ recursoDescricao ? ' — ' + recursoDescricao : '' }}</strong></p>
+        <p>Operador: <strong>{{ operatorName }}</strong></p>
       </div>
     </div>
-    <po-button
-      p-label="Sair"
-      p-kind="secondary"
-      p-icon="an an-sign-out"
-      (p-click)="logout()">
+    <po-button p-label="Sair" p-kind="secondary" p-icon="an an-sign-out" (p-click)="logout()">
     </po-button>
   </div>
 
@@ -28,15 +25,15 @@
 
     <div class="timer-actions">
       @if (status === 'IDLE' || status === 'PAUSED') {
-        <button class="action-btn btn-start" (click)="startTimer()">
-          <po-icon p-icon="an an-play"></po-icon> Iniciar
-        </button>
+      <button class="action-btn btn-start" (click)="startTimer()">
+        <po-icon p-icon="an an-play"></po-icon> Iniciar
+      </button>
       }
 
       @if (status === 'RUNNING') {
-        <button class="action-btn btn-pause" (click)="openPauseModal()">
-          <po-icon p-icon="an an-pause"></po-icon> Pausar
-        </button>
+      <button class="action-btn btn-pause" (click)="openPauseModal()">
+        <po-icon p-icon="an an-pause"></po-icon> Pausar
+      </button>
       }
 
       <button class="action-btn btn-finish" [disabled]="status === 'IDLE'" (click)="openFinishModal()">
@@ -46,20 +43,17 @@
   </div>
 </div>
 
-<po-modal #pauseModal p-title="Pausar Setup" [p-primary-action]="confirmPauseAction" [p-secondary-action]="cancelPauseAction">
+<po-modal #pauseModal p-title="Pausar Setup" [p-primary-action]="confirmPauseAction"
+  [p-secondary-action]="cancelPauseAction">
   <div class="modal-content-center">
-    <po-combo
-      name="motivoPausa"
-      p-label="Motivo da Pausa"
-      [p-options]="pauseReasons"
-      [ngModel]="selectedPauseReason"
-      (p-change)="selectedPauseReason = $event"
-      p-placeholder="Selecione um motivo">
+    <po-combo name="motivoPausa" p-label="Motivo da Pausa" [p-options]="pauseReasons" [ngModel]="selectedPauseReason"
+      (p-change)="selectedPauseReason = $event" p-placeholder="Selecione um motivo">
     </po-combo>
   </div>
 </po-modal>
 
-<po-modal #finishModal p-title="Finalizar Setup" [p-primary-action]="confirmFinishAction" [p-secondary-action]="cancelFinishAction">
+<po-modal #finishModal p-title="Finalizar Setup" [p-primary-action]="confirmFinishAction"
+  [p-secondary-action]="cancelFinishAction">
   <div class="modal-content-center">
     <po-icon p-icon="an an-check-circle" class="modal-icon modal-icon--success"></po-icon>
     <h2 class="modal-title">Deseja realmente finalizar o setup?</h2>
