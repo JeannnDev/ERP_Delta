@@ -223,6 +223,14 @@ app-apontamento-step-indicator {
 .btn--pause { background: #fcd34d; color: #92400e; }
 .btn--stop { background: #f87171; }
 
+.control-btn:disabled, .btn--disabled {
+  background: #e2e8f0 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed;
+  transform: none !important;
+  opacity: 0.7;
+}
+
 /* ── STATUS ALERT ── */
 .status-alert {
   background: #f1f5f9;

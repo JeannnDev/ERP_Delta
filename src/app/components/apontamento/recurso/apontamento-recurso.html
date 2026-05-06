@@ -93,15 +93,24 @@
             tabindex="0"
             [class.op-card--selected]="selectedOperation === op.operac"
             [class.op-card--done]="op.encerrada"
-            (click)="selectOperation(op)"
-            (keyup.enter)="selectOperation(op)"
+            [class.op-card--disabled]="isOperationDisabled(op, i)"
+            (click)="selectOperation(op, i)"
+            (keyup.enter)="selectOperation(op, i)"
           >
             <span class="op-card__badge">{{ i + 1 }}/{{ operacoes.length }}</span>
             <div class="op-card__icon" [class.op-card__icon--done]="op.encerrada">
-              <po-icon [p-icon]="op.encerrada ? 'an an-check' : 'an an-clock'"></po-icon>
+              @if (op.encerrada) {
+                <po-icon p-icon="an an-check-circle"></po-icon>
+              } @else if (isOperationDisabled(op, i)) {
+                <po-icon p-icon="an an-lock-simple"></po-icon>
+              } @else {
+                <po-icon p-icon="an an-clock"></po-icon>
+              }
             </div>
             <h3 class="op-card__name">{{ op.operac }} - {{ op.descricao }}</h3>
-            <span class="op-card__status">{{ op.encerrada ? 'Concluída' : 'Pendente' }}</span>
+            <span class="op-card__status">
+              {{ op.encerrada ? 'Concluída' : (isOperationDisabled(op, i) ? 'Bloqueada' : 'Disponível') }}
+            </span>
             @if (op.encerrada) {
               <div class="op-card__bar"></div>
             }
@@ -166,7 +175,11 @@
             </div>
             <div class="po-row po-mt-2">
               <div class="po-md-12 po-text-center">
-                <po-tag p-value="Disponível" p-color="color-11"></po-tag>
+                @if (saldo.saldoEstq >= saldo.qtdeEmp) {
+                  <po-tag p-value="Disponível" p-color="color-11" p-icon="an an-check-circle"></po-tag>
+                } @else {
+                  <po-tag p-value="Saldo Insuficiente" p-color="color-07" p-icon="an an-warning-circle"></po-tag>
+                }
               </div>
             </div>
           </po-widget>

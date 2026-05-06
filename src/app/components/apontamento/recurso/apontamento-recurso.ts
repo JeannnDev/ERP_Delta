@@ -75,7 +75,29 @@ export class ApontamentoRecursoComponent implements OnInit {
     }
   }
 
-  selectOperation(op: Operacao): void {
+  hasStockBalance(): boolean {
+    const saldos = this.apontamentoService.data().apiData?.saldo_item || [];
+    if (saldos.length === 0) return true;
+    return saldos.every((item) => item.saldoEstq >= item.qtdeEmp);
+  }
+
+  isOperationDisabled(op: Operacao, index: number): boolean {
+    if (op.encerrada) return false;
+    if (!this.hasStockBalance()) return true;
+    for (let i = 0; i < index; i++) {
+      if (!this.operacoes[i].encerrada) return true;
+    }
+    return false;
+  }
+
+  selectOperation(op: Operacao, index: number): void {
+    if (this.isOperationDisabled(op, index)) {
+      this.notification.warning('Esta operação está bloqueada por sequência ou falta de saldo.');
+      return;
+    }
+    if (this.selectedOperation !== op.operac) {
+      this.apontamentoService.resetTimer();
+    }
     this.selectedOperation = op.operac;
     this.useDefaultResource = true;
     this.selectedRecurso = '';
@@ -92,15 +114,22 @@ export class ApontamentoRecursoComponent implements OnInit {
 
   handleNext(): void {
     if (!this.canProceed) return;
+
+    const opIndex = this.operacoes.findIndex((o) => o.operac === this.selectedOperation);
+    const op = this.operacoes[opIndex];
+    if (op && this.isOperationDisabled(op, opIndex)) {
+      this.notification.error('Operação bloqueada.');
+      return;
+    }
+
     this.apontamentoService.updateData({
       operation: this.selectedOperation,
       resource: this.useDefaultResource ? this.getDefaultResource() : this.selectedRecurso,
     });
-    
+
     if (this.apontamentoService.data().apiData?.status === 'Enc. Total') {
       this.router.navigate(['/apontamento/resumo']);
     } else {
-      this.apontamentoService.startTimer();
       this.router.navigate(['/apontamento/quantidade']);
     }
   }

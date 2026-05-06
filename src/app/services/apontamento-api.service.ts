@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable, of, timer } from 'rxjs';
-import { map, catchError, retry } from 'rxjs/operators';
+import { map, catchError, retry, switchMap } from 'rxjs/operators';
 import { ProtheusApiService } from './protheus-api.service';
 import {
   OPApiData,
@@ -341,18 +341,32 @@ export class ApontamentoApiService {
     console.log('====================================================');
 
     return this.protheusApi.resource('WSAPONTAPRODUCAO')
-      .post<unknown>('', jsonString)
+      .post<string>('', jsonString, { responseType: 'text' })
       .pipe(
-        map((response: unknown) => {
-          const raw = response as Record<string, unknown>;
+        // Retry logic: if fails, wait 1.5s and try once more
+        catchError(() => {
+          console.warn('[API] Falha no envio, tentando novamente em 1.5s...');
+          return timer(1500).pipe(
+            switchMap(() => this.protheusApi.resource('WSAPONTAPRODUCAO').post<string>('', jsonString, { responseType: 'text' }))
+          );
+        }),
+        map((response: string) => {
+          let data: unknown;
+          try {
+            data = JSON.parse(response);
+          } catch {
+            data = { success: true, message: response };
+          }
+
+          const raw = data as Record<string, unknown>;
           if (raw['status'] === false || raw['success'] === false) {
             const errorMessage = (raw['response'] as Record<string, unknown>)?.['errorMessage'] as string ||
               raw['response'] as string ||
               raw['error'] as string ||
               'Erro ao apontar produção';
-            return { success: false, error: errorMessage, data: response };
+            return { success: false, error: errorMessage, data: data };
           }
-          return { success: true, data: response };
+          return { success: true, data: data };
         }),
         catchError(error => {
           console.error('Erro ao apontar produção:', error);

@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject } from '@angular/core';
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApontamentoApiService } from './apontamento-api.service';
 import { ApontamentoData, OPApiData, Operacao } from '../models/apontamento.model';
@@ -84,6 +84,46 @@ export class ApontamentoService {
 
   constructor() {
     this.loadOperators();
+    if (typeof window !== 'undefined') {
+      this.loadPersistedState();
+      effect(() => {
+        this.saveState();
+      });
+    }
+  }
+
+  private saveState(): void {
+    if (typeof window === 'undefined') return;
+    const state = {
+      data: this._data(),
+      startTime: this._startTime(),
+      isStarted: this._isStarted(),
+      isPaused: this._isPaused(),
+      pausedElapsedTime: this._pausedElapsedTime(),
+      elapsedTime: this._elapsedTime()
+    };
+    localStorage.setItem('apontamento_state', JSON.stringify(state));
+  }
+
+  private loadPersistedState(): void {
+    const saved = localStorage.getItem('apontamento_state');
+    if (saved) {
+      try {
+        const state = JSON.parse(saved);
+        this._data.set(state.data);
+        this._startTime.set(state.startTime);
+        this._isStarted.set(state.isStarted);
+        this._isPaused.set(state.isPaused);
+        this._pausedElapsedTime.set(state.pausedElapsedTime);
+        this._elapsedTime.set(state.elapsedTime || 0);
+
+        if (state.isStarted && !state.isPaused) {
+          this.startTimerInterval();
+        }
+      } catch (e) {
+        console.error('[ApontamentoService] Erro ao carregar estado persistido', e);
+      }
+    }
   }
 
   private loadOperators(): void {
@@ -143,6 +183,24 @@ export class ApontamentoService {
     const finalElapsed = this._startTime() ? Math.floor((now - this._startTime()!) / 1000) : 0;
     this._elapsedTime.set(finalElapsed);
     this.stopTimerInterval();
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('apontamento_state');
+    }
+  }
+
+  resetTimer(): void {
+    this.stopTimerInterval();
+    this._startTime.set(null);
+    this._endTime.set(null);
+    this._elapsedTime.set(0);
+    this._isStarted.set(false);
+    this._isFinished.set(false);
+    this._isPaused.set(false);
+    this._pausedElapsedTime.set(0);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('apontamento_state');
+    }
   }
 
   private startTimerInterval(): void {

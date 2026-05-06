@@ -190,18 +190,23 @@ export class HistoricoOPComponent {
           };
         });
 
-        this.notification.success('Histórico completo carregado!');
+        // Delay para garantir que o Angular renderize as tabelas no DOM antes de tirar o overlay
+        setTimeout(() => {
+          this.isLoading = false;
+          this.notification.success('Histórico completo carregado!');
+          this.cdr.detectChanges();
+        }, 500);
+
       } else {
+        this.isLoading = false;
         this.resetData();
         this.notification.error(result.error || 'OP não encontrada.');
       }
     } catch (error: unknown) {
+      this.isLoading = false;
       this.resetData();
       const isTimeout = error instanceof Error && error.name === 'TimeoutError';
       this.notification.error(isTimeout ? 'Tempo esgotado.' : 'Erro de conexão.');
-    } finally {
-      this.isLoading = false;
-      this.cdr.detectChanges();
     }
   }
 

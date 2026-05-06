@@ -85,13 +85,23 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     });
   }
 
+  startTimer(): void {
+    this.apontamentoService.startTimer();
+  }
+
   pauseTimer(): void {
     this.apontamentoService.pauseTimer();
   }
+  
   resumeTimer(): void {
     this.apontamentoService.resumeTimer();
   }
+  
   confirmStopTimer(): void {
+    if (this.apontamentoService.elapsedTime() < 60) {
+      this.notification.warning('Você só pode encerrar o apontamento após 1 minuto de operação.');
+      return;
+    }
     this.stopModal.open();
   }
 
@@ -149,11 +159,9 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.apontamentoService.isFinished()) {
-      this.apontamentoService.stopTimer();
-    }
-
-    this.isApontando = true;
+    setTimeout(() => {
+      this.isApontando = true;
+    });
     try {
       const data = this.apontamentoService.data();
       const startTime = this.apontamentoService.startTime();
@@ -217,14 +225,16 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   }
 
   private formatDateAPI(date: Date): string {
-    const y = date.getFullYear();
     const m = (date.getMonth() + 1).toString().padStart(2, '0');
     const d = date.getDate().toString().padStart(2, '0');
-    return `${y}${m}${d}`;
+    const y = date.getFullYear();
+    return `${d}/${m}/${y}`;
   }
 
   private formatTimeAPI(date: Date): string {
-    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    const h = date.getHours().toString().padStart(2, '0');
+    const m = date.getMinutes().toString().padStart(2, '0');
+    return `${h}:${m}`;
   }
 
   goBack(): void {

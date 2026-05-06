@@ -73,14 +73,36 @@
 
       @if (!isOpEncerrada()) {
       <div class="controls-row">
-        <button class="control-btn btn--play"
-          [class.active]="!apontamentoService.isPaused() && apontamentoService.startTime()" (click)="resumeTimer()">
-          <po-icon p-icon="an an-play"></po-icon> INICIAR
-        </button>
-        <button class="control-btn btn--pause" [class.active]="apontamentoService.isPaused()" (click)="pauseTimer()">
+        <!-- Botão INICIAR / RETOMAR -->
+        @if (!apontamentoService.isStarted()) {
+          <button class="control-btn btn--play" (click)="startTimer()">
+            <po-icon p-icon="an an-play"></po-icon> INICIAR
+          </button>
+        } @else if (apontamentoService.isPaused()) {
+          <button class="control-btn btn--play active" (click)="resumeTimer()">
+            <po-icon p-icon="an an-play"></po-icon> RETOMAR
+          </button>
+        } @else {
+          <button class="control-btn btn--play active" disabled>
+            <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
+          </button>
+        }
+
+        <!-- Botão PAUSAR -->
+        <button 
+          class="control-btn btn--pause" 
+          [class.active]="apontamentoService.isPaused()" 
+          [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused()"
+          (click)="pauseTimer()">
           <po-icon p-icon="an an-pause"></po-icon> PAUSAR
         </button>
-        <button class="control-btn btn--stop" (click)="confirmStopTimer()">
+
+        <!-- Botão ENCERRAR -->
+        <button 
+          class="control-btn btn--stop" 
+          [class.btn--disabled]="apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60"
+          [disabled]="!apontamentoService.isStarted()"
+          (click)="confirmStopTimer()">
           <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
         </button>
       </div>
@@ -96,7 +118,8 @@
 
     <div class="page-footer">
       <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
-      <po-button p-label="Apontar" p-kind="primary" class="btn-next" [p-disabled]="!canProceed"
+      <po-button p-label="Apontar" p-kind="primary" class="btn-next" 
+        [p-disabled]="!canProceed || !apontamentoService.isFinished()"
         [p-loading]="isApontando" (p-click)="handleApontar()">
       </po-button>
     </div>

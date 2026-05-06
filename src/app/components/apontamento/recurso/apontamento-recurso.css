@@ -321,6 +321,22 @@ app-apontamento-step-indicator {
   font-weight: 500;
 }
 
+.op-card.op-card--disabled {
+  background-color: #f1f5f9 !important;
+  border-color: #e2e8f0 !important;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.op-card--disabled .op-card__name {
+  color: #94a3b8 !important;
+}
+
+.op-card--disabled .op-card__icon {
+  background-color: #f8fafc;
+  color: #cbd5e1 !important;
+}
+
 .op-card__bar {
   position: absolute;
   bottom: 0;
