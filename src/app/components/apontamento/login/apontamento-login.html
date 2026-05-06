@@ -1,72 +1,74 @@
-<div class="wizard-container">
-  <aside class="wizard-sidebar">
-    <app-apontamento-step-indicator [currentStep]="1" [totalSteps]="4"
-      [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
-      (stepClick)="onStepClick()">
-    </app-apontamento-step-indicator>
-  </aside>
+<po-page-default>
+  <div class="wizard-container">
+    <aside class="wizard-sidebar">
+      <app-apontamento-step-indicator [currentStep]="1" [totalSteps]="4"
+        [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
+        (stepClick)="onStepClick()">
+      </app-apontamento-step-indicator>
+    </aside>
 
-  <main class="wizard-content wizard-content--centered">
-    <div class="login-card fade-in">
-      <div class="login-card__header">
-        <div class="icon-circle">
-          <po-icon p-icon="an an-factory" style="font-size: 48px;"></po-icon>
-        </div>
-        <h1>Apontamento de Produção</h1>
-        <p>Sistema de Controle de Ordem de Produção</p>
-      </div>
-
-      <div class="login-card__body">
-        <div class="form-group">
-          <label class="input-label" for="op-input">Ordem de Produção <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <po-input id="op-input" name="op" [(ngModel)]="opNumber"
-              p-placeholder="Digite o número da OP ou escaneie o código" p-clean [p-maxlength]="12"
-              (p-enter)="onOpEnter()">
-            </po-input>
-            <button class="icon-btn" (click)="openDeviceSpecificInput('op')">
-              <po-icon p-icon="an an-keyboard"></po-icon>
-            </button>
+    <main class="wizard-content wizard-content--centered">
+      <div class="login-card fade-in">
+        <div class="login-card__header">
+          <div class="icon-circle">
+            <po-icon p-icon="an an-factory" style="font-size: 48px;"></po-icon>
           </div>
+          <h1>Apontamento de Produção</h1>
+          <p>Sistema de Controle de Ordem de Produção</p>
         </div>
 
-        <div class="form-group">
-          <label class="input-label" for="operator-input">Código do Operador <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <po-input id="operator-input" name="operador" [(ngModel)]="operatorCode"
-              (ngModelChange)="onOperatorCodeChange($event)" p-placeholder="Digite o código do operador ou escaneie"
-              p-clean [p-maxlength]="6" (p-enter)="onOperatorEnter()">
-            </po-input>
-            <button class="icon-btn" (click)="openDeviceSpecificInput('operator')">
-              <po-icon p-icon="an an-keyboard"></po-icon>
-            </button>
+        <div class="login-card__body">
+          <div class="form-group">
+            <label class="input-label" for="op-input">Ordem de Produção <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <po-input id="op-input" name="op" [(ngModel)]="opNumber"
+                p-placeholder="Digite o número da OP ou escaneie o código" p-clean [p-maxlength]="12"
+                (p-enter)="onOpEnter()">
+              </po-input>
+              <button class="icon-btn" (click)="openDeviceSpecificInput('op')">
+                <po-icon p-icon="an an-keyboard"></po-icon>
+              </button>
+            </div>
           </div>
-        </div>
 
-        @if (isOperatorConfirmed) {
-        <div class="form-group animate-fade-in">
-          <label class="input-label" for="password-input">Senha do Operador <span class="required">*</span></label>
-          <div class="input-wrapper">
-            <po-password id="password-input" name="senha" [(ngModel)]="operatorPassword" p-placeholder="Digite a senha"
-              p-clean (p-enter)="onPasswordEnter()">
-            </po-password>
-            <button class="icon-btn" (click)="openPasswordKeyboard()">
-              <po-icon p-icon="an an-keyboard"></po-icon>
-            </button>
+          <div class="form-group">
+            <label class="input-label" for="operator-input">Código do Operador <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <po-input id="operator-input" name="operador" [(ngModel)]="operatorCode"
+                (ngModelChange)="onOperatorCodeChange($event)" p-placeholder="Digite o código do operador ou escaneie"
+                p-clean [p-maxlength]="6" (p-enter)="onOperatorEnter()">
+              </po-input>
+              <button class="icon-btn" (click)="openDeviceSpecificInput('operator')">
+                <po-icon p-icon="an an-keyboard"></po-icon>
+              </button>
+            </div>
           </div>
-        </div>
-        }
-      </div>
 
-      <div class="login-card__footer">
-        <po-button p-label="VOLTAR" class="btn-back" (p-click)="goBack()"></po-button>
-        <po-button p-label="AVANÇAR" p-kind="primary" class="btn-next" [p-disabled]="!canProceed"
-          [p-loading]="isValidating || isLoading" (p-click)="handleNext()">
-        </po-button>
+          @if (isOperatorConfirmed) {
+          <div class="form-group animate-fade-in">
+            <label class="input-label" for="password-input">Senha do Operador <span class="required">*</span></label>
+            <div class="input-wrapper">
+              <po-password id="password-input" name="senha" [(ngModel)]="operatorPassword" p-placeholder="Digite a senha"
+                p-clean (p-enter)="onPasswordEnter()">
+              </po-password>
+              <button class="icon-btn" (click)="openPasswordKeyboard()">
+                <po-icon p-icon="an an-keyboard"></po-icon>
+              </button>
+            </div>
+          </div>
+          }
+        </div>
+
+        <div class="login-card__footer">
+          <po-button p-label="VOLTAR" class="btn-back" (p-click)="goBack()"></po-button>
+          <po-button p-label="AVANÇAR" p-kind="primary" class="btn-next" [p-disabled]="!canProceed"
+            [p-loading]="isValidating || isLoading" (p-click)="handleNext()">
+          </po-button>
+        </div>
       </div>
-    </div>
-  </main>
-</div>
+    </main>
+  </div>
+</po-page-default>
 
 <po-modal #keyboardModal p-title="Teclado Numérico" [p-hide-close]="false">
   <app-numeric-keyboard [value]="getActiveFieldValue()" [label]="getActiveFieldLabel()"

@@ -73,14 +73,8 @@ export class ApontamentoLoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    const isReloaded = sessionStorage.getItem('apontamento_login_reloaded');
-    if (!isReloaded) {
-      sessionStorage.setItem('apontamento_login_reloaded', 'true');
-      this.apontamentoService.reset('/apontamento');
-      window.location.reload();
-      return;
-    }
-    sessionStorage.removeItem('apontamento_login_reloaded');
+    // Apenas limpa o estado, sem redirecionar ou recarregar a página forçadamente
+    this.apontamentoService.reset(null);
     this.opNumber = '';
     this.operatorCode = '';
     this.operatorPassword = '';

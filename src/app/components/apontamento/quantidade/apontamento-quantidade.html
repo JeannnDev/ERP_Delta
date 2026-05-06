@@ -1,130 +1,132 @@
-<div class="wizard-container">
-  <aside class="wizard-sidebar">
-    <app-apontamento-step-indicator [currentStep]="3" [totalSteps]="4"
-      [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
-      (stepClick)="onStepClick($event)">
-    </app-apontamento-step-indicator>
-  </aside>
+<po-page-default>
+  <div class="wizard-container">
+    <aside class="wizard-sidebar">
+      <app-apontamento-step-indicator [currentStep]="3" [totalSteps]="4"
+        [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
+        (stepClick)="onStepClick($event)">
+      </app-apontamento-step-indicator>
+    </aside>
 
-  <main class="wizard-content">
-    <div class="page-info-bar">
-      <div class="page-info-bar__item">
-        <span class="page-info-bar__label">OP</span>
-        <strong class="page-info-bar__value">{{ apontamentoService.data().opNumber }}</strong>
+    <main class="wizard-content">
+      <div class="page-info-bar">
+        <div class="page-info-bar__item">
+          <span class="page-info-bar__label">OP</span>
+          <strong class="page-info-bar__value">{{ apontamentoService.data().opNumber }}</strong>
+        </div>
+        <div class="page-info-bar__divider"></div>
+        <div class="page-info-bar__item">
+          <span class="page-info-bar__label">Roteiro</span>
+          <strong class="page-info-bar__value">{{ apontamentoService.data().apiData?.roteiroUtilizado || '-' }}</strong>
+        </div>
+        <div class="page-info-bar__divider"></div>
+        <div class="page-info-bar__item">
+          <span class="page-info-bar__label">Operador <po-icon p-icon="an an-qr-code"></po-icon></span>
+          <strong class="page-info-bar__value">{{ apontamentoService.data().operatorName || '-' }}</strong>
+        </div>
       </div>
-      <div class="page-info-bar__divider"></div>
-      <div class="page-info-bar__item">
-        <span class="page-info-bar__label">Roteiro</span>
-        <strong class="page-info-bar__value">{{ apontamentoService.data().apiData?.roteiroUtilizado || '-' }}</strong>
-      </div>
-      <div class="page-info-bar__divider"></div>
-      <div class="page-info-bar__item">
-        <span class="page-info-bar__label">Operador <po-icon p-icon="an an-qr-code"></po-icon></span>
-        <strong class="page-info-bar__value">{{ apontamentoService.data().operatorName || '-' }}</strong>
-      </div>
-    </div>
 
-    <div class="product-card">
-      <div class="product-card__header">
-        <div>
-          <span class="product-card__label">PRODUTO:
-            <strong class="product-card__code">{{ apontamentoService.data().apiData?.produto }}</strong>
-          </span>
-          <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
-        </div>
-      </div>
-      <div class="product-card__stats-grid">
-        <div class="stat-box">
-          <span class="stat-box__label">Já Produzido</span>
-          <strong class="stat-box__value value--green">{{ getQuantidadeProduzida() }}</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-box__label">Faltante</span>
-          <strong class="stat-box__value value--orange">{{ getQuantidadeFaltante() }}</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-box__label">Previsão Inicial</span>
-          <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoIni) }}</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-box__label">Previsão Entrega</span>
-          <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoEntrega) }}</strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="apontamento-area">
-      <div class="inputs-row">
-        <div class="input-group">
-          <span class="label--green">Quantidade Produzida</span>
-          <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')"
-            (keyup.enter)="openKeyboard('quantity')">
-            {{ quantityProduced }}
+      <div class="product-card">
+        <div class="product-card__header">
+          <div>
+            <span class="product-card__label">PRODUTO:
+              <strong class="product-card__code">{{ apontamentoService.data().apiData?.produto }}</strong>
+            </span>
+            <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
           </div>
         </div>
-        <div class="input-group">
-          <span class="label--red">Perdas</span>
-          <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')"
-            (keyup.enter)="openKeyboard('loss')">
-            {{ loss }}
+        <div class="product-card__stats-grid">
+          <div class="stat-box">
+            <span class="stat-box__label">Já Produzido</span>
+            <strong class="stat-box__value value--green">{{ getQuantidadeProduzida() }}</strong>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__label">Faltante</span>
+            <strong class="stat-box__value value--orange">{{ getQuantidadeFaltante() }}</strong>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__label">Previsão Inicial</span>
+            <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoIni) }}</strong>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__label">Previsão Entrega</span>
+            <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoEntrega) }}</strong>
           </div>
         </div>
       </div>
 
-      @if (!isOpEncerrada()) {
-      <div class="controls-row">
-        <!-- Botão INICIAR / RETOMAR -->
-        @if (!apontamentoService.isStarted()) {
-          <button class="control-btn btn--play" (click)="startTimer()">
-            <po-icon p-icon="an an-play"></po-icon> INICIAR
+      <div class="apontamento-area">
+        <div class="inputs-row">
+          <div class="input-group">
+            <span class="label--green">Quantidade Produzida</span>
+            <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')"
+              (keyup.enter)="openKeyboard('quantity')">
+              {{ quantityProduced }}
+            </div>
+          </div>
+          <div class="input-group">
+            <span class="label--red">Perdas</span>
+            <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')"
+              (keyup.enter)="openKeyboard('loss')">
+              {{ loss }}
+            </div>
+          </div>
+        </div>
+
+        @if (!isOpEncerrada()) {
+        <div class="controls-row">
+          <!-- Botão INICIAR / RETOMAR -->
+          @if (!apontamentoService.isStarted()) {
+            <button class="control-btn btn--play" (click)="startTimer()">
+              <po-icon p-icon="an an-play"></po-icon> INICIAR
+            </button>
+          } @else if (apontamentoService.isPaused()) {
+            <button class="control-btn btn--play active" (click)="resumeTimer()">
+              <po-icon p-icon="an an-play"></po-icon> RETOMAR
+            </button>
+          } @else {
+            <button class="control-btn btn--play active" disabled>
+              <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
+            </button>
+          }
+
+          <!-- Botão PAUSAR -->
+          <button 
+            class="control-btn btn--pause" 
+            [class.active]="apontamentoService.isPaused()" 
+            [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused()"
+            (click)="pauseTimer()">
+            <po-icon p-icon="an an-pause"></po-icon> PAUSAR
           </button>
-        } @else if (apontamentoService.isPaused()) {
-          <button class="control-btn btn--play active" (click)="resumeTimer()">
-            <po-icon p-icon="an an-play"></po-icon> RETOMAR
+
+          <!-- Botão ENCERRAR -->
+          <button 
+            class="control-btn btn--stop" 
+            [class.btn--disabled]="apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60"
+            [disabled]="!apontamentoService.isStarted()"
+            (click)="confirmStopTimer()">
+            <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
           </button>
-        } @else {
-          <button class="control-btn btn--play active" disabled>
-            <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
-          </button>
+        </div>
         }
 
-        <!-- Botão PAUSAR -->
-        <button 
-          class="control-btn btn--pause" 
-          [class.active]="apontamentoService.isPaused()" 
-          [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused()"
-          (click)="pauseTimer()">
-          <po-icon p-icon="an an-pause"></po-icon> PAUSAR
-        </button>
-
-        <!-- Botão ENCERRAR -->
-        <button 
-          class="control-btn btn--stop" 
-          [class.btn--disabled]="apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60"
-          [disabled]="!apontamentoService.isStarted()"
-          (click)="confirmStopTimer()">
-          <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
-        </button>
+        @if (isOpEncerrada()) {
+        <div class="status-alert">
+          <po-icon p-icon="an an-info"></po-icon>
+          <span>Esta OP está encerrada. Você está em modo de consulta.</span>
+        </div>
+        }
       </div>
-      }
 
-      @if (isOpEncerrada()) {
-      <div class="status-alert">
-        <po-icon p-icon="an an-info"></po-icon>
-        <span>Esta OP está encerrada. Você está em modo de consulta.</span>
+      <div class="page-footer">
+        <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
+        <po-button p-label="Apontar" p-kind="primary" class="btn-next" 
+          [p-disabled]="!canProceed || !apontamentoService.isFinished()"
+          [p-loading]="isApontando" (p-click)="handleApontar()">
+        </po-button>
       </div>
-      }
-    </div>
-
-    <div class="page-footer">
-      <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
-      <po-button p-label="Apontar" p-kind="primary" class="btn-next" 
-        [p-disabled]="!canProceed || !apontamentoService.isFinished()"
-        [p-loading]="isApontando" (p-click)="handleApontar()">
-      </po-button>
-    </div>
-  </main>
-</div>
+    </main>
+  </div>
+</po-page-default>
 
 <po-modal #keyboardModal p-title="Teclado Numérico">
   <app-numeric-keyboard [value]="getActiveFieldValue()" [label]="getActiveFieldLabel()"

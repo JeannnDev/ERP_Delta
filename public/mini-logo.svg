@@ -1,0 +1,13 @@
+<svg width="60" height="50" viewBox="15 10 60 50" xmlns="http://www.w3.org/2000/svg">
+  <!-- Definições de Gradiente e Sombras -->
+  <defs>
+    <linearGradient id="popurple" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#93278f;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#532d8c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Símbolo Delta Estalizado -->
+  <path d="M15 60 L45 10 L75 60 Z" fill="url(#popurple)" />
+  <path d="M35 50 L45 32 L55 50 Z" fill="#ffffff" />
+</svg>

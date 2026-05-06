@@ -11,23 +11,11 @@
 /* Layout compartilhado - reutiliza padrões do projeto */
 .wizard-container {
   display: flex;
-  height: 100vh;
+  height: calc(100vh - 64px);
   background: #f4f6f9;
-
-  /* Respeita o menu lateral com um respiro extra de 30px */
-  padding-left: calc(var(--po-menu-width, 256px) + 30px);
-}
-
-@media (max-width: 950px) {
-  .wizard-container {
-    padding-left: calc(64px + 15px);
-  }
-}
-
-@media (max-width: 768px) {
-  .wizard-container {
-    padding-left: 0;
-  }
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 
 .wizard-sidebar {

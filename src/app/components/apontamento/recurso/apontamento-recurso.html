@@ -1,137 +1,139 @@
-<div class="wizard-container">
-  <aside class="wizard-sidebar">
-    <app-apontamento-step-indicator
-      [currentStep]="2"
-      [totalSteps]="4"
-      [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
-      (stepClick)="onStepClick($event)"
-    >
-    </app-apontamento-step-indicator>
-  </aside>
+<po-page-default>
+  <div class="wizard-container">
+    <aside class="wizard-sidebar">
+      <app-apontamento-step-indicator
+        [currentStep]="2"
+        [totalSteps]="4"
+        [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
+        (stepClick)="onStepClick($event)"
+      >
+      </app-apontamento-step-indicator>
+    </aside>
 
-  <div class="wizard-content">
-    <div class="page-info-bar">
-      <div class="page-info-bar__item">
-        <span class="page-info-bar__label">OP</span>
-        <strong class="page-info-bar__value">{{ apontamentoService.data().opNumber }}</strong>
+    <div class="wizard-content">
+      <div class="page-info-bar">
+        <div class="page-info-bar__item">
+          <span class="page-info-bar__label">OP</span>
+          <strong class="page-info-bar__value">{{ apontamentoService.data().opNumber }}</strong>
+        </div>
+        <div class="page-info-bar__divider"></div>
+        <div class="page-info-bar__item">
+          <span class="page-info-bar__label">Roteiro</span>
+          <strong class="page-info-bar__value">{{
+            apontamentoService.data().apiData?.roteiroUtilizado || '-'
+          }}</strong>
+        </div>
+        <div class="page-info-bar__divider"></div>
+        <div class="page-info-bar__item">
+          <span class="page-info-bar__label"
+            >Operador <po-icon p-icon="an an-qr-code"></po-icon
+          ></span>
+          <strong class="page-info-bar__value">{{
+            apontamentoService.data().operatorName || '-'
+          }}</strong>
+        </div>
       </div>
-      <div class="page-info-bar__divider"></div>
-      <div class="page-info-bar__item">
-        <span class="page-info-bar__label">Roteiro</span>
-        <strong class="page-info-bar__value">{{
-          apontamentoService.data().apiData?.roteiroUtilizado || '-'
-        }}</strong>
-      </div>
-      <div class="page-info-bar__divider"></div>
-      <div class="page-info-bar__item">
-        <span class="page-info-bar__label"
-          >Operador <po-icon p-icon="an an-qr-code"></po-icon
-        ></span>
-        <strong class="page-info-bar__value">{{
-          apontamentoService.data().operatorName || '-'
-        }}</strong>
-      </div>
-    </div>
 
-    <div class="product-card">
-      <div class="product-card__header">
-        <div>
-          <span class="product-card__label"
-            >PRODUTO:
-            <strong class="product-card__code">{{
-              apontamentoService.data().apiData?.produto
+      <div class="product-card">
+        <div class="product-card__header">
+          <div>
+            <span class="product-card__label"
+              >PRODUTO:
+              <strong class="product-card__code">{{
+                apontamentoService.data().apiData?.produto
+              }}</strong>
+            </span>
+            <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
+          </div>
+        </div>
+        <div class="product-card__stats">
+          <div class="stat-box">
+            <span class="stat-box__label">Quantidade</span>
+            <strong class="stat-box__value">{{
+              apontamentoService.data().apiData?.quantidade
             }}</strong>
-          </span>
-          <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__label">Prev. Inicial</span>
+            <strong class="stat-box__value">{{
+              formatDate(apontamentoService.data().apiData?.previsaoIni)
+            }}</strong>
+          </div>
+          <div class="stat-box">
+            <span class="stat-box__label">Prev. Entrega</span>
+            <strong class="stat-box__value">{{
+              formatDate(apontamentoService.data().apiData?.previsaoEntrega)
+            }}</strong>
+          </div>
+          <div class="stat-box stat-box--action">
+            <po-button
+              p-label="Ver Saldo"
+              p-kind="primary"
+              p-icon="an an-eye"
+              (p-click)="saldoSheet.open()"
+            ></po-button>
+          </div>
         </div>
-      </div>
-      <div class="product-card__stats">
-        <div class="stat-box">
-          <span class="stat-box__label">Quantidade</span>
-          <strong class="stat-box__value">{{
-            apontamentoService.data().apiData?.quantidade
-          }}</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-box__label">Prev. Inicial</span>
-          <strong class="stat-box__value">{{
-            formatDate(apontamentoService.data().apiData?.previsaoIni)
-          }}</strong>
-        </div>
-        <div class="stat-box">
-          <span class="stat-box__label">Prev. Entrega</span>
-          <strong class="stat-box__value">{{
-            formatDate(apontamentoService.data().apiData?.previsaoEntrega)
-          }}</strong>
-        </div>
-        <div class="stat-box stat-box--action">
-          <po-button
-            p-label="Ver Saldo"
-            p-kind="primary"
-            p-icon="an an-eye"
-            (p-click)="saldoSheet.open()"
-          ></po-button>
-        </div>
-      </div>
-    </div>
-
-    <div class="ops-container">
-      <div class="ops-container__header">
-        <div class="ops-container__title-wrap">
-          <po-icon p-icon="an an-gear"></po-icon>
-          <h2 class="ops-container__title">Selecione a Operação</h2>
-        </div>
-        <span class="ops-container__total"
-          >Total no Roteiro: <strong>{{ operacoes.length }}</strong></span
-        >
       </div>
 
-      <div class="ops-grid">
-        @for (op of operacoes; track op; let i = $index) {
-          <div
-            class="op-card"
-            tabindex="0"
-            [class.op-card--selected]="selectedOperation === op.operac"
-            [class.op-card--done]="op.encerrada"
-            [class.op-card--disabled]="isOperationDisabled(op, i)"
-            (click)="selectOperation(op, i)"
-            (keyup.enter)="selectOperation(op, i)"
+      <div class="ops-container">
+        <div class="ops-container__header">
+          <div class="ops-container__title-wrap">
+            <po-icon p-icon="an an-gear"></po-icon>
+            <h2 class="ops-container__title">Selecione a Operação</h2>
+          </div>
+          <span class="ops-container__total"
+            >Total no Roteiro: <strong>{{ operacoes.length }}</strong></span
           >
-            <span class="op-card__badge">{{ i + 1 }}/{{ operacoes.length }}</span>
-            <div class="op-card__icon" [class.op-card__icon--done]="op.encerrada">
+        </div>
+
+        <div class="ops-grid">
+          @for (op of operacoes; track op; let i = $index) {
+            <div
+              class="op-card"
+              tabindex="0"
+              [class.op-card--selected]="selectedOperation === op.operac"
+              [class.op-card--done]="op.encerrada"
+              [class.op-card--disabled]="isOperationDisabled(op, i)"
+              (click)="selectOperation(op, i)"
+              (keyup.enter)="selectOperation(op, i)"
+            >
+              <span class="op-card__badge">{{ i + 1 }}/{{ operacoes.length }}</span>
+              <div class="op-card__icon" [class.op-card__icon--done]="op.encerrada">
+                @if (op.encerrada) {
+                  <po-icon p-icon="an an-check-circle"></po-icon>
+                } @else if (isOperationDisabled(op, i)) {
+                  <po-icon p-icon="an an-lock-simple"></po-icon>
+                } @else {
+                  <po-icon p-icon="an an-clock"></po-icon>
+                }
+              </div>
+              <h3 class="op-card__name">{{ op.operac }} - {{ op.descricao }}</h3>
+              <span class="op-card__status">
+                {{ op.encerrada ? 'Concluída' : (isOperationDisabled(op, i) ? 'Bloqueada' : 'Disponível') }}
+              </span>
               @if (op.encerrada) {
-                <po-icon p-icon="an an-check-circle"></po-icon>
-              } @else if (isOperationDisabled(op, i)) {
-                <po-icon p-icon="an an-lock-simple"></po-icon>
-              } @else {
-                <po-icon p-icon="an an-clock"></po-icon>
+                <div class="op-card__bar"></div>
               }
             </div>
-            <h3 class="op-card__name">{{ op.operac }} - {{ op.descricao }}</h3>
-            <span class="op-card__status">
-              {{ op.encerrada ? 'Concluída' : (isOperationDisabled(op, i) ? 'Bloqueada' : 'Disponível') }}
-            </span>
-            @if (op.encerrada) {
-              <div class="op-card__bar"></div>
-            }
-          </div>
-        }
+          }
+        </div>
+      </div>
+
+      <div class="page-footer">
+        <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
+        <po-button
+          p-label="Avançar"
+          p-kind="primary"
+          class="btn-next"
+          [p-disabled]="!canProceed"
+          (p-click)="handleNext()"
+        >
+        </po-button>
       </div>
     </div>
-
-    <div class="page-footer">
-      <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
-      <po-button
-        p-label="Avançar"
-        p-kind="primary"
-        class="btn-next"
-        [p-disabled]="!canProceed"
-        (p-click)="handleNext()"
-      >
-      </po-button>
-    </div>
   </div>
-</div>
+</po-page-default>
 
 <po-page-slide #saldoSheet p-title="Dados do Saldo" p-size="md">
   <div class="po-p-2">

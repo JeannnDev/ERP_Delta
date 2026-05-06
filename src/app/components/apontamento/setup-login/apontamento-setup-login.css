@@ -1,10 +1,20 @@
+/* HIDE PO-PAGE HEADER FOR SPACE */
+:host ::ng-deep .po-page-header {
+  display: none;
+}
+
+/* REMOVE PAGE PADDING */
+:host ::ng-deep .po-page-content {
+  padding: 0 !important;
+}
+
 .setup-container {
   background-color: #f4f6f9;
-  min-height: 100vh;
+  min-height: calc(100vh - 64px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: calc(64px + 32px) 32px 32px calc(var(--po-menu-width, 256px) + 30px);
+  padding: 24px;
   width: 100%;
 }
 

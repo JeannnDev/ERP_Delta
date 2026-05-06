@@ -1,47 +1,49 @@
-<div class="setup-container-page">
-  <div class="setup-header">
-    <div class="header-main">
-      <div class="icon-wrap">
-        <po-icon p-icon="an an-clock"></po-icon>
+<po-page-default>
+  <div class="setup-container-page">
+    <div class="setup-header">
+      <div class="header-main">
+        <div class="icon-wrap">
+          <po-icon p-icon="an an-clock"></po-icon>
+        </div>
+        <div class="text">
+          <h1>Setup do Tempo da Máquina</h1>
+          <p>Recurso: <strong>{{ recursoCode }}{{ recursoDescricao ? ' — ' + recursoDescricao : '' }}</strong></p>
+          <p>Operador: <strong>{{ operatorName }}</strong></p>
+        </div>
       </div>
-      <div class="text">
-        <h1>Setup do Tempo da Máquina</h1>
-        <p>Recurso: <strong>{{ recursoCode }}{{ recursoDescricao ? ' — ' + recursoDescricao : '' }}</strong></p>
-        <p>Operador: <strong>{{ operatorName }}</strong></p>
+      <po-button p-label="Sair" p-kind="secondary" p-icon="an an-sign-out" (p-click)="logout()">
+      </po-button>
+    </div>
+
+    <div class="setup-timer-card">
+      <div class="status-badge" [ngClass]="status">
+        {{ statusLabel }}
+      </div>
+
+      <div class="timer-display">
+        {{ formattedTime }}
+      </div>
+
+      <div class="timer-actions">
+        @if (status === 'IDLE' || status === 'PAUSED') {
+        <button class="action-btn btn-start" (click)="startTimer()">
+          <po-icon p-icon="an an-play"></po-icon> Iniciar
+        </button>
+        }
+
+        @if (status === 'RUNNING') {
+        <button class="action-btn btn-pause" (click)="openPauseModal()">
+          <po-icon p-icon="an an-pause"></po-icon> Pausar
+        </button>
+        }
+
+        <button class="action-btn btn-finish" [disabled]="status === 'IDLE'" (click)="openFinishModal()">
+          <po-icon p-icon="an an-check"></po-icon> Finalizar Setup
+        </button>
       </div>
     </div>
-    <po-button p-label="Sair" p-kind="secondary" p-icon="an an-sign-out" (p-click)="logout()">
-    </po-button>
   </div>
-
-  <div class="setup-timer-card">
-    <div class="status-badge" [ngClass]="status">
-      {{ statusLabel }}
-    </div>
-
-    <div class="timer-display">
-      {{ formattedTime }}
-    </div>
-
-    <div class="timer-actions">
-      @if (status === 'IDLE' || status === 'PAUSED') {
-      <button class="action-btn btn-start" (click)="startTimer()">
-        <po-icon p-icon="an an-play"></po-icon> Iniciar
-      </button>
-      }
-
-      @if (status === 'RUNNING') {
-      <button class="action-btn btn-pause" (click)="openPauseModal()">
-        <po-icon p-icon="an an-pause"></po-icon> Pausar
-      </button>
-      }
-
-      <button class="action-btn btn-finish" [disabled]="status === 'IDLE'" (click)="openFinishModal()">
-        <po-icon p-icon="an an-check"></po-icon> Finalizar Setup
-      </button>
-    </div>
-  </div>
-</div>
+</po-page-default>
 
 <po-modal #pauseModal p-title="Pausar Setup" [p-primary-action]="confirmPauseAction"
   [p-secondary-action]="cancelPauseAction">

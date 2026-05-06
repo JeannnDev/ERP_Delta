@@ -413,7 +413,7 @@ export class ApontamentoService {
   }
 
   // ── Reset ──
-  reset(redirectPath = '/apontamento'): void {
+  reset(redirectPath: string | null = '/apontamento'): void {
     const current = this._data();
     this._data.set({
       opNumber: '',
@@ -436,7 +436,9 @@ export class ApontamentoService {
     this._pausedElapsedTime.set(0);
     this._hasApontado.set(false);
     this.stopTimerInterval();
-    this.router.navigate([redirectPath]);
+    if (redirectPath) {
+      this.router.navigate([redirectPath]);
+    }
   }
 
   resetOperation(): void {

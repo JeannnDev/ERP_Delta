@@ -3,6 +3,16 @@
 }
 
 <div class="po-wrapper">
-    <po-menu p-logo="logo.svg" [p-menus]="menus"></po-menu>
-    <router-outlet></router-outlet>
+  <po-toolbar p-title="ERP Delta" [p-show-notification]="false"></po-toolbar>
+
+  <po-menu 
+    p-logo="logo.svg" 
+    p-short-logo="mini-logo.svg"
+    [p-menus]="menus" 
+    [p-collapsed]="isMenuCollapsed()"
+    [p-filter]="!isMenuCollapsed()"
+  >
+  </po-menu>
+
+  <router-outlet></router-outlet>
 </div>
