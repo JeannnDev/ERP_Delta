@@ -133,7 +133,8 @@ app-apontamento-step-indicator {
   gap: 8px;
 }
 
-.input-wrapper po-input {
+.input-wrapper po-input,
+.input-wrapper po-password {
   flex: 1;
 }
 

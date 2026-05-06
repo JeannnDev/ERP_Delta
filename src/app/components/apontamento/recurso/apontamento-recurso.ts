@@ -96,8 +96,13 @@ export class ApontamentoRecursoComponent implements OnInit {
       operation: this.selectedOperation,
       resource: this.useDefaultResource ? this.getDefaultResource() : this.selectedRecurso,
     });
-    this.apontamentoService.startTimer();
-    this.router.navigate(['/apontamento/quantidade']);
+    
+    if (this.apontamentoService.data().apiData?.status === 'Enc. Total') {
+      this.router.navigate(['/apontamento/resumo']);
+    } else {
+      this.apontamentoService.startTimer();
+      this.router.navigate(['/apontamento/quantidade']);
+    }
   }
 
   goBack(): void {

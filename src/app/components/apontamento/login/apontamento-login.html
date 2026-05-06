@@ -1,8 +1,7 @@
 <div class="wizard-container">
   <aside class="wizard-sidebar">
-    <app-apontamento-step-indicator 
-      [currentStep]="1"
-      [totalSteps]="4"
+    <app-apontamento-step-indicator [currentStep]="1" [totalSteps]="4"
+      [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
       (stepClick)="onStepClick()">
     </app-apontamento-step-indicator>
   </aside>
@@ -21,17 +20,12 @@
         <div class="form-group">
           <label class="input-label" for="op-input">Ordem de Produção <span class="required">*</span></label>
           <div class="input-wrapper">
-            <po-input
-              id="op-input"
-              name="op"
-              [(ngModel)]="opNumber"
-              p-placeholder="Digite o número da OP ou escaneie o código"
-              p-clean
-              [p-maxlength]="12"
+            <po-input id="op-input" name="op" [(ngModel)]="opNumber"
+              p-placeholder="Digite o número da OP ou escaneie o código" p-clean [p-maxlength]="12"
               (p-enter)="onOpEnter()">
             </po-input>
             <button class="icon-btn" (click)="openDeviceSpecificInput('op')">
-              <po-icon p-icon="an an-magnifying-glass"></po-icon>
+              <po-icon p-icon="an an-keyboard"></po-icon>
             </button>
           </div>
         </div>
@@ -39,51 +33,35 @@
         <div class="form-group">
           <label class="input-label" for="operator-input">Código do Operador <span class="required">*</span></label>
           <div class="input-wrapper">
-            <po-input
-              id="operator-input"
-              name="operador"
-              [(ngModel)]="operatorCode"
-              (ngModelChange)="onOperatorCodeChange($event)"
-              p-placeholder="Digite o código do operador ou escaneie"
-              p-clean
-              (p-enter)="onOperatorEnter()">
+            <po-input id="operator-input" name="operador" [(ngModel)]="operatorCode"
+              (ngModelChange)="onOperatorCodeChange($event)" p-placeholder="Digite o código do operador ou escaneie"
+              p-clean [p-maxlength]="6" (p-enter)="onOperatorEnter()">
             </po-input>
             <button class="icon-btn" (click)="openDeviceSpecificInput('operator')">
-              <po-icon p-icon="an an-barcode"></po-icon>
+              <po-icon p-icon="an an-keyboard"></po-icon>
             </button>
           </div>
         </div>
 
         @if (isOperatorConfirmed) {
-          <div class="form-group animate-fade-in">
-            <label class="input-label" for="password-input">Senha do Operador <span class="required">*</span></label>
-            <div class="input-wrapper">
-              <po-input
-                id="password-input"
-                name="senha"
-                [(ngModel)]="operatorPassword"
-                p-placeholder="Digite a senha"
-                p-clean
-                p-type="password"
-                (p-enter)="onPasswordEnter()">
-              </po-input>
-              <button class="icon-btn" (click)="openDeviceSpecificInput('password')">
-                <po-icon p-icon="an an-lock"></po-icon>
-              </button>
-            </div>
+        <div class="form-group animate-fade-in">
+          <label class="input-label" for="password-input">Senha do Operador <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <po-password id="password-input" name="senha" [(ngModel)]="operatorPassword" p-placeholder="Digite a senha"
+              p-clean (p-enter)="onPasswordEnter()">
+            </po-password>
+            <button class="icon-btn" (click)="openPasswordKeyboard()">
+              <po-icon p-icon="an an-keyboard"></po-icon>
+            </button>
           </div>
+        </div>
         }
       </div>
 
       <div class="login-card__footer">
         <po-button p-label="VOLTAR" class="btn-back" (p-click)="goBack()"></po-button>
-        <po-button
-          p-label="AVANÇAR"
-          p-kind="primary"
-          class="btn-next"
-          [p-disabled]="!canProceed"
-          [p-loading]="isValidating || isLoading"
-          (p-click)="handleNext()">
+        <po-button p-label="AVANÇAR" p-kind="primary" class="btn-next" [p-disabled]="!canProceed"
+          [p-loading]="isValidating || isLoading" (p-click)="handleNext()">
         </po-button>
       </div>
     </div>
@@ -91,22 +69,25 @@
 </div>
 
 <po-modal #keyboardModal p-title="Teclado Numérico" [p-hide-close]="false">
-  <app-numeric-keyboard
-    [value]="getActiveFieldValue()"
-    (valueChange)="onKeyboardValueChange($event)"
-    (confirm)="onKeyboardConfirm()"
+  <app-numeric-keyboard [value]="getActiveFieldValue()" [label]="getActiveFieldLabel()"
+    (valueChange)="onKeyboardValueChange($event)" (confirm)="onKeyboardConfirm()"
     (keyboardClose)="keyboardModal.close()">
   </app-numeric-keyboard>
 </po-modal>
 
+<po-modal #passwordModal p-title="Teclado de Senha" [p-hide-close]="false" p-size="xl">
+  <app-password-keyboard [value]="operatorPassword" (valueChange)="operatorPassword = $event"
+    (confirm)="onPasswordKeyboardConfirm()" (keyboardClose)="passwordModal.close()">
+  </app-password-keyboard>
+</po-modal>
+
 <po-modal #scannerModal p-title="Leitor de Código" [p-hide-close]="false">
   <div class="scanner-container">
-    <po-icon p-icon="an an-barcode" style="font-size: 48px; color: #14253d; display: block; margin: 0 auto 16px; text-align: center;"></po-icon>
-    <p style="text-align: center; margin-bottom: 24px; color: #6b7280;">Aponte a câmera para o QR Code ou Código de Barras</p>
-    <po-input
-      name="scannerSimulator"
-      p-label="Simulador de Leitura"
-      [(ngModel)]="scannerSimulatorValue"
+    <po-icon p-icon="an an-barcode"
+      style="font-size: 48px; color: #14253d; display: block; margin: 0 auto 16px; text-align: center;"></po-icon>
+    <p style="text-align: center; margin-bottom: 24px; color: #6b7280;">Aponte a câmera para o QR Code ou Código de
+      Barras</p>
+    <po-input name="scannerSimulator" p-label="Simulador de Leitura" [(ngModel)]="scannerSimulatorValue"
       (p-enter)="onScannerSimulatorEnter(scannerSimulatorValue)">
     </po-input>
   </div>
@@ -115,7 +96,8 @@
 <po-modal #operatorNotFoundModal p-title="Operador não encontrado" [p-primary-action]="operatorNotFoundAction">
   <div class="modal-content-center">
     <po-icon p-icon="an an-user" class="modal-icon modal-icon--error"></po-icon>
-    <p>O código de operador informado não foi encontrado no sistema ou não possui permissão. Verifique os dados e tente novamente.</p>
+    <p>O código de operador informado não foi encontrado no sistema ou não possui permissão. Verifique os dados e tente
+      novamente.</p>
   </div>
 </po-modal>
 
@@ -135,7 +117,8 @@
   </div>
   <div class="modal-footer-custom">
     <po-button p-label="VOLTAR" class="btn-back" (p-click)="opEncerradaModal.close()"></po-button>
-    <po-button p-label="PROSSEGUIR" class="btn-next" p-kind="primary" (p-click)="onProsseguirParaConsulta()"></po-button>
+    <po-button p-label="PROSSEGUIR" class="btn-next" p-kind="primary"
+      (p-click)="onProsseguirParaConsulta()"></po-button>
   </div>
 </po-modal>
 
@@ -147,8 +130,6 @@
 </po-modal>
 
 @if (isValidating || isLoading) {
-  <po-loading-overlay
-    [p-screen-lock]="true"
-    p-text="Processando dados">
-  </po-loading-overlay>
+<po-loading-overlay [p-screen-lock]="true" p-text="Processando dados">
+</po-loading-overlay>
 }

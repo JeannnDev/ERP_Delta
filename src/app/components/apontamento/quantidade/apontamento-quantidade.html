@@ -1,8 +1,7 @@
 <div class="wizard-container">
   <aside class="wizard-sidebar">
-    <app-apontamento-step-indicator 
-      [currentStep]="3"
-      [totalSteps]="4"
+    <app-apontamento-step-indicator [currentStep]="3" [totalSteps]="4"
+      [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
       (stepClick)="onStepClick($event)">
     </app-apontamento-step-indicator>
   </aside>
@@ -28,7 +27,7 @@
     <div class="product-card">
       <div class="product-card__header">
         <div>
-          <span class="product-card__label">PRODUTO: 
+          <span class="product-card__label">PRODUTO:
             <strong class="product-card__code">{{ apontamentoService.data().apiData?.produto }}</strong>
           </span>
           <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
@@ -58,70 +57,61 @@
       <div class="inputs-row">
         <div class="input-group">
           <span class="label--green">Quantidade Produzida</span>
-          <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')" (keyup.enter)="openKeyboard('quantity')">
+          <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')"
+            (keyup.enter)="openKeyboard('quantity')">
             {{ quantityProduced }}
           </div>
         </div>
         <div class="input-group">
           <span class="label--red">Perdas</span>
-          <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')" (keyup.enter)="openKeyboard('loss')">
+          <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')"
+            (keyup.enter)="openKeyboard('loss')">
             {{ loss }}
           </div>
         </div>
       </div>
 
       @if (!isOpEncerrada()) {
-        <div class="controls-row">
-          <button 
-            class="control-btn btn--play" 
-            [class.active]="!apontamentoService.isPaused() && apontamentoService.startTime()"
-            (click)="resumeTimer()">
-            <po-icon p-icon="an an-play"></po-icon> INICIAR
-          </button>
-          <button 
-            class="control-btn btn--pause"
-            [class.active]="apontamentoService.isPaused()"
-            (click)="pauseTimer()">
-            <po-icon p-icon="an an-pause"></po-icon> PAUSAR
-          </button>
-          <button class="control-btn btn--stop" (click)="confirmStopTimer()">
-            <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
-          </button>
-        </div>
+      <div class="controls-row">
+        <button class="control-btn btn--play"
+          [class.active]="!apontamentoService.isPaused() && apontamentoService.startTime()" (click)="resumeTimer()">
+          <po-icon p-icon="an an-play"></po-icon> INICIAR
+        </button>
+        <button class="control-btn btn--pause" [class.active]="apontamentoService.isPaused()" (click)="pauseTimer()">
+          <po-icon p-icon="an an-pause"></po-icon> PAUSAR
+        </button>
+        <button class="control-btn btn--stop" (click)="confirmStopTimer()">
+          <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
+        </button>
+      </div>
       }
 
       @if (isOpEncerrada()) {
-        <div class="status-alert">
-          <po-icon p-icon="an an-info"></po-icon>
-          <span>Esta OP está encerrada. Você está em modo de consulta.</span>
-        </div>
+      <div class="status-alert">
+        <po-icon p-icon="an an-info"></po-icon>
+        <span>Esta OP está encerrada. Você está em modo de consulta.</span>
+      </div>
       }
     </div>
 
     <div class="page-footer">
       <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
-      <po-button 
-        p-label="Apontar" 
-        p-kind="primary" 
-        class="btn-next" 
-        [p-disabled]="!canProceed"
-        [p-loading]="isApontando"
-        (p-click)="handleApontar()">
+      <po-button p-label="Apontar" p-kind="primary" class="btn-next" [p-disabled]="!canProceed"
+        [p-loading]="isApontando" (p-click)="handleApontar()">
       </po-button>
     </div>
   </main>
 </div>
 
 <po-modal #keyboardModal p-title="Teclado Numérico">
-  <app-numeric-keyboard
-    [value]="getActiveFieldValue()"
-    (valueChange)="onKeyboardValueChange($event)"
-    (confirm)="keyboardModal.close()"
+  <app-numeric-keyboard [value]="getActiveFieldValue()" [label]="getActiveFieldLabel()"
+    (valueChange)="onKeyboardValueChange($event)" (confirm)="keyboardModal.close()"
     (keyboardClose)="keyboardModal.close()">
   </app-numeric-keyboard>
 </po-modal>
 
-<po-modal #stopModal p-title="Confirmar Parada" [p-primary-action]="stopPrimaryAction" [p-secondary-action]="stopSecondaryAction">
+<po-modal #stopModal p-title="Confirmar Parada" [p-primary-action]="stopPrimaryAction"
+  [p-secondary-action]="stopSecondaryAction">
   <div class="modal-content-center">
     <po-icon p-icon="an an-warning" class="modal-icon modal-icon--warning"></po-icon>
     <p>Deseja realmente parar o cronômetro e registrar este tempo?</p>
@@ -136,5 +126,5 @@
 </po-modal>
 
 @if (isApontando) {
-  <po-loading-overlay [p-screen-lock]="true" p-text="Registrando apontamento"></po-loading-overlay>
+<po-loading-overlay [p-screen-lock]="true" p-text="Registrando apontamento"></po-loading-overlay>
 }

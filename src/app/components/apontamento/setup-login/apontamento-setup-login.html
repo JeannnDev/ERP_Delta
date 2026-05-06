@@ -52,13 +52,12 @@
       <!-- Senha do Operador -->
       @if (isOperatorConfirmed) {
         <div class="form-group animate-fade-in">
-          <po-input
+          <po-password
             p-label="Senha do Operador *"
             p-placeholder="Senha"
             [(ngModel)]="operatorPassword"
-            p-type="password"
             (p-enter)="handleNext()">
-          </po-input>
+          </po-password>
         </div>
       }
 

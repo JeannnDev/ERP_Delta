@@ -166,6 +166,8 @@ export class ApontamentoService {
   async fetchAndSetOPData(
     opNumber: string,
     showDialogs = true,
+    operatorCode?: string,
+    operatorPassword?: string
   ): Promise<{ success: boolean; skipToSummary?: boolean; isOpEncerrada?: boolean }> {
     this._isLoadingOP.set(true);
 
@@ -175,13 +177,44 @@ export class ApontamentoService {
       this.dialogsShownForCurrentOp.clear();
     }
 
-    try {
-      const result = await firstValueFrom(
-        this.apiService.fetchOPData(opNumber, this._data().operatorCode),
+    // Helper para executar a chamada e processar a resposta
+    const doFetch = async () => {
+      return firstValueFrom(
+        this.apiService.fetchOPData(
+          opNumber,
+          operatorCode || this._data().operatorCode,
+          operatorPassword || this._data().operatorPassword
+        ),
       );
+    };
+
+    try {
+      // Primeira tentativa
+      let result = await doFetch();
+
+      // Se falhou, aguarda 1.5s e tenta novamente (cold-start do Protheus)
+      if (!result.success) {
+        const errorMsg = result.error || '';
+        // Só retenta se NÃO for um erro de negócio definitivo (senha errada, OP não encontrada etc.)
+        const isDefinitiveError = errorMsg.includes('Senha incorreta')
+          || errorMsg.includes('não cadastrado como operador')
+          || errorMsg.includes('não encontrad');
+
+        if (!isDefinitiveError) {
+          console.warn('[Service] Primeira tentativa falhou, aguardando 1.5s para retry (cold-start Protheus)...');
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          result = await doFetch();
+          console.log('[Service] Resultado após retry:', result.success ? 'Sucesso' : result.error);
+        }
+      }
 
       if (!result.success) {
         const errorMessage = result.error || 'Erro ao buscar dados da OP';
+
+        if (errorMessage.includes('Senha incorreta') || errorMessage.toLowerCase().includes('senha')) {
+          this._showIncorrectPasswordDialog.set(true);
+          return { success: false };
+        }
 
         if (errorMessage.includes('não cadastrado como operador')) {
           this._showOperatorNotFoundDialog.set(true);

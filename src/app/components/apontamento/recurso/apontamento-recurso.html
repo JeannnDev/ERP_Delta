@@ -3,6 +3,7 @@
     <app-apontamento-step-indicator
       [currentStep]="2"
       [totalSteps]="4"
+      [blockedSteps]="apontamentoService.data().apiData?.status === 'Enc. Total' ? [3] : []"
       (stepClick)="onStepClick($event)"
     >
     </app-apontamento-step-indicator>

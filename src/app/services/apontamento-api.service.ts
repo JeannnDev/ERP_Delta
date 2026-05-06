@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, of, timer } from 'rxjs';
+import { map, catchError, retry } from 'rxjs/operators';
 import { ProtheusApiService } from './protheus-api.service';
 import {
   OPApiData,
@@ -21,8 +21,9 @@ export class ApontamentoApiService {
   /**
    * Busca dados da Ordem de Produção
    */
-  fetchOPData(opNumber: string, operatorCode: string): Observable<ApontamentoApiResponse<OPApiData>> {
-    return this.protheusApi.resource(`WsFuncApontamento?OP=${opNumber}&OPERADOR=${operatorCode}`)
+  fetchOPData(opNumber: string, operatorCode: string, password?: string): Observable<ApontamentoApiResponse<OPApiData>> {
+    const url = `WsFuncApontamento?OP=${opNumber}&OPERADOR=${operatorCode}${password ? '&SENHA=' + password : ''}`;
+    return this.protheusApi.resource(url)
       .get<unknown>()
       .pipe(
         map((res: unknown) => {
@@ -144,8 +145,18 @@ export class ApontamentoApiService {
 
           return { success: true, data: opData };
         }),
+        // Retry automático para lidar com o cold-start do Protheus.
+        // Se a primeira requisição falhar com erro de HTTP (ex: timeout de sessão),
+        // aguarda 1.5s e tenta novamente uma única vez antes de propagar o erro.
+        retry({
+          count: 1,
+          delay: (error, retryCount) => {
+            console.warn(`[API] fetchOPData falhou (tentativa ${retryCount}). Tentando novamente em 1.5s...`, error);
+            return timer(1500);
+          }
+        }),
         catchError(error => {
-          console.error('Erro ao buscar dados da OP:', error);
+          console.error('Erro ao buscar dados da OP após retry:', error);
           return of({ success: false, error: 'Erro ao buscar dados da OP' });
         })
       );

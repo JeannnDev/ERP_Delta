@@ -106,6 +106,10 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       : this.loss.toString();
   }
 
+  getActiveFieldLabel(): string {
+    return this.activeField === 'quantity' ? 'Quantidade Produzida' : 'Perdas';
+  }
+
   onKeyboardValueChange(value: string): void {
     const num = parseFloat(value) || 0;
     if (this.activeField === 'quantity') this.quantityProduced = num;

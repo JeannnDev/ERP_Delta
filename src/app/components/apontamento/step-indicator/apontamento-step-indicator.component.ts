@@ -8,11 +8,12 @@ import { PoModule } from '@po-ui/ng-components';
   imports: [PoModule],
   template: `
     <div class="step-indicator-container">
-      @for (step of steps; track step.id; let last = $last) {
+      @for (step of allSteps; track step.id; let last = $last) {
         <div
           class="step-item"
           [class.active-item]="step.id === currentStep"
           [class.completed-item]="step.id < currentStep"
+          [class.blocked-item]="isBlocked(step.id)"
         >
           <!-- Linha Conectora -->
           @if (!last) {
@@ -26,11 +27,14 @@ import { PoModule } from '@po-ui/ng-components';
               type="button"
               [class.completed]="step.id < currentStep"
               [class.active]="step.id === currentStep"
-              [class.pending]="step.id > currentStep"
-              [disabled]="step.id >= currentStep"
+              [class.pending]="step.id > currentStep && !isBlocked(step.id)"
+              [class.blocked]="isBlocked(step.id)"
+              [disabled]="step.id >= currentStep || isBlocked(step.id)"
               (click)="onStepClick(step.id)"
             >
-              @if (step.id < currentStep) {
+              @if (isBlocked(step.id)) {
+                <po-icon p-icon="an an-lock"></po-icon>
+              } @else if (step.id < currentStep) {
                 <po-icon p-icon="po-icon-check"></po-icon>
               } @else {
                 <po-icon [p-icon]="step.icon" [class.active-icon]="step.id === currentStep">
@@ -44,6 +48,7 @@ import { PoModule } from '@po-ui/ng-components';
             class="step-label"
             [class.active-label]="step.id === currentStep"
             [class.completed-label]="step.id < currentStep"
+            [class.blocked-label]="isBlocked(step.id)"
           >
             {{ step.label }}
           </span>
@@ -215,23 +220,41 @@ import { PoModule } from '@po-ui/ng-components';
       .step-label.completed-label {
         color: #16a34a;
       }
+
+      .step-circle.blocked {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        cursor: not-allowed;
+      }
+      .step-circle.blocked po-icon {
+        color: #94a3b8 !important;
+      }
+      .step-label.blocked-label {
+        color: #94a3b8;
+        background-color: #f8fafc;
+      }
     `,
   ],
 })
 export class ApontamentoStepIndicatorComponent {
   @Input() currentStep = 1;
   @Input() totalSteps = 4;
+  @Input() blockedSteps: number[] = [];
   @Output() stepClick = new EventEmitter<number>();
 
-  steps = [
+  allSteps = [
     { id: 1, label: 'Início', icon: 'an an-factory' },
     { id: 2, label: 'Operação', icon: 'an an-gear' },
     { id: 3, label: 'Quantidade', icon: 'an an-plus-circle' },
     { id: 4, label: 'Resumo', icon: 'an an-check' },
   ];
 
+  isBlocked(stepId: number): boolean {
+    return this.blockedSteps.includes(stepId);
+  }
+
   onStepClick(stepId: number): void {
-    if (stepId < this.currentStep) {
+    if (stepId < this.currentStep && !this.isBlocked(stepId)) {
       this.stepClick.emit(stepId);
     }
   }

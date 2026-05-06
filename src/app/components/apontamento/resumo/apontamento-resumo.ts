@@ -141,13 +141,19 @@ export class ApontamentoResumoComponent implements OnInit {
     this.newOpModal.open();
   }
   goBack(): void {
-    this.router.navigate(['/apontamento/quantidade']);
+    if (this.isOpEncerrada()) {
+      this.router.navigate(['/apontamento/recurso']);
+    } else {
+      this.router.navigate(['/apontamento/quantidade']);
+    }
   }
 
   onStepClick(s: number): void {
     if (s === 1) this.router.navigate(['/apontamento']);
     if (s === 2) this.router.navigate(['/apontamento/recurso']);
-    if (s === 3) this.router.navigate(['/apontamento/quantidade']);
+    if (s === 3 && !this.isOpEncerrada()) {
+      this.router.navigate(['/apontamento/quantidade']);
+    }
   }
 
   toggleOp(index: number): void {
