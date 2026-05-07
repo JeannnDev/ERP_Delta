@@ -8,6 +8,7 @@ import {
   PoModalAction,
   PoNotificationService,
   PoPageSlideModule,
+  PoPageSlideComponent,
   PoPageModule,
 } from '@po-ui/ng-components';
 import { ApontamentoService } from '../../../services/apontamento.service';
@@ -40,7 +41,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
 
   @ViewChild('stopModal') stopModal!: PoModalComponent;
   @ViewChild('successModal') successModal!: PoModalComponent;
-  @ViewChild('resourceSheet') resourceSheet!: any;
+  @ViewChild('resourceSheet') resourceSheet!: PoPageSlideComponent;
 
   quantityProduced = 0;
   loss = 0;
@@ -113,7 +114,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     try {
       this.resources = await firstValueFrom(this.apiService.fetchRecursosAll());
       this.filteredResources = [...this.resources];
-    } catch (error) {
+    } catch {
       this.notification.error('Erro ao carregar recursos.');
     } finally {
       this.isLoadingResources = false;
