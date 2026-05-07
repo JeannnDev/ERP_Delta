@@ -58,16 +58,33 @@
         <div class="inputs-row">
           <div class="input-group">
             <span class="label--green">Quantidade Produzida</span>
-            <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')"
-              (keyup.enter)="openKeyboard('quantity')">
-              {{ quantityProduced }}
+            <div class="input-adjuster">
+              <button class="adjust-btn btn--minus" (click)="adjustQuantity(-1)">
+                <po-icon p-icon="an an-minus"></po-icon>
+              </button>
+              <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')"
+                (keyup.enter)="openKeyboard('quantity')">
+                {{ quantityProduced }}
+              </div>
+              <button class="adjust-btn btn--plus" (click)="adjustQuantity(1)">
+                <po-icon p-icon="an an-plus"></po-icon>
+              </button>
             </div>
           </div>
+
           <div class="input-group">
             <span class="label--red">Perdas</span>
-            <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')"
-              (keyup.enter)="openKeyboard('loss')">
-              {{ loss }}
+            <div class="input-adjuster">
+              <button class="adjust-btn btn--minus" (click)="adjustLoss(-1)">
+                <po-icon p-icon="an an-minus"></po-icon>
+              </button>
+              <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')"
+                (keyup.enter)="openKeyboard('loss')">
+                {{ loss }}
+              </div>
+              <button class="adjust-btn btn--plus" (click)="adjustLoss(1)">
+                <po-icon p-icon="an an-plus"></po-icon>
+              </button>
             </div>
           </div>
         </div>

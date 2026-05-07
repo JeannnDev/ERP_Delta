@@ -113,6 +113,18 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  adjustQuantity(amount: number): void {
+    const newVal = this.quantityProduced + amount;
+    this.quantityProduced = newVal < 0 ? 0 : newVal;
+    this.cdr.detectChanges();
+  }
+
+  adjustLoss(amount: number): void {
+    const newVal = this.loss + amount;
+    this.loss = newVal < 0 ? 0 : newVal;
+    this.cdr.detectChanges();
+  }
+
   getActiveFieldValue(): string {
     return this.activeField === 'quantity'
       ? this.quantityProduced.toString()
@@ -171,6 +183,13 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       const endTime = this.apontamentoService.endTime();
       const startDate = startTime ? new Date(startTime) : new Date();
       const endDate = endTime ? new Date(endTime) : new Date();
+      
+      // Cálculo do tempo líquido em minutos
+      const totalSeconds = this.apontamentoService.elapsedTime();
+      const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+      const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+      const tempoFormatado = `${h}:${m}`;
+
       const parctotalValue = this.quantityProduced >= this.getQuantidadeFaltante() ? 'T' : 'P';
 
       const payload: ApontamentoPayload = {
@@ -188,7 +207,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
         PARCTOTAL: parctotalValue,
         DATAAPONTAMENTO: this.formatDateAPI(new Date()),
         DESDOBRAMENTO: '',
-        TEMPOREAL: 'S',
+        TEMPOREAL: tempoFormatado, // Enviando a duração HH:MM
         LOTE: '',
         SUBLOTE: '',
         VALIDLOTE: '',

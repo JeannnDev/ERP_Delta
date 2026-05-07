@@ -161,24 +161,66 @@ app-apontamento-step-indicator {
 .label--green { color: #10b981; }
 .label--red { color: #ef4444; }
 
-.custom-input {
+.input-adjuster {
+  display: flex;
+  align-items: center;
+  gap: 20px;
   width: 100%;
-  max-width: 240px;
+  justify-content: center;
+}
+
+.adjust-btn {
+  width: 64px;
   height: 64px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.adjust-btn:active {
+  transform: scale(0.9);
+}
+
+.adjust-btn.btn--minus {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 2px solid #e2e8f0;
+}
+
+.adjust-btn.btn--plus {
+  background-color: #1e293b;
+  color: white;
+}
+
+.adjust-btn:hover {
+  filter: brightness(1.1);
+}
+
+.custom-input {
+  flex: 1;
+  max-width: 180px;
+  height: 80px;
   border: 2px solid #e2e8f0;
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 42px;
   font-weight: 800;
   cursor: pointer;
   transition: all 0.2s;
+  background: #f8fafc;
 }
 
 .custom-input--green { border-color: #10b981; color: #10b981; }
 .custom-input--red { border-color: #fca5a5; color: #ef4444; }
-.custom-input:hover { background: #f8fafc; transform: translateY(-2px); }
+.custom-input:hover { background: white; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
 
 /* ── CONTROLES DO TIMER ── */
 .controls-row {
