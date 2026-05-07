@@ -13,8 +13,8 @@ import { ApontamentoLoginComponent } from './components/apontamento/login/aponta
 import { ApontamentoRecursoComponent } from './components/apontamento/recurso/apontamento-recurso';
 import { ApontamentoQuantidadeComponent } from './components/apontamento/quantidade/apontamento-quantidade';
 import { ApontamentoResumoComponent } from './components/apontamento/resumo/apontamento-resumo';
-import { ApontamentoSetupComponent } from './components/apontamento/setup/apontamento-setup';
-import { ApontamentoSetupLoginComponent } from './components/apontamento/setup-login/apontamento-setup-login';
+// import { ApontamentoSetupComponent } from './components/apontamento/setup/apontamento-setup';
+// import { ApontamentoSetupLoginComponent } from './components/apontamento/setup-login/apontamento-setup-login';
 import { EtiquetaComponent } from './components/etiqueta/etiqueta';
 import { HistoricoOPComponent } from './components/historico-op/historico-op';
 
@@ -34,8 +34,8 @@ export const routes: Routes = [
     { path: 'apontamento/recurso', component: ApontamentoRecursoComponent },
     { path: 'apontamento/quantidade', component: ApontamentoQuantidadeComponent },
     { path: 'apontamento/resumo', component: ApontamentoResumoComponent },
-    { path: 'apontamento/setup', component: ApontamentoSetupComponent },
-    { path: 'apontamento/setup-login', component: ApontamentoSetupLoginComponent },
+    // { path: 'apontamento/setup', component: ApontamentoSetupComponent },
+    // { path: 'apontamento/setup-login', component: ApontamentoSetupLoginComponent },
     { path: 'etiqueta', component: EtiquetaComponent },
     { path: 'historico-op', component: HistoricoOPComponent },
 ];

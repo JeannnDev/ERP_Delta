@@ -138,13 +138,24 @@ export class ApontamentoRecursoComponent implements OnInit {
     this.router.navigate(['/apontamento']);
   }
 
-  formatDate(dateStr: string | undefined): string {
-    if (!dateStr) return '';
-    const clean = dateStr.replace(/\//g, '').trim();
-    if (clean.length === 8 && /^\d+$/.test(clean)) {
-      return `${clean.substring(6, 8)}/${clean.substring(4, 6)}/${clean.substring(0, 4)}`;
-    }
-    return dateStr;
+  formatDate(date: string | undefined): string {
+    if (!date) return '-';
+    const year = date.substring(0, 4);
+    const month = date.substring(4, 6);
+    const day = date.substring(6, 8);
+    return `${day}/${month}/${year}`;
+  }
+
+  // Helpers para o Sheet de Saldo
+  getStockProgress(saldo: number, empenho: number): number {
+    if (empenho <= 0) return 100;
+    return Math.min((saldo / empenho) * 100, 100);
+  }
+
+  getProgressColorClass(saldo: number, empenho: number): string {
+    if (saldo >= empenho) return 'progress-fill--ok';
+    if (saldo > 0) return 'progress-fill--warning';
+    return 'progress-fill--error';
   }
 
   onStepClick(step: number): void {

@@ -133,3 +133,23 @@
   color: #3b82f6;
   font-size: 18px;
 }
+
+/* DISABLED STATE */
+.option-card--disabled {
+  opacity: 0.6;
+  filter: grayscale(1);
+  cursor: not-allowed !important;
+  pointer-events: none; /* Bloqueia cliques no nível do CSS */
+  background-color: #f1f5f9;
+}
+
+.option-card--disabled:hover {
+  transform: none !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+  border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.option-card--disabled .icon-wrapper {
+  background: #cbd5e1 !important;
+  color: #64748b !important;
+}

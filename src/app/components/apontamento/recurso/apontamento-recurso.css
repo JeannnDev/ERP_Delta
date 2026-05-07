@@ -351,3 +351,201 @@ app-apontamento-step-indicator {
 ::ng-deep .btn-next .po-button {
   width: 100%;
 }
+
+/* ── PREMIUM SHEET STYLES ── */
+.sheet-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.premium-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  padding: 20px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.info-grid-custom {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.full-width {
+  grid-column: span 2;
+}
+
+.info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-block__label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-block__label po-icon {
+  font-size: 14px;
+  color: #3b82f6;
+}
+
+.info-block__value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.info-block__value--highlight {
+  color: #2563eb;
+}
+
+/* Timeline Histórico */
+.history-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.section-subtitle {
+  font-size: 14px;
+  font-weight: 800;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.history-card {
+  position: relative;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  border-left: 4px solid #3b82f6;
+}
+
+.history-card__header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.history-card__operator {
+  display: flex;
+  flex-direction: column;
+}
+
+.history-card__name {
+  font-weight: 700;
+  font-size: 14px;
+  color: #1e293b;
+}
+
+.history-card__code {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.history-card__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Saldo Progress */
+.balance-card {
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 16px;
+}
+
+.balance-header {
+  margin-bottom: 16px;
+}
+
+.balance-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.balance-desc {
+  font-size: 12px;
+  color: #64748b;
+  margin: 2px 0 0;
+}
+
+.balance-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.balance-progress-bar {
+  height: 8px;
+  background: #f1f5f9;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.progress-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+.progress-fill--ok { background: #10b981; }
+.progress-fill--warning { background: #f59e0b; }
+.progress-fill--error { background: #ef4444; }
+
+.balance-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.location-tag {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
