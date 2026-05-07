@@ -13,9 +13,9 @@ import { PoModule } from '@po-ui/ng-components';
         <div class="display-label">{{ label }}</div>
         <div class="display-main">
           <span class="display-value">{{ value || ' ' }}</span>
-          @if (value.length < maxLength) { <span class="cursor"></span> }
+          @if (value.length < maxLength) { <span class="display-cursor"></span> }
         </div>
-        <div class="display-count">{{ value.length }}/{{ maxLength }}</div>
+        <div class="display-counter">{{ value.length }}/{{ maxLength }}</div>
       </div>
 
       <div class="keyboard-body">
@@ -72,7 +72,8 @@ import { PoModule } from '@po-ui/ng-components';
 
       .keyboard-container {
         padding: 24px;
-        max-width: 360px;
+        width: 100%;
+        max-width: 950px;
         margin: 0 auto;
         background: #ffffff;
         border-radius: 20px;
@@ -88,8 +89,9 @@ import { PoModule } from '@po-ui/ng-components';
         background: #f8fafc;
         border: 2px solid #e2e8f0;
         border-radius: 16px;
-        padding: 16px 20px;
+        padding: 20px 40px;
         margin-bottom: 24px;
+        width: 100%;
         position: relative;
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
       }
@@ -105,32 +107,30 @@ import { PoModule } from '@po-ui/ng-components';
       .display-main {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
-        min-height: 40px;
+        justify-content: center;
+        min-height: 48px;
       }
 
       .display-value {
-        font-size: 36px;
+        font-size: 38px;
         font-weight: 700;
         font-family: 'Roboto Mono', monospace;
         color: #0f172a;
-        word-break: break-all;
         letter-spacing: 2px;
       }
 
-      .cursor {
-        display: inline-block;
+      .display-cursor {
         width: 3px;
         height: 32px;
         background: #3b82f6;
-        margin-left: 4px;
+        margin-left: 8px;
         animation: blink 1s infinite;
       }
 
-      .display-count {
+      .display-counter {
         position: absolute;
         bottom: 8px;
-        left: 20px;
+        left: 12px;
         font-size: 10px;
         font-weight: 700;
         color: #94a3b8;
@@ -143,7 +143,7 @@ import { PoModule } from '@po-ui/ng-components';
       .keyboard-body {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 12px;
       }
 
       .alphanumeric-mode .keyboard-body {
@@ -153,13 +153,15 @@ import { PoModule } from '@po-ui/ng-components';
 
       /* Grid Styling */
       .numbers-section {
-        flex: 0 0 240px;
+        flex: 1;
+        width: 100%;
       }
 
       .keyboard-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 12px;
+        gap: 12px 32px;
+        width: 100%;
       }
 
       .letters-section {
@@ -181,8 +183,8 @@ import { PoModule } from '@po-ui/ng-components';
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 64px;
-        font-size: 24px;
+        height: 60px;
+        font-size: 28px;
         font-weight: 700;
         background: #ffffff;
         border: 1px solid #e2e8f0;
@@ -239,8 +241,9 @@ import { PoModule } from '@po-ui/ng-components';
       /* Footer Actions */
       .keyboard-footer {
         display: flex;
-        gap: 16px;
+        gap: 24px;
         margin-top: 24px;
+        width: 100%;
       }
 
       .action-btn {
@@ -248,8 +251,8 @@ import { PoModule } from '@po-ui/ng-components';
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        height: 56px;
+        gap: 12px;
+        height: 72px;
         border: none;
         border-radius: 14px;
         font-size: 14px;

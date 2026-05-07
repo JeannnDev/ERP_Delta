@@ -46,6 +46,8 @@ export class ApontamentoLoginComponent implements OnInit {
   errorMessage = '';
   activeField: 'op' | 'operator' | 'password' | null = null;
   scannerSimulatorValue = '';
+  showKeyboard = false;
+  showPasswordKeyboard = false;
 
   operatorNotFoundAction: PoModalAction = {
     label: 'Entendi',
@@ -159,16 +161,18 @@ export class ApontamentoLoginComponent implements OnInit {
       this.scannerSimulatorValue = '';
       this.scannerModal.open();
     } else {
-      this.keyboardModal.open();
+      this.showKeyboard = true;
     }
+    this.cdr.detectChanges();
   }
 
   openPasswordKeyboard(): void {
-    this.passwordModal.open();
+    this.showPasswordKeyboard = true;
+    this.cdr.detectChanges();
   }
 
   onPasswordKeyboardConfirm(): void {
-    this.passwordModal.close();
+    this.showPasswordKeyboard = false;
     if (this.operatorPassword?.trim()) {
       this.handleNext();
     }
@@ -227,7 +231,7 @@ export class ApontamentoLoginComponent implements OnInit {
   }
 
   onKeyboardConfirm(): void {
-    this.keyboardModal.close();
+    this.showKeyboard = false;
     if (this.activeField === 'operator' && this.operatorCode?.trim()) {
       this.isOperatorConfirmed = true;
     }

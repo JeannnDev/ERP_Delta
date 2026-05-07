@@ -68,20 +68,40 @@
       </div>
     </main>
   </div>
+
+  <!-- Teclado Numérico Customizado -->
+  @if (showKeyboard) {
+    <div class="keyboard-overlay">
+      <div class="keyboard-wrapper">
+        <h3>Informe os Dados</h3>
+        <app-numeric-keyboard 
+          [value]="getActiveFieldValue()" 
+          [label]="getActiveFieldLabel()"
+          (valueChange)="onKeyboardValueChange($event)" 
+          (confirm)="onKeyboardConfirm()"
+          (keyboardClose)="showKeyboard = false">
+        </app-numeric-keyboard>
+      </div>
+    </div>
+  }
+
+  <!-- Teclado de Senha Customizado -->
+  @if (showPasswordKeyboard) {
+    <div class="keyboard-overlay">
+      <div class="keyboard-wrapper">
+        <h3>Informe a Senha</h3>
+        <app-password-keyboard 
+          [value]="operatorPassword" 
+          (valueChange)="operatorPassword = $event"
+          (confirm)="onPasswordKeyboardConfirm()" 
+          (keyboardClose)="showPasswordKeyboard = false">
+        </app-password-keyboard>
+      </div>
+    </div>
+  }
 </po-page-default>
 
-<po-modal #keyboardModal p-title="Teclado Numérico" [p-hide-close]="false">
-  <app-numeric-keyboard [value]="getActiveFieldValue()" [label]="getActiveFieldLabel()"
-    (valueChange)="onKeyboardValueChange($event)" (confirm)="onKeyboardConfirm()"
-    (keyboardClose)="keyboardModal.close()">
-  </app-numeric-keyboard>
-</po-modal>
 
-<po-modal #passwordModal p-title="Teclado de Senha" [p-hide-close]="false" p-size="xl">
-  <app-password-keyboard [value]="operatorPassword" (valueChange)="operatorPassword = $event"
-    (confirm)="onPasswordKeyboardConfirm()" (keyboardClose)="passwordModal.close()">
-  </app-password-keyboard>
-</po-modal>
 
 <po-modal #scannerModal p-title="Leitor de Código" [p-hide-close]="false">
   <div class="scanner-container">

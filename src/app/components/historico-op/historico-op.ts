@@ -1,13 +1,7 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  PoModule,
-  PoTableColumn,
-  PoNotificationService,
-  PoLoadingModule,
-  PoTableModule
-} from '@po-ui/ng-components';
+import { PoModule, PoTableColumn, PoNotificationService, PoLoadingModule, PoTableModule } from '@po-ui/ng-components';
 import { ApontamentoApiService } from '../../services/apontamento-api.service';
 import { NumericKeyboardComponent } from '../apontamento/numeric-keyboard/numeric-keyboard.component';
 import {
@@ -114,10 +108,10 @@ export class HistoricoOPComponent {
     const match = str.match(/^(\d+):(\d{2})$/);
     if (!match) return str;
     const horas = parseInt(match[1], 10);
-    const mins  = parseInt(match[2], 10);
+    const mins = parseInt(match[2], 10);
     if (horas === 0 && mins === 0) return '—';
     if (horas === 0) return `${mins} min`;
-    if (mins === 0)  return `${horas}h`;
+    if (mins === 0) return `${horas}h`;
     return `${horas}h ${mins}min`;
   }
 
@@ -147,6 +141,7 @@ export class HistoricoOPComponent {
   openKeyboard(): void {
     this.keyboardValue = this.opSearch;
     this.showKeyboard = true;
+    this.cdr.detectChanges();
   }
 
   onKeyboardConfirm(value: string): void {
@@ -182,10 +177,10 @@ export class HistoricoOPComponent {
           return {
             ...op,
             historicoDisplay: op.historico || [],
-            operadorCod:  h0?.operadorCod  ?? '',
+            operadorCod: h0?.operadorCod ?? '',
             operadorNome: h0?.operadorNome ?? '',
-            hrIni:        h0?.hrIni        ?? '',
-            hrFim:        h0?.hrFim        ?? '',
+            hrIni: h0?.hrIni ?? '',
+            hrFim: h0?.hrFim ?? '',
             tempoApont: this.formatTempo(h0?.tempoApont ?? '')
           };
         });

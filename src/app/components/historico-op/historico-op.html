@@ -101,13 +101,20 @@
   </div>
   }
 
-  <!-- Overlay do Teclado -->
+  <!-- Teclado Numérico Customizado -->
   @if (showKeyboard) {
-  <div class="keyboard-overlay">
-    <app-numeric-keyboard [label]="'Consultar OP'" [value]="keyboardValue" [maxLength]="11"
-      (confirm)="onKeyboardConfirm($event)" (keyboardClose)="showKeyboard = false">
-    </app-numeric-keyboard>
-  </div>
+    <div class="keyboard-overlay">
+      <div class="keyboard-wrapper">
+        <h3>Consultar OP</h3>
+        <app-numeric-keyboard 
+          [label]="'Informe o número da OP'" 
+          [value]="keyboardValue" 
+          [maxLength]="11"
+          (confirm)="onKeyboardConfirm($event)" 
+          (keyboardClose)="showKeyboard = false">
+        </app-numeric-keyboard>
+      </div>
+    </div>
   }
 
 </po-page-default>

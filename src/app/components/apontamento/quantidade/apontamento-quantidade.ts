@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -27,6 +27,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   apontamentoService = inject(ApontamentoService);
   private apiService = inject(ApontamentoApiService);
   private notification = inject(PoNotificationService);
+  private cdr = inject(ChangeDetectorRef);
 
   @ViewChild('keyboardModal') keyboardModal!: PoModalComponent;
   @ViewChild('stopModal') stopModal!: PoModalComponent;
@@ -36,6 +37,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   loss = 0;
   activeField: 'quantity' | 'loss' | null = null;
   isApontando = false;
+  showKeyboard = false;
 
   stopPrimaryAction: PoModalAction = {
     label: 'Encerrar',
@@ -107,7 +109,8 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
 
   openKeyboard(field: 'quantity' | 'loss'): void {
     this.activeField = field;
-    this.keyboardModal.open();
+    this.showKeyboard = true;
+    this.cdr.detectChanges();
   }
 
   getActiveFieldValue(): string {

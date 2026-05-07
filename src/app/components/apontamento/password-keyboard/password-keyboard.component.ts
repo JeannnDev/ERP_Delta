@@ -92,7 +92,8 @@ import { PoModule } from '@po-ui/ng-components';
       display: flex;
       flex-direction: column;
       gap: 12px;
-      min-width: 650px;
+      width: 100%;
+      max-width: 950px;
     }
 
     /* ── DISPLAY ── */
@@ -100,8 +101,8 @@ import { PoModule } from '@po-ui/ng-components';
       background: #f8fafc;
       border: 2px solid #e2e8f0;
       border-radius: 16px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
+      padding: 20px 40px;
+      margin-bottom: 24px;
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
@@ -143,7 +144,7 @@ import { PoModule } from '@po-ui/ng-components';
 
     .pk-display__value {
       font-family: 'Roboto Mono', monospace;
-      font-size: 32px;
+      font-size: 30px;
       font-weight: 700;
       color: #14253d;
       letter-spacing: 4px;
@@ -206,9 +207,9 @@ import { PoModule } from '@po-ui/ng-components';
     /* ── KEYS ── */
     .pk-key {
       height: 56px;
-      min-width: 50px;
+      min-width: 40px;
       flex: 1;
-      max-width: 64px;
+      max-width: 80px;
       background: #ffffff;
       border: 1px solid #e2e8f0;
       border-radius: 12px;
