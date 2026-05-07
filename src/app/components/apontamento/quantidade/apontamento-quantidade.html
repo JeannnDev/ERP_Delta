@@ -121,17 +121,13 @@
             <button class="control-btn btn--play" (click)="startTimer()">
               <po-icon p-icon="an an-play"></po-icon> INICIAR
             </button>
-          } @else if (apontamentoService.isFinished()) {
-            <button class="control-btn btn--play" (click)="resumeTimer()">
-              <po-icon p-icon="an an-play"></po-icon> RETOMAR TEMPO
-            </button>
           } @else if (apontamentoService.isPaused()) {
             <button class="control-btn btn--play active" (click)="resumeTimer()">
               <po-icon p-icon="an an-play"></po-icon> RETOMAR
             </button>
           } @else {
             <button class="control-btn btn--play active" disabled>
-              <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
+              <po-icon p-icon="an an-play"></po-icon> {{ apontamentoService.isFinished() ? 'TEMPO FINALIZADO' : 'EM OPERAÇÃO' }}
             </button>
           }
 
@@ -141,8 +137,8 @@
           </button>
 
           <button class="control-btn btn--stop"
-            [class.btn--disabled]="(apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60) || apontamentoService.isFinished()"
-            [disabled]="!apontamentoService.isStarted() || apontamentoService.isFinished()" (click)="confirmStopTimer()">
+            [class.btn--disabled]="(apontamentoService.isStarted() && (apontamentoService.elapsedTime() < 60 || quantityProduced <= 0)) || apontamentoService.isFinished()"
+            [disabled]="!apontamentoService.isStarted() || apontamentoService.isFinished() || quantityProduced <= 0" (click)="confirmStopTimer()">
             <po-icon p-icon="an an-x-circle"></po-icon> {{ apontamentoService.isFinished() ? 'ENCERRADO' : 'ENCERRAR' }} ({{ apontamentoService.formattedElapsedTime() }})
           </button>
         </div>

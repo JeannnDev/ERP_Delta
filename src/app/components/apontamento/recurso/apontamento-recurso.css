@@ -337,19 +337,28 @@ app-apontamento-step-indicator {
 /* ── FOOTER ── */
 .page-footer {
   display: flex;
-  justify-content: space-between; /* Um em cada canto */
+  justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
   margin-top: 16px;
+  margin-left: -12px;
+  margin-right: -12px;
 }
 
 .btn-back, .btn-next {
-  width: 180px; /* Mais esticados */
+  width: 480px;
+  height: 72px;
 }
 
-::ng-deep .btn-back .po-button,
-::ng-deep .btn-next .po-button {
-  width: 100%;
+:host ::ng-deep .btn-back .po-button,
+:host ::ng-deep .btn-next .po-button {
+  width: 100% !important;
+  height: 72px !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  border-radius: 16px !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 /* ── PREMIUM SHEET STYLES ── */
