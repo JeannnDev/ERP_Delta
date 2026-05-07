@@ -7,18 +7,27 @@ import {
   PoModalComponent,
   PoModalAction,
   PoNotificationService,
+  PoPageSlideModule,
+  PoPageModule,
 } from '@po-ui/ng-components';
 import { ApontamentoService } from '../../../services/apontamento.service';
 import { ApontamentoApiService } from '../../../services/apontamento-api.service';
 import { ApontamentoStepIndicatorComponent } from '../step-indicator/apontamento-step-indicator.component';
 import { NumericKeyboardComponent } from '../numeric-keyboard/numeric-keyboard.component';
-import { ApontamentoPayload } from '../../../models/apontamento.model';
+import { ApontamentoPayload, RecursoApontamento } from '../../../models/apontamento.model';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-apontamento-quantidade',
   standalone: true,
-  imports: [FormsModule, PoModule, ApontamentoStepIndicatorComponent, NumericKeyboardComponent],
+  imports: [
+    FormsModule,
+    PoModule,
+    PoPageSlideModule,
+    PoPageModule,
+    ApontamentoStepIndicatorComponent,
+    NumericKeyboardComponent
+  ],
   templateUrl: './apontamento-quantidade.html',
   styleUrls: ['./apontamento-quantidade.css'],
 })
@@ -29,15 +38,24 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   private notification = inject(PoNotificationService);
   private cdr = inject(ChangeDetectorRef);
 
-  @ViewChild('keyboardModal') keyboardModal!: PoModalComponent;
   @ViewChild('stopModal') stopModal!: PoModalComponent;
   @ViewChild('successModal') successModal!: PoModalComponent;
+  @ViewChild('resourceSheet') resourceSheet!: any;
 
   quantityProduced = 0;
   loss = 0;
-  activeField: 'quantity' | 'loss' | null = null;
+  activeField: 'quantity' | 'loss' | 'resource' | 'NF' | null = null;
   isApontando = false;
   showKeyboard = false;
+
+  // Estado para Troca de Recurso
+  resources: RecursoApontamento[] = [];
+  filteredResources: RecursoApontamento[] = [];
+  resourceSearch = '';
+  isLoadingResources = false;
+
+  // Estado para NF
+  tempNF = '';
 
   stopPrimaryAction: PoModalAction = {
     label: 'Encerrar',
@@ -78,6 +96,9 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     }
     if (data.quantityProduced) this.quantityProduced = parseFloat(data.quantityProduced);
     if (data.loss) this.loss = parseFloat(data.loss);
+    
+    this.tempNF = data.apiData?.nf || '';
+    this.loadResources();
   }
 
   ngOnDestroy(): void {
@@ -85,6 +106,40 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       quantityProduced: this.quantityProduced.toString(),
       loss: this.loss.toString(),
     });
+  }
+
+  private async loadResources() {
+    this.isLoadingResources = true;
+    try {
+      this.resources = await firstValueFrom(this.apiService.fetchRecursosAll());
+      this.filteredResources = [...this.resources];
+    } catch (error) {
+      this.notification.error('Erro ao carregar recursos.');
+    } finally {
+      this.isLoadingResources = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  filterResources() {
+    const search = this.resourceSearch.toLowerCase().trim();
+    this.filteredResources = this.resources.filter(r => 
+      r.codigo.toLowerCase().includes(search) || 
+      r.descricao.toLowerCase().includes(search)
+    );
+  }
+
+  openResourceSheet() {
+    if (this.isOpEncerrada()) return;
+    this.resourceSheet.open();
+    this.resourceSearch = '';
+    this.filteredResources = [...this.resources];
+  }
+
+  selectResource(resource: RecursoApontamento) {
+    this.apontamentoService.updateData({ selectedResource: resource });
+    this.resourceSheet.close();
+    this.notification.success(`Recurso alterado para: ${resource.codigo}`);
   }
 
   startTimer(): void {
@@ -107,7 +162,8 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     this.stopModal.open();
   }
 
-  openKeyboard(field: 'quantity' | 'loss'): void {
+  openKeyboard(field: 'quantity' | 'loss' | 'resource' | 'NF'): void {
+    if (this.isOpEncerrada() && (field === 'quantity' || field === 'loss')) return;
     this.activeField = field;
     this.showKeyboard = true;
     this.cdr.detectChanges();
@@ -126,19 +182,77 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   }
 
   getActiveFieldValue(): string {
-    return this.activeField === 'quantity'
-      ? this.quantityProduced.toString()
-      : this.loss.toString();
+    if (this.activeField === 'quantity') return this.quantityProduced.toString();
+    if (this.activeField === 'loss') return this.loss.toString();
+    if (this.activeField === 'resource') return this.resourceSearch;
+    if (this.activeField === 'NF') return this.tempNF;
+    return '';
   }
 
   getActiveFieldLabel(): string {
-    return this.activeField === 'quantity' ? 'Quantidade Produzida' : 'Perdas';
+    if (this.activeField === 'quantity') return 'Quantidade Produzida';
+    if (this.activeField === 'loss') return 'Perdas';
+    if (this.activeField === 'resource') return 'Filtrar Recurso';
+    if (this.activeField === 'NF') return 'Informe a NF';
+    return '';
+  }
+
+  getActiveFieldMaxLength(): number {
+    if (this.activeField === 'NF') return 9;
+    if (this.activeField === 'resource') return 15;
+    return 12; // Padrão para quantidade e perdas
   }
 
   onKeyboardValueChange(value: string): void {
-    const num = parseFloat(value) || 0;
-    if (this.activeField === 'quantity') this.quantityProduced = num;
-    else this.loss = num;
+    const maxLength = this.getActiveFieldMaxLength();
+    const truncatedValue = value.substring(0, maxLength);
+    
+    if (this.activeField === 'quantity') this.quantityProduced = parseFloat(truncatedValue) || 0;
+    else if (this.activeField === 'loss') this.loss = parseFloat(truncatedValue) || 0;
+    else if (this.activeField === 'resource') {
+      this.resourceSearch = truncatedValue;
+      this.filterResources();
+    }
+    else if (this.activeField === 'NF') this.tempNF = truncatedValue;
+  }
+
+  async onKeyboardConfirm() {
+    this.showKeyboard = false;
+    if (this.activeField === 'NF') {
+      await this.updateNF();
+    }
+  }
+
+  async updateNF() {
+    const op = this.apontamentoService.data().opNumber;
+    if (!op || this.isApontando) return;
+
+    this.isApontando = true;
+    try {
+      const res = await firstValueFrom(this.apiService.updateNF(op, this.tempNF));
+      if (res.success) {
+        this.notification.success('NF atualizada com sucesso!');
+        // Atualiza os dados locais da OP para refletir a nova NF
+        await this.apontamentoService.fetchAndSetOPData(op, false);
+      } else {
+        this.notification.error(res.error || 'Erro ao atualizar NF.');
+      }
+    } catch {
+      this.notification.error('Falha na conexão ao atualizar NF.');
+    } finally {
+      this.isApontando = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  getCurrentResourceCode(): string {
+    const data = this.apontamentoService.data();
+    return data.selectedResource?.codigo || data.resource || '-';
+  }
+
+  getCurrentResourceDesc(): string {
+    const data = this.apontamentoService.data();
+    return data.selectedResource?.descricao || (data.apiData?.operacoes.find(o => o.operac === data.operation)?.descricao) || '-';
   }
 
   getQuantidadeSolicitada(): number {
@@ -174,9 +288,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    setTimeout(() => {
-      this.isApontando = true;
-    });
+    this.isApontando = true;
     try {
       const data = this.apontamentoService.data();
       const startTime = this.apontamentoService.startTime();
@@ -184,7 +296,6 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       const startDate = startTime ? new Date(startTime) : new Date();
       const endDate = endTime ? new Date(endTime) : new Date();
       
-      // Cálculo do tempo líquido em minutos
       const totalSeconds = this.apontamentoService.elapsedTime();
       const h = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
       const m = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
@@ -207,7 +318,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
         PARCTOTAL: parctotalValue,
         DATAAPONTAMENTO: this.formatDateAPI(new Date()),
         DESDOBRAMENTO: '',
-        TEMPOREAL: tempoFormatado, // Enviando a duração HH:MM
+        TEMPOREAL: tempoFormatado,
         LOTE: '',
         SUBLOTE: '',
         VALIDLOTE: '',
@@ -235,14 +346,13 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
         await this.apontamentoService.fetchAndSetOPData(data.opNumber, false);
         this.successModal.open();
       } else {
-        this.notification.error(
-          result?.error || 'Erro no apontamento. Verifique os dados e tente novamente.',
-        );
+        this.notification.error(result?.error || 'Erro no apontamento.');
       }
     } catch {
       this.notification.error('Erro ao processar apontamento');
     } finally {
       this.isApontando = false;
+      this.cdr.detectChanges();
     }
   }
 

@@ -63,6 +63,51 @@ app-apontamento-step-indicator {
   flex-direction: column;
   flex: 1;
   padding: 0 16px;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.item--resource {
+  background: #005c99; /* Azul vibrante padrão do projeto para itens ativos */
+  border-radius: 6px;
+  padding: 8px 16px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item--resource:hover:not(.disabled) {
+  background: #0073bc;
+  transform: translateY(-1px);
+}
+
+.item--resource.disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  border: 1px solid #e2e8f0;
+}
+
+.item--resource.disabled .value--white,
+.item--resource.disabled .label--white {
+  color: #94a3b8 !important;
+}
+
+.label--white { 
+  color: rgba(255, 255, 255, 0.9) !important; 
+  font-weight: 700 !important; 
+}
+
+.value--white { 
+  color: #ffffff !important; 
+}
+
+.page-info-bar__sub {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+  font-weight: 500;
 }
 
 .page-info-bar__item:first-child { padding-left: 0; }
@@ -70,7 +115,7 @@ app-apontamento-step-indicator {
 
 .page-info-bar__label {
   font-size: 10px;
-  color: #94a3b8;
+  color: #64748b;
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -90,13 +135,20 @@ app-apontamento-step-indicator {
   flex-shrink: 0;
 }
 
+/* ── PRODUCT INFO GRID ── */
+.product-info-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
 /* ── PRODUCT CARD ── */
 .product-card {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
-  flex-shrink: 0;
 }
 
 .product-card__header {
@@ -113,7 +165,7 @@ app-apontamento-step-indicator {
 
 .product-card__stats-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1px;
   background: #f1f5f9;
 }
@@ -132,16 +184,51 @@ app-apontamento-step-indicator {
 .value--green { color: #10b981; }
 .value--orange { color: #f97316; }
 
+/* ── NF CARD (STYLE FROM ETIQUETA) ── */
+.data-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.card-header po-icon { color: #14253d; font-size: 18px; }
+.card-label { font-size: 10px; color: #94a3b8; font-weight: 700; text-transform: uppercase; }
+
+.card-body { display: flex; flex-direction: column; gap: 4px; }
+.card-value { font-size: 20px; font-weight: 700; color: #0f172a; }
+
+.nf-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-alterar-nf {
+  --font-weight: 800;
+}
+
 /* ── APONTAMENTO AREA ── */
 .apontamento-area {
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
-  padding: 32px;
+  padding: 24px 32px;
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 32px;
+  gap: 24px;
 }
 
 .inputs-row {
@@ -183,7 +270,14 @@ app-apontamento-step-indicator {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.adjust-btn:active {
+.adjust-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f1f5f9 !important;
+  color: #94a3b8 !important;
+}
+
+.adjust-btn:active:not(:disabled) {
   transform: scale(0.9);
 }
 
@@ -198,7 +292,7 @@ app-apontamento-step-indicator {
   color: white;
 }
 
-.adjust-btn:hover {
+.adjust-btn:hover:not(:disabled) {
   filter: brightness(1.1);
 }
 
@@ -218,9 +312,102 @@ app-apontamento-step-indicator {
   background: #f8fafc;
 }
 
+.custom-input.disabled {
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
 .custom-input--green { border-color: #10b981; color: #10b981; }
 .custom-input--red { border-color: #fca5a5; color: #ef4444; }
-.custom-input:hover { background: white; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+.custom-input:hover:not(.disabled) { background: white; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+/* ── RESOURCE SHEET STYLES ── */
+.sheet-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.sheet-search-container {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.sheet-search-container po-input {
+  flex: 1;
+}
+
+.sheet-kb-btn {
+  height: 44px;
+}
+
+.resources-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px;
+}
+
+.resource-item {
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.resource-item:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  transform: translateX(4px);
+}
+
+.resource-item.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.resource-item__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resource-item__code {
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.resource-item__desc {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.resource-item__check {
+  color: #3b82f6;
+  font-size: 20px;
+  display: none;
+}
+
+.resource-item.active .resource-item__check {
+  display: block;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+  font-style: italic;
+}
 
 /* ── CONTROLES DO TIMER ── */
 .controls-row {
@@ -280,20 +467,39 @@ app-apontamento-step-indicator {
 /* ── FOOTER ── */
 .page-footer {
   display: flex;
-  justify-content: space-between; /* Um em cada canto */
+  justify-content: space-between;
   gap: 12px;
   flex-shrink: 0;
   margin-top: 16px;
 }
 
 .btn-back, .btn-next {
-  width: 180px; /* Mais esticados */
+  width: 180px;
 }
 
-::ng-deep .btn-back .po-button,
-::ng-deep .btn-next .po-button {
-  width: 100%;
+/* ── TECLADO ── */
+.keyboard-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
+.keyboard-wrapper {
+  background: white;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 90%;
+  max-width: 500px;
+  text-align: center;
+}
+
+.keyboard-wrapper h3 { margin-bottom: 24px; color: #1e293b; font-weight: 800; font-size: 24px; }
 
 /* ── MODAIS ── */
 .modal-content-center {

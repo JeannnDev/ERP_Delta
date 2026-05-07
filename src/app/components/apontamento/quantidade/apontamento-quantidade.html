@@ -19,37 +19,60 @@
           <strong class="page-info-bar__value">{{ apontamentoService.data().apiData?.roteiroUtilizado || '-' }}</strong>
         </div>
         <div class="page-info-bar__divider"></div>
+        <!-- CARD RECURSO DESTACADO (CLICÁVEL) -->
+        <div class="page-info-bar__item item--resource" (click)="openResourceSheet()" [class.disabled]="isOpEncerrada()"
+          tabindex="0" role="button" aria-label="Trocar Recurso">
+          <span class="page-info-bar__label label--white">Recurso <po-icon
+              p-icon="an an-arrows-left-right"></po-icon></span>
+          <strong class="page-info-bar__value value--white">{{ getCurrentResourceCode() }}</strong>
+          <small class="page-info-bar__sub value--white">{{ getCurrentResourceDesc() }}</small>
+        </div>
+        <div class="page-info-bar__divider"></div>
         <div class="page-info-bar__item">
           <span class="page-info-bar__label">Operador <po-icon p-icon="an an-qr-code"></po-icon></span>
           <strong class="page-info-bar__value">{{ apontamentoService.data().operatorName || '-' }}</strong>
         </div>
       </div>
 
-      <div class="product-card">
-        <div class="product-card__header">
-          <div>
-            <span class="product-card__label">PRODUTO:
-              <strong class="product-card__code">{{ apontamentoService.data().apiData?.produto }}</strong>
-            </span>
-            <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
+      <div class="product-info-grid">
+        <div class="product-card">
+          <div class="product-card__header">
+            <div>
+              <span class="product-card__label">PRODUTO:
+                <strong class="product-card__code">{{ apontamentoService.data().apiData?.produto }}</strong>
+              </span>
+              <p class="product-card__desc">{{ apontamentoService.data().apiData?.descProduto }}</p>
+            </div>
+          </div>
+          <div class="product-card__stats-grid">
+            <div class="stat-box">
+              <span class="stat-box__label">Já Produzido</span>
+              <strong class="stat-box__value value--green">{{ getQuantidadeProduzida() }}</strong>
+            </div>
+            <div class="stat-box">
+              <span class="stat-box__label">Faltante</span>
+              <strong class="stat-box__value value--orange">{{ getQuantidadeFaltante() }}</strong>
+            </div>
+            <div class="stat-box">
+              <span class="stat-box__label">Previsão Inicial</span>
+              <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoIni) }}</strong>
+            </div>
           </div>
         </div>
-        <div class="product-card__stats-grid">
-          <div class="stat-box">
-            <span class="stat-box__label">Já Produzido</span>
-            <strong class="stat-box__value value--green">{{ getQuantidadeProduzida() }}</strong>
+
+        <!-- CARD NF (PADRÃO ETIQUETA) -->
+        <div class="data-card nf-card">
+          <div class="card-header">
+            <po-icon p-icon="an an-file-text"></po-icon>
+            <span class="card-label">Nota Fiscal</span>
           </div>
-          <div class="stat-box">
-            <span class="stat-box__label">Faltante</span>
-            <strong class="stat-box__value value--orange">{{ getQuantidadeFaltante() }}</strong>
-          </div>
-          <div class="stat-box">
-            <span class="stat-box__label">Previsão Inicial</span>
-            <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoIni) }}</strong>
-          </div>
-          <div class="stat-box">
-            <span class="stat-box__label">Previsão Entrega</span>
-            <strong class="stat-box__value">{{ formatDate(apontamentoService.data().apiData?.previsaoEntrega) }}</strong>
+          <div class="card-body">
+            <div class="nf-display">
+              <span class="card-value">{{ apontamentoService.data().apiData?.nf || 'Não informada' }}</span>
+              <po-button p-small p-label="ALTERAR" p-kind="tertiary" (p-click)="openKeyboard('NF')"
+                [p-disabled]="isOpEncerrada() || isApontando" class="btn-alterar-nf">
+              </po-button>
+            </div>
           </div>
         </div>
       </div>
@@ -59,14 +82,14 @@
           <div class="input-group">
             <span class="label--green">Quantidade Produzida</span>
             <div class="input-adjuster">
-              <button class="adjust-btn btn--minus" (click)="adjustQuantity(-1)">
+              <button class="adjust-btn btn--minus" (click)="adjustQuantity(-1)" [disabled]="isOpEncerrada()">
                 <po-icon p-icon="an an-minus"></po-icon>
               </button>
               <div class="custom-input custom-input--green" tabindex="0" (click)="openKeyboard('quantity')"
-                (keyup.enter)="openKeyboard('quantity')">
+                (keyup.enter)="openKeyboard('quantity')" [class.disabled]="isOpEncerrada()">
                 {{ quantityProduced }}
               </div>
-              <button class="adjust-btn btn--plus" (click)="adjustQuantity(1)">
+              <button class="adjust-btn btn--plus" (click)="adjustQuantity(1)" [disabled]="isOpEncerrada()">
                 <po-icon p-icon="an an-plus"></po-icon>
               </button>
             </div>
@@ -75,14 +98,14 @@
           <div class="input-group">
             <span class="label--red">Perdas</span>
             <div class="input-adjuster">
-              <button class="adjust-btn btn--minus" (click)="adjustLoss(-1)">
+              <button class="adjust-btn btn--minus" (click)="adjustLoss(-1)" [disabled]="isOpEncerrada()">
                 <po-icon p-icon="an an-minus"></po-icon>
               </button>
               <div class="custom-input custom-input--red" tabindex="0" (click)="openKeyboard('loss')"
-                (keyup.enter)="openKeyboard('loss')">
+                (keyup.enter)="openKeyboard('loss')" [class.disabled]="isOpEncerrada()">
                 {{ loss }}
               </div>
-              <button class="adjust-btn btn--plus" (click)="adjustLoss(1)">
+              <button class="adjust-btn btn--plus" (click)="adjustLoss(1)" [disabled]="isOpEncerrada()">
                 <po-icon p-icon="an an-plus"></po-icon>
               </button>
             </div>
@@ -91,36 +114,28 @@
 
         @if (!isOpEncerrada()) {
         <div class="controls-row">
-          <!-- Botão INICIAR / RETOMAR -->
           @if (!apontamentoService.isStarted()) {
-            <button class="control-btn btn--play" (click)="startTimer()">
-              <po-icon p-icon="an an-play"></po-icon> INICIAR
-            </button>
+          <button class="control-btn btn--play" (click)="startTimer()">
+            <po-icon p-icon="an an-play"></po-icon> INICIAR
+          </button>
           } @else if (apontamentoService.isPaused()) {
-            <button class="control-btn btn--play active" (click)="resumeTimer()">
-              <po-icon p-icon="an an-play"></po-icon> RETOMAR
-            </button>
+          <button class="control-btn btn--play active" (click)="resumeTimer()">
+            <po-icon p-icon="an an-play"></po-icon> RETOMAR
+          </button>
           } @else {
-            <button class="control-btn btn--play active" disabled>
-              <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
-            </button>
+          <button class="control-btn btn--play active" disabled>
+            <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
+          </button>
           }
 
-          <!-- Botão PAUSAR -->
-          <button 
-            class="control-btn btn--pause" 
-            [class.active]="apontamentoService.isPaused()" 
-            [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused()"
-            (click)="pauseTimer()">
+          <button class="control-btn btn--pause" [class.active]="apontamentoService.isPaused()"
+            [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused()" (click)="pauseTimer()">
             <po-icon p-icon="an an-pause"></po-icon> PAUSAR
           </button>
 
-          <!-- Botão ENCERRAR -->
-          <button 
-            class="control-btn btn--stop" 
+          <button class="control-btn btn--stop"
             [class.btn--disabled]="apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60"
-            [disabled]="!apontamentoService.isStarted()"
-            (click)="confirmStopTimer()">
+            [disabled]="!apontamentoService.isStarted()" (click)="confirmStopTimer()">
             <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
           </button>
         </div>
@@ -136,28 +151,62 @@
 
       <div class="page-footer">
         <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
-        <po-button p-label="Apontar" p-kind="primary" class="btn-next" 
-          [p-disabled]="!canProceed || !apontamentoService.isFinished()"
-          [p-loading]="isApontando" (p-click)="handleApontar()">
+        <po-button p-label="Apontar" p-kind="primary" class="btn-next"
+          [p-disabled]="!canProceed || !apontamentoService.isFinished() || isApontando" [p-loading]="isApontando"
+          (p-click)="handleApontar()">
         </po-button>
       </div>
     </main>
   </div>
 
-  <!-- Teclado Numérico Customizado -->
-  @if (showKeyboard) {
-    <div class="keyboard-overlay">
-      <div class="keyboard-wrapper">
-        <h3>{{ getActiveFieldLabel() }}</h3>
-        <app-numeric-keyboard 
-          [value]="getActiveFieldValue()" 
-          [label]="'Informe o valor'"
-          (valueChange)="onKeyboardValueChange($event)" 
-          (confirm)="showKeyboard = false"
-          (keyboardClose)="showKeyboard = false">
-        </app-numeric-keyboard>
+  <!-- ResourceSelectionSheet (PageSlide) -->
+  <po-page-slide #resourceSheet p-title="Selecionar Recurso" [p-click-out]="true" p-size="md">
+
+    <div class="sheet-content">
+      <div class="sheet-search-container">
+        <po-input name="resourceSearch" [(ngModel)]="resourceSearch" p-label="Pesquisar Recurso"
+          p-placeholder="Código ou descrição..." (p-change)="filterResources()" (click)="openKeyboard('resource')">
+        </po-input>
+        <po-button p-icon="an an-keyboard" (p-click)="openKeyboard('resource')" class="sheet-kb-btn"></po-button>
+      </div>
+
+      <div class="resources-list" [class.loading]="isLoadingResources">
+        @if (isLoadingResources) {
+        <po-loading-overlay></po-loading-overlay>
+        } @else {
+        @for (res of filteredResources; track res.codigo) {
+        <div class="resource-item" 
+          (click)="selectResource(res)"
+          (keyup.enter)="selectResource(res)"
+          [class.active]="getCurrentResourceCode() === res.codigo"
+          tabindex="0"
+          role="button"
+          [aria-label]="'Selecionar recurso ' + res.codigo">
+          <div class="resource-item__info">
+            <strong class="resource-item__code">{{ res.codigo }}</strong>
+            <span class="resource-item__desc">{{ res.descricao }}</span>
+          </div>
+          <po-icon p-icon="an an-check" class="resource-item__check"></po-icon>
+        </div>
+        } @empty {
+        <div class="empty-state">Nenhum recurso encontrado.</div>
+        }
+        }
       </div>
     </div>
+  </po-page-slide>
+
+  <!-- Teclado Numérico Customizado -->
+  @if (showKeyboard) {
+  <div class="keyboard-overlay">
+    <div class="keyboard-wrapper">
+      <h3>{{ getActiveFieldLabel() }}</h3>
+      <app-numeric-keyboard [value]="getActiveFieldValue()" [label]="'Informe o valor'"
+        [maxLength]="getActiveFieldMaxLength()" (valueChange)="onKeyboardValueChange($event)"
+        (confirm)="onKeyboardConfirm()" (keyboardClose)="showKeyboard = false">
+      </app-numeric-keyboard>
+    </div>
+  </div>
   }
 </po-page-default>
 
