@@ -163,10 +163,17 @@ export class ApontamentoService {
   }
 
   resumeTimer(): void {
-    if (!this._isStarted() || this._isFinished()) return;
+    if (!this._isStarted()) return;
     const now = Date.now();
-    const adjustedStartTime = now - this._pausedElapsedTime() * 1000;
+    
+    // Se estava finalizado, usamos o tempo total decorrido para ajustar o início
+    // Se estava apenas pausado, usamos o tempo pausado salvo
+    const timeToSubtract = this._isFinished() ? this._elapsedTime() : this._pausedElapsedTime();
+    
+    const adjustedStartTime = now - timeToSubtract * 1000;
     this._startTime.set(adjustedStartTime);
+    this._endTime.set(null); 
+    this._isFinished.set(false);
     this._pausedElapsedTime.set(0);
     this._isPaused.set(false);
     this.startTimerInterval();

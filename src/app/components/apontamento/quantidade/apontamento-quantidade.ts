@@ -59,7 +59,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   tempNF = '';
 
   stopPrimaryAction: PoModalAction = {
-    label: 'Encerrar',
+    label: 'CONFIRMAR ENCERRAMENTO',
     danger: true,
     action: () => {
       this.apontamentoService.stopTimer();
@@ -68,7 +68,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   };
 
   stopSecondaryAction: PoModalAction = {
-    label: 'Cancelar',
+    label: 'CANCELAR / VOLTAR',
     action: () => this.stopModal.close(),
   };
 

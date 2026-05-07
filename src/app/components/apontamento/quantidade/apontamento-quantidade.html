@@ -14,11 +14,7 @@
           <strong class="page-info-bar__value">{{ apontamentoService.data().opNumber }}</strong>
         </div>
         <div class="page-info-bar__divider"></div>
-        <div class="page-info-bar__item">
-          <span class="page-info-bar__label">Roteiro</span>
-          <strong class="page-info-bar__value">{{ apontamentoService.data().apiData?.roteiroUtilizado || '-' }}</strong>
-        </div>
-        <div class="page-info-bar__divider"></div>
+
         <!-- CARD RECURSO DESTACADO (CLICÁVEL) -->
         <div class="page-info-bar__item item--resource" (click)="openResourceSheet()" [class.disabled]="isOpEncerrada()"
           tabindex="0" role="button" aria-label="Trocar Recurso">
@@ -28,9 +24,16 @@
           <small class="page-info-bar__sub value--white">{{ getCurrentResourceDesc() }}</small>
         </div>
         <div class="page-info-bar__divider"></div>
+
         <div class="page-info-bar__item">
           <span class="page-info-bar__label">Operador <po-icon p-icon="an an-qr-code"></po-icon></span>
           <strong class="page-info-bar__value">{{ apontamentoService.data().operatorName || '-' }}</strong>
+        </div>
+        <div class="page-info-bar__divider"></div>
+
+        <div class="page-info-bar__item item--timer">
+          <span class="page-info-bar__label">Tempo Decorrido <po-icon p-icon="an an-clock"></po-icon></span>
+          <strong class="page-info-bar__value">{{ apontamentoService.formattedElapsedTime() }}</strong>
         </div>
       </div>
 
@@ -115,28 +118,32 @@
         @if (!isOpEncerrada()) {
         <div class="controls-row">
           @if (!apontamentoService.isStarted()) {
-          <button class="control-btn btn--play" (click)="startTimer()">
-            <po-icon p-icon="an an-play"></po-icon> INICIAR
-          </button>
+            <button class="control-btn btn--play" (click)="startTimer()">
+              <po-icon p-icon="an an-play"></po-icon> INICIAR
+            </button>
+          } @else if (apontamentoService.isFinished()) {
+            <button class="control-btn btn--play" (click)="resumeTimer()">
+              <po-icon p-icon="an an-play"></po-icon> RETOMAR TEMPO
+            </button>
           } @else if (apontamentoService.isPaused()) {
-          <button class="control-btn btn--play active" (click)="resumeTimer()">
-            <po-icon p-icon="an an-play"></po-icon> RETOMAR
-          </button>
+            <button class="control-btn btn--play active" (click)="resumeTimer()">
+              <po-icon p-icon="an an-play"></po-icon> RETOMAR
+            </button>
           } @else {
-          <button class="control-btn btn--play active" disabled>
-            <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
-          </button>
+            <button class="control-btn btn--play active" disabled>
+              <po-icon p-icon="an an-play"></po-icon> EM OPERAÇÃO
+            </button>
           }
 
           <button class="control-btn btn--pause" [class.active]="apontamentoService.isPaused()"
-            [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused()" (click)="pauseTimer()">
+            [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused() || apontamentoService.isFinished()" (click)="pauseTimer()">
             <po-icon p-icon="an an-pause"></po-icon> PAUSAR
           </button>
 
           <button class="control-btn btn--stop"
-            [class.btn--disabled]="apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60"
-            [disabled]="!apontamentoService.isStarted()" (click)="confirmStopTimer()">
-            <po-icon p-icon="an an-x-circle"></po-icon> ENCERRAR ({{ apontamentoService.formattedElapsedTime() }})
+            [class.btn--disabled]="(apontamentoService.isStarted() && apontamentoService.elapsedTime() < 60) || apontamentoService.isFinished()"
+            [disabled]="!apontamentoService.isStarted() || apontamentoService.isFinished()" (click)="confirmStopTimer()">
+            <po-icon p-icon="an an-x-circle"></po-icon> {{ apontamentoService.isFinished() ? 'ENCERRADO' : 'ENCERRAR' }} ({{ apontamentoService.formattedElapsedTime() }})
           </button>
         </div>
         }
@@ -150,11 +157,14 @@
       </div>
 
       <div class="page-footer">
-        <po-button p-label="Voltar" class="btn-back" (p-click)="goBack()"></po-button>
-        <po-button p-label="Apontar" p-kind="primary" class="btn-next"
-          [p-disabled]="!canProceed || !apontamentoService.isFinished() || isApontando" [p-loading]="isApontando"
-          (p-click)="handleApontar()">
-        </po-button>
+        <po-button p-label="Voltar" class="btn-footer btn-back" (p-click)="goBack()"></po-button>
+        
+        @if (isOpEncerrada() || apontamentoService.isFinished()) {
+          <po-button p-label="Apontar" p-kind="primary" class="btn-footer btn-next"
+            [p-disabled]="!canProceed || isApontando" [p-loading]="isApontando"
+            (p-click)="handleApontar()">
+          </po-button>
+        }
       </div>
     </main>
   </div>
@@ -210,11 +220,19 @@
   }
 </po-page-default>
 
-<po-modal #stopModal p-title="Confirmar Parada" [p-primary-action]="stopPrimaryAction"
+<po-modal #stopModal p-title="FINALIZAR TEMPO DE PRODUÇÃO" [p-primary-action]="stopPrimaryAction"
   [p-secondary-action]="stopSecondaryAction">
   <div class="modal-content-center">
     <po-icon p-icon="an an-warning" class="modal-icon modal-icon--warning"></po-icon>
-    <p>Deseja realmente parar o cronômetro e registrar este tempo?</p>
+    <h2 class="modal-alert-title">ATENÇÃO, OPERADOR!</h2>
+    <p class="modal-alert-text">Você está prestes a encerrar a contagem de tempo desta operação.</p>
+    
+    <div class="modal-time-display">
+      <span>TEMPO QUE SERÁ REGISTRADO:</span>
+      <strong>{{ apontamentoService.formattedElapsedTime() }}</strong>
+    </div>
+
+    <p class="modal-alert-subtext">Deseja realmente confirmar o encerramento?</p>
   </div>
 </po-modal>
 
