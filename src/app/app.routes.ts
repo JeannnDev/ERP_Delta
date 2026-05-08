@@ -17,9 +17,11 @@ import { ApontamentoResumoComponent } from './components/apontamento/resumo/apon
 // import { ApontamentoSetupLoginComponent } from './components/apontamento/setup-login/apontamento-setup-login';
 import { EtiquetaComponent } from './components/etiqueta/etiqueta';
 import { HistoricoOPComponent } from './components/historico-op/historico-op';
+import { DashboardOpComponent } from './components/dashboard-op/dashboard-op';
 
 export const routes: Routes = [
-    { path: '', redirectTo: 'apontamento', pathMatch: 'full' },
+    { path: '', redirectTo: 'dashboard-op', pathMatch: 'full' },
+    { path: 'dashboard-op', component: DashboardOpComponent },
     // { path: 'consulta', component: ConsultaDocumento },
     // { path: 'fornecedor', component: FornecedorComponent },
     // { path: 'cliente', component: ClienteComponent },

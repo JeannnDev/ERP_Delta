@@ -89,6 +89,7 @@ export class App implements OnInit, AfterViewInit {
         shortLabel: 'Produção',
         icon: 'an an-factory',
         subItems: [
+          { label: 'Dashboard OP', link: '/dashboard-op', icon: 'an an-chart-bar' },
           { label: 'Apontamento', link: '/apontamento', icon: 'an an-desktop' },
           { label: 'Imprimir Etiqueta', link: '/etiqueta', icon: 'an an-printer' },
           {
