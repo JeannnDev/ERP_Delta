@@ -97,17 +97,20 @@
           <h2 class="op-card__op-number">{{ op.op }}</h2>
         </div>
         <div class="op-card__badges">
-          @if (isAtrasada(op)) {
-            <span class="badge-late">
-              <po-icon p-icon="an an-warning"></po-icon> ATRASADA
-            </span>
-          }
-          @if (op.pausado) {
-            <span class="badge-paused">⏸ PAUSADA</span>
-          }
           <po-tag [p-value]="op.status" [p-color]="getStatusTagColor(op.status)"></po-tag>
         </div>
       </div>
+      <!-- Alert Badges Row -->
+      @if (isAtrasada(op) || op.pausado) {
+        <div class="op-card__alert-row">
+          @if (isAtrasada(op)) {
+            <span class="badge-late"><po-icon p-icon="an an-warning"></po-icon> ATRASADA</span>
+          }
+          @if (op.pausado) {
+            <span class="badge-paused"><po-icon p-icon="an an-pause-circle"></po-icon> PAUSADA</span>
+          }
+        </div>
+      }
 
       <!-- Timer Box -->
       <div class="op-card__timer"

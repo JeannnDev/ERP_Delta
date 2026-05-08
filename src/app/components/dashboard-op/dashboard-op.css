@@ -185,23 +185,71 @@
 .op-card__header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  align-items: flex-start;
+  margin-bottom: 4px;
 }
 
 .op-card__op-label {
   font-size: 11px;
   font-weight: 800;
   color: #94a3b8;
-  margin: 0;
+  margin: 0 0 2px;
+  letter-spacing: 0.5px;
 }
 
 .op-card__op-number {
-  font-size: 28px;
-  font-weight: 950;
+  font-size: 26px;
+  font-weight: 900;
   color: #1e293b;
   margin: 0;
   line-height: 1;
+}
+
+.op-card__badges {
+  display: flex;
+  align-items: flex-start;
+  padding-top: 2px;
+}
+
+/* Alert row: ATRASADA / PAUSADA banners below the header */
+.op-card__alert-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.badge-late {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: #ef4444;
+  border-radius: 6px;
+  padding: 3px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  animation: blink-badge 1.5s infinite;
+}
+
+.badge-paused {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: #f59e0b;
+  border-radius: 6px;
+  padding: 3px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+@keyframes blink-badge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 /* ── TIMER BOX (REDESIGNED) ── */
