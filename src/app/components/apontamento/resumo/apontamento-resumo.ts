@@ -54,7 +54,7 @@ export class ApontamentoResumoComponent implements OnInit {
     label: 'Nova OP',
     action: () => {
       this.newOpModal.close();
-      this.apontamentoService.reset('/apontamento');
+      this.apontamentoService.reset('/apontamento/login');
     },
   };
 
@@ -80,7 +80,7 @@ export class ApontamentoResumoComponent implements OnInit {
   ngOnInit(): void {
     const data = this.apontamentoService.data();
     if (!data.opNumber || !data.operatorCode) {
-      this.router.navigate(['/apontamento']);
+      this.router.navigate(['/apontamento/login']);
       return;
     }
     this.loadImpressoras();
@@ -149,7 +149,7 @@ export class ApontamentoResumoComponent implements OnInit {
   }
 
   onStepClick(s: number): void {
-    if (s === 1) this.router.navigate(['/apontamento']);
+    if (s === 1) this.router.navigate(['/apontamento/login']);
     if (s === 2) this.router.navigate(['/apontamento/recurso']);
     if (s === 3 && !this.isOpEncerrada()) {
       this.router.navigate(['/apontamento/quantidade']);

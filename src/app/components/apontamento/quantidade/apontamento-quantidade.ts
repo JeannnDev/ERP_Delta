@@ -92,7 +92,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const data = this.apontamentoService.data();
     if (!data.opNumber || !data.operatorCode) {
-      this.router.navigate(['/apontamento']);
+      this.router.navigate(['/apontamento/login']);
       return;
     }
     if (data.quantityProduced) this.quantityProduced = parseFloat(data.quantityProduced);
@@ -375,7 +375,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   }
 
   onStepClick(s: number): void {
-    if (s === 1) this.router.navigate(['/apontamento']);
+    if (s === 1) this.router.navigate(['/apontamento/login']);
     if (s === 2) this.router.navigate(['/apontamento/recurso']);
   }
 }

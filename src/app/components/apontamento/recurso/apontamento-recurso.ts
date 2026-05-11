@@ -135,7 +135,7 @@ export class ApontamentoRecursoComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/apontamento']);
+    this.router.navigate(['/apontamento/login']);
   }
 
   formatDate(date: string | undefined): string {
@@ -159,6 +159,6 @@ export class ApontamentoRecursoComponent implements OnInit {
   }
 
   onStepClick(step: number): void {
-    if (step === 1) this.router.navigate(['/apontamento']);
+    if (step === 1) this.router.navigate(['/apontamento/login']);
   }
 }

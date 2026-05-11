@@ -413,7 +413,7 @@ export class ApontamentoService {
   }
 
   // ── Reset ──
-  reset(redirectPath: string | null = '/apontamento'): void {
+  reset(redirectPath: string | null = '/apontamento/login'): void {
     const current = this._data();
     this._data.set({
       opNumber: '',
