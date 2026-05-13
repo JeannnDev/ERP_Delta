@@ -1,7 +1,7 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PoModule, PoTableColumn, PoNotificationService, PoLoadingModule, PoTableModule } from '@po-ui/ng-components';
+import { PoModule, PoTableColumn, PoNotificationService, PoLoadingModule, PoTableModule, PoModalComponent, PoModalAction } from '@po-ui/ng-components';
 import { ApontamentoApiService } from '../../services/apontamento-api.service';
 import { NumericKeyboardComponent } from '../apontamento/numeric-keyboard/numeric-keyboard.component';
 import {
@@ -12,6 +12,16 @@ import {
   ApontamentoApiResponse
 } from '../../models/apontamento.model';
 import { firstValueFrom, timeout } from 'rxjs';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+
+// Interface para estender o jsPDF com as propriedades do plugin jspdf-autotable
+interface jsPDFWithPlugin extends jsPDF {
+  lastAutoTable?: {
+    finalY: number;
+  };
+}
 
 // Tipo local: item de material com status convertido para string (exigência do po-table label)
 interface SaldoItemDisplay extends Omit<SaldoItem, 'status'> {
@@ -53,8 +63,14 @@ export class HistoricoOPComponent {
   roteiro: OperacaoDisplay[] = [];
   opData: OPApiData | null = null;
 
-  // Teclado
+  // Teclado e Modal
+  @ViewChild('exportModal') exportModal!: PoModalComponent;
   showKeyboard = false;
+
+  exportCloseAction: PoModalAction = {
+    label: 'Fechar',
+    action: () => this.exportModal.close()
+  };
   keyboardValue = '';
 
   readonly materiaisColumns: PoTableColumn[] = [
@@ -217,5 +233,279 @@ export class HistoricoOPComponent {
     this.opSearch = '';
     this.resetData();
     this.cdr.detectChanges();
+  }
+
+  // EXPORTAÇÃO PARA EXCEL
+  exportToExcel(): void {
+    if (!this.opData) return;
+
+    // 1. Dados da OP
+    const opInfo = [
+      ['HISTÓRICO DE ORDEM DE PRODUÇÃO'],
+      [''],
+      ['Ordem de Produção', this.opData.op || ''],
+      ['Produto', `${this.opData.produto || ''} - ${this.opData.descProduto || ''}`],
+      ['Status', this.opData.status || ''],
+      ['Emissão', this.formatProtheusDate(this.opData.dtEmissao || '')],
+      ['Previsão Início', this.formatProtheusDate(this.opData.previsaoIni || '')],
+      ['Previsão Entrega', this.formatProtheusDate(this.opData.previsaoEntrega || '')],
+      ['Data de Entrega', this.formatProtheusDate(this.opData.dtEntrega || '')],
+      ['Qtd. Solicitada', this.opData.quantidadeSolicitada ?? 0],
+      ['Qtd. Produzida', this.opData.qtdProduzida ?? 0],
+      ['Armazém', this.opData.armazem || ''],
+      ['Roteiro', this.opData.roteiroUtilizado || ''],
+      [''],
+      ['ROTEIRO DE OPERAÇÕES'],
+      ['Operação', 'Descrição', 'Recurso', 'Qtd. Prod.', 'Cód. Op.', 'Operador', 'Hr. Ini', 'Hr. Fim', 'Tempo', 'Status']
+    ];
+
+    // 2. Adicionar roteiro
+    this.roteiro.forEach(op => {
+      opInfo.push([
+        op.operac || '',
+        op.descricao || '',
+        op.recurso || '',
+        op.quantidadeProduzida ?? 0,
+        op.operadorCod || '',
+        op.operadorNome || '',
+        op.hrIni || '',
+        op.hrFim || '',
+        op.tempoApont || '',
+        op.status || ''
+      ]);
+    });
+
+    opInfo.push(['']);
+    opInfo.push(['MATERIAIS EMPENHADOS']);
+    opInfo.push(['Produto', 'Descrição', 'UM', 'Qtd. Orig.', 'Empenhado', 'Saldo Estq.', 'Armz.', 'Endereço', 'Status']);
+
+    // 3. Adicionar materiais
+    this.items.forEach(item => {
+      opInfo.push([
+        item.produto || '',
+        item.descricao || '',
+        item.um || '',
+        item.qtOriginal ?? 0,
+        item.qtdeEmp ?? 0,
+        item.saldoEstq ?? 0,
+        item.armz || '',
+        item.endereco || '',
+        item.status === 'true' ? 'Disponível' : 'Indisponível'
+      ]);
+    });
+
+    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(opInfo);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Histórico OP');
+
+    XLSX.writeFile(wb, `Historico_OP_${this.opData.op}.xlsx`);
+    this.notification.success('Excel exportado com sucesso!');
+  }
+
+  // EXPORTAÇÃO PARA PDF (Layout Profissional)
+  exportToPDF(): void {
+    if (!this.opData) return;
+
+    const doc = new jsPDF() as jsPDFWithPlugin;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    // 1. HEADER - Barra superior escura
+    doc.setFillColor(20, 37, 61); // Azul Marinho Profissional
+    doc.rect(0, 0, pageWidth, 40, 'F');
+
+    // Título no Header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(255, 255, 255);
+    doc.text('HISTÓRICO DE PRODUÇÃO', 15, 22);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(200, 200, 200);
+    doc.text(`Gerado em: ${new Date().toLocaleString()}`, 15, 30);
+
+    // Status em destaque no Header
+    doc.setFillColor(255, 255, 255, 0.15);
+    doc.roundedRect(pageWidth - 65, 12, 50, 18, 2, 2, 'F');
+    doc.setFontSize(8);
+    doc.setTextColor(220, 220, 220);
+    doc.text('STATUS ATUAL', pageWidth - 60, 19);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(255, 255, 255);
+    doc.text(this.opData.status || '', pageWidth - 60, 26);
+
+    // 2. INFO CARDS - Dados principais em blocos
+    let currentY = 50;
+
+    // Card Principal (OP e Produto)
+    doc.setDrawColor(226, 232, 240);
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(10, currentY, pageWidth - 20, 25, 2, 2, 'FD');
+    
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('ORDEM DE PRODUÇÃO', 15, currentY + 7);
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(14);
+    doc.text(this.opData.op || '', 15, currentY + 16);
+
+    doc.setFontSize(9);
+    doc.setTextColor(100, 116, 139);
+    doc.text('PRODUTO / DESCRIÇÃO', 80, currentY + 7);
+    doc.setTextColor(30, 41, 59);
+    doc.setFontSize(11);
+    const productText = `${this.opData.produto || ''} - ${this.opData.descProduto || ''}`;
+    doc.text(doc.splitTextToSize(productText, pageWidth - 100), 80, currentY + 14);
+
+    currentY += 32;
+
+    // Grid de Detalhes (Datas e Quantidades)
+    const cardsPerRow = 3;
+    const cardWidth = (pageWidth - 30) / cardsPerRow;
+    const details = [
+      { label: 'EMISSÃO', value: this.formatProtheusDate(this.opData.dtEmissao || '') },
+      { label: 'PREV. INÍCIO', value: this.formatProtheusDate(this.opData.previsaoIni || '') },
+      { label: 'PREV. ENTREGA', value: this.formatProtheusDate(this.opData.previsaoEntrega || '') },
+      { label: 'DATA ENTREGA', value: this.formatProtheusDate(this.opData.dtEntrega || '') },
+      { label: 'QTD. SOLICITADA', value: String(this.opData.quantidadeSolicitada ?? 0) },
+      { label: 'QTD. PRODUZIDA', value: String(this.opData.qtdProduzida ?? 0) }
+    ];
+
+    details.forEach((item, i) => {
+      const row = Math.floor(i / cardsPerRow);
+      const col = i % cardsPerRow;
+      const x = 10 + (col * (cardWidth + 5));
+      const y = currentY + (row * 22);
+      
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, y, cardWidth - 5, 18, 1, 1, 'D');
+      doc.setFontSize(7);
+      doc.setTextColor(100, 116, 139);
+      doc.text(item.label, x + 4, y + 6);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text(item.value, x + 4, y + 13);
+    });
+
+    currentY += 50; // Espaço para as duas linhas de cards
+
+    // 3. TABELAS - Estilização Premium
+    
+    // Roteiro
+    doc.setFontSize(12);
+    doc.setTextColor(20, 37, 61);
+    doc.text('ROTEIRO DE OPERAÇÕES', 10, currentY);
+    
+    const roteiroBody = this.roteiro.map(op => [
+      op.operac || '',
+      op.descricao || '',
+      op.recurso || '',
+      op.quantidadeProduzida ?? 0,
+      op.operadorNome || '',
+      op.hrIni || '',
+      op.hrFim || '',
+      op.tempoApont || '',
+      op.status || ''
+    ]);
+
+    autoTable(doc, {
+      startY: currentY + 4,
+      head: [['Op', 'Descrição', 'Recurso', 'Prod', 'Operador', 'Início', 'Fim', 'Tempo', 'Status']],
+      body: roteiroBody,
+      theme: 'grid',
+      headStyles: { 
+        fillColor: [20, 37, 61], 
+        textColor: [255, 255, 255], 
+        fontSize: 8, 
+        fontStyle: 'bold',
+        halign: 'center',
+        valign: 'middle'
+      },
+      styles: { fontSize: 7, cellPadding: 3, textColor: [51, 65, 85], lineColor: [226, 232, 240] },
+      columnStyles: {
+        0: { halign: 'center', fontStyle: 'bold' },
+        3: { halign: 'center' },
+        5: { halign: 'center' },
+        6: { halign: 'center' },
+        7: { halign: 'center' },
+        8: { halign: 'center' }
+      },
+      didParseCell: (data) => {
+        if (data.section === 'body' && data.column.index === 8) {
+          const val = String(data.cell.raw).toLowerCase();
+          if (val.includes('finalizado') || val.includes('total')) {
+            data.cell.styles.textColor = [21, 128, 61]; // Verde
+            data.cell.styles.fontStyle = 'bold';
+          }
+        }
+      }
+    });
+
+    // Materiais
+    let finalY = doc.lastAutoTable?.finalY || currentY + 20;
+    
+    if (finalY > pageHeight - 60) {
+      doc.addPage();
+      finalY = 20;
+    } else {
+      finalY += 15;
+    }
+
+    doc.setFontSize(12);
+    doc.setTextColor(20, 37, 61);
+    doc.text('MATERIAIS EMPENHADOS', 10, finalY);
+
+    const materiaisBody = this.items.map(item => [
+      item.produto || '',
+      item.descricao || '',
+      item.um || '',
+      item.qtdeEmp ?? 0,
+      item.saldoEstq ?? 0,
+      item.armz || '',
+      item.status === 'true' ? 'Sim' : 'Não'
+    ]);
+
+    autoTable(doc, {
+      startY: finalY + 4,
+      head: [['Produto', 'Descrição', 'UM', 'Empenhado', 'Saldo', 'Armz', 'Disp']],
+      body: materiaisBody,
+      theme: 'striped',
+      headStyles: { 
+        fillColor: [71, 85, 105], 
+        textColor: [255, 255, 255], 
+        fontSize: 8,
+        halign: 'center' 
+      },
+      styles: { fontSize: 7, cellPadding: 3, textColor: [51, 65, 85] },
+      columnStyles: {
+        2: { halign: 'center' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'center' },
+        6: { halign: 'center' }
+      }
+    });
+
+    // 4. FOOTER - Rodapé em todas as páginas
+    const totalPages = doc.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      
+      // Linha superior do rodapé
+      doc.setDrawColor(226, 232, 240);
+      doc.line(10, pageHeight - 15, pageWidth - 10, pageHeight - 15);
+      
+      doc.setFontSize(7);
+      doc.setTextColor(148, 163, 184);
+      doc.text('ERP DELTA - Sistema de Controle de Produção', 10, pageHeight - 10);
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth - 10, pageHeight - 10, { align: 'right' });
+    }
+
+    doc.save(`Historico_OP_${this.opData.op}.pdf`);
+    this.notification.success('PDF Profissional exportado com sucesso!');
   }
 }

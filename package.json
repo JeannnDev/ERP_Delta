@@ -27,6 +27,8 @@
     "@po-ui/style": "^21.6.0",
     "@totvs/protheus-lib-core": "^21.0.0",
     "express": "^5.1.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.7",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "xlsx": "^0.18.5"

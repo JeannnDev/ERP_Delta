@@ -14,15 +14,18 @@
       </div>
       <div class="search-buttons">
         @if (!opData) {
-          <po-button p-icon="an an-keyboard" p-label="Teclado" [p-disabled]="isLoading" (p-click)="openKeyboard()">
-          </po-button>
-          <po-button p-icon="an an-magnifying-glass" p-label="Consultar" p-kind="primary" [p-disabled]="isLoading"
-            (p-click)="validateOP()">
-          </po-button>
+        <po-button p-icon="an an-keyboard" p-label="Teclado" [p-disabled]="isLoading" (p-click)="openKeyboard()">
+        </po-button>
+        <po-button p-icon="an an-magnifying-glass" p-label="Consultar" p-kind="primary" [p-disabled]="isLoading"
+          (p-click)="validateOP()">
+        </po-button>
         } @else {
-          <po-button p-icon="an an-arrows-clockwise" p-label="Trocar OP" p-kind="danger" [p-disabled]="isLoading"
-            (p-click)="clearSearch()">
-          </po-button>
+        <po-button p-icon="an an-arrows-clockwise" p-label="Trocar OP" p-kind="danger" [p-disabled]="isLoading"
+          (p-click)="clearSearch()">
+        </po-button>
+        <po-button p-icon="an an-download" p-label="Exportar" p-kind="primary" [p-disabled]="isLoading"
+          (p-click)="exportModal.open()">
+        </po-button>
         }
       </div>
     </div>
@@ -57,6 +60,10 @@
     <div class="info-item">
       <span class="info-label">Previsão Entrega</span>
       <span class="info-value">{{ formatProtheusDate(opData.previsaoEntrega) }}</span>
+    </div>
+    <div class="info-item">
+      <span class="info-label">Data de Entrega</span>
+      <span class="info-value">{{ formatProtheusDate(opData.dtEntrega) }}</span>
     </div>
     <div class="info-item">
       <span class="info-label">Qtd. Solicitada</span>
@@ -103,18 +110,43 @@
 
   <!-- Teclado Numérico Customizado -->
   @if (showKeyboard) {
-    <div class="keyboard-overlay">
-      <div class="keyboard-wrapper">
-        <h3>Consultar OP</h3>
-        <app-numeric-keyboard 
-          [label]="'Informe o número da OP'" 
-          [value]="keyboardValue" 
-          [maxLength]="11"
-          (confirm)="onKeyboardConfirm($event)" 
-          (keyboardClose)="showKeyboard = false">
-        </app-numeric-keyboard>
+  <div class="keyboard-overlay">
+    <div class="keyboard-wrapper">
+      <h3>Consultar OP</h3>
+      <app-numeric-keyboard [label]="'Informe o número da OP'" [value]="keyboardValue" [maxLength]="11"
+        (confirm)="onKeyboardConfirm($event)" (keyboardClose)="showKeyboard = false">
+      </app-numeric-keyboard>
+    </div>
+  </div>
+  }
+
+  <!-- Modal de Exportação -->
+  <po-modal #exportModal p-title="Exportar Histórico" [p-primary-action]="exportCloseAction">
+    <div class="export-modal-content">
+      <p class="export-modal-desc">Selecione o formato desejado para exportar os dados desta OP:</p>
+
+      <div class="export-options">
+        <div class="export-option" role="button" tabindex="0" (click)="exportToExcel(); exportModal.close()"
+          (keydown.enter)="exportToExcel(); exportModal.close()">
+          <div class="export-icon excel">
+            <span class="an an-file-xls"></span>
+          </div>
+          <div class="export-details">
+            <strong>Microsoft Excel (.xlsx)</strong>
+          </div>
+        </div>
+
+        <div class="export-option" role="button" tabindex="0" (click)="exportToPDF(); exportModal.close()"
+          (keydown.enter)="exportToPDF(); exportModal.close()">
+          <div class="export-icon pdf">
+            <span class="an an-file-pdf"></span>
+          </div>
+          <div class="export-details">
+            <strong>Documento PDF (.pdf)</strong>
+          </div>
+        </div>
       </div>
     </div>
-  }
+  </po-modal>
 
 </po-page-default>
