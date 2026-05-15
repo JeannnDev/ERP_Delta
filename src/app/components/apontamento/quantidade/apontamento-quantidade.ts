@@ -126,6 +126,12 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     return this.apontamentoService.data().apiData?.status === 'Enc. Total';
   }
 
+  get canEditQuantity(): boolean {
+    // Só permite editar se a operação NÃO estiver encerrada no Protheus 
+    // E se o cronômetro estiver em execução (RUNNING)
+    return !this.isOpEncerrada() && this.apontamentoService.currentTempoStatus() === 'RUNNING';
+  }
+
   async ngOnInit() {
     const data = this.apontamentoService.data();
     if (!data.opNumber || !data.operatorCode) {
@@ -138,6 +144,12 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     console.log('[QuantidadeComponent] ngOnInit disparado.');
     
     this.tempNF = data.apiData?.nf || '';
+    
+    // Sincroniza o histórico de tempo (SZT010) ao entrar na tela
+    this.apontamentoService.loadCtrlTempoHistory().then(() => {
+      console.log('[QuantidadeComponent] Histórico sincronizado.');
+    });
+
     this.loadResources();
   }
 

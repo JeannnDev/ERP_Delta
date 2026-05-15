@@ -98,7 +98,7 @@
               (click)="selectOperation(op, i)"
               (keyup.enter)="selectOperation(op, i)"
             >
-              <span class="op-card__badge">{{ i + 1 }}/{{ operacoes.length }}</span>
+              <span class="op-card__badge">{{ op.quantidadeProduzida }}/{{ op.quantidadeSolicitada }}</span>
               <div class="op-card__icon" [class.op-card__icon--done]="op.encerrada">
                 @if (op.encerrada) {
                   <po-icon p-icon="an an-check-circle"></po-icon>

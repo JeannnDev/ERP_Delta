@@ -82,29 +82,41 @@ export class ApontamentoRecursoComponent implements OnInit {
   }
 
   isOperationDisabled(op: Operacao, index: number): boolean {
-    if (op.encerrada) return false;
+    // Se já está encerrada, está bloqueada para novos apontamentos
+    if (op.encerrada) return true;
+    
+    // Bloqueio por falta de saldo
     if (!this.hasStockBalance()) return true;
+    
+    // Bloqueio por sequência (estágios): só libera se a anterior estiver encerrada
     for (let i = 0; i < index; i++) {
       if (!this.operacoes[i].encerrada) return true;
     }
+    
     return false;
   }
 
   selectOperation(op: Operacao, index: number): void {
-    if (this.isOperationDisabled(op, index)) {
-      this.notification.warning('Esta operação está bloqueada por sequência ou falta de saldo.');
-      return;
-    }
-    if (this.selectedOperation !== op.operac) {
-      this.apontamentoService.resetTimer();
-    }
-    this.selectedOperation = op.operac;
-    this.useDefaultResource = true;
-    this.selectedRecurso = '';
+    // Se a operação já está encerrada, apenas abre os detalhes para visualização
     if (op.encerrada) {
       this.selectedOpDetails = op;
       this.opDetailsSheet.open();
+      return;
     }
+
+    // Se estiver bloqueada por outros motivos (sequência ou saldo)
+    if (this.isOperationDisabled(op, index)) {
+      this.notification.warning('Esta operação está bloqueada por sequência (estágio anterior pendente) ou falta de saldo.');
+      return;
+    }
+
+    if (this.selectedOperation !== op.operac) {
+      this.apontamentoService.resetTimer();
+    }
+    
+    this.selectedOperation = op.operac;
+    this.useDefaultResource = true;
+    this.selectedRecurso = '';
   }
 
   getDefaultResource(): string {
