@@ -187,4 +187,5 @@ export interface CtrlTempoPayload {
   ZT_CODPER: string;
   ZT_NOME: string;
   ZT_STATUS: string;
+  ZT_TEMPO_EFETIVO?: number;
 }

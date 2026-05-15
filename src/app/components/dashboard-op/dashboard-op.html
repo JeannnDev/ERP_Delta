@@ -82,6 +82,11 @@
 
   <!-- ── OP CARDS GRID ── -->
   <div class="op-grid">
+    @if (isLoading()) {
+      <div class="loading-overlay">
+        <po-loading-overlay p-text="Carregando Dashboard..."></po-loading-overlay>
+      </div>
+    }
 
     @for (op of filteredOps; track op.op) {
     <div class="op-card-container"
@@ -97,13 +102,14 @@
           <h2 class="op-card__op-number">{{ op.op }}</h2>
         </div>
         <div class="op-card__badges">
-          <po-tag [p-value]="op.status" [p-color]="getStatusTagColor(op.status)"></po-tag>
+          <po-tag [p-value]="(op.status === 'Encerrada' && isAtrasada(op)) ? 'Encerrada (Atrasada)' : op.status" 
+                  [p-color]="getStatusTagColor(op.status)"></po-tag>
         </div>
       </div>
       <!-- Alert Badges Row -->
       @if (isAtrasada(op) || op.pausado) {
         <div class="op-card__alert-row">
-          @if (isAtrasada(op)) {
+          @if (isAtrasada(op) && op.status !== 'Encerrada') {
             <span class="badge-late"><po-icon p-icon="an an-warning"></po-icon> ATRASADA</span>
           }
           @if (op.pausado) {
@@ -121,8 +127,14 @@
           <po-icon [p-icon]="op.pausado ? 'an an-pause-circle' : (op.status === 'Encerrada' ? 'an an-check-circle' : 'an an-clock')"></po-icon>
         </div>
         <div class="op-card__timer-content">
-          <p class="op-card__timer-label">TEMPO DECORRIDO</p>
-          <p class="op-card__timer-value">{{ op.tempoDecorrido }}</p>
+          <p class="op-card__timer-label">TEMPO EFETIVO DE PRODUÇÃO</p>
+          <p class="op-card__timer-value">{{ op.tempoEfetivo }}</p>
+          
+          <div class="op-card__pause-summary">
+            <span class="pause-label">TOTAL PAUSADO:</span>
+            <span class="pause-value">{{ op.tempoPausaTotal }}</span>
+          </div>
+
           @if (op.pausado && op.motivoPausa) {
             <p class="op-card__pause-reason">Motivo: {{ op.motivoPausa }}</p>
           }
@@ -153,7 +165,7 @@
             <span class="info-row__value">{{ op.operador }}</span>
           </div>
           <div class="info-row">
-            <span class="info-row__label">ENTREGA</span>
+            <span class="info-row__label">{{ op.status === 'Encerrada' ? 'TÉRMINO' : 'ENTREGA' }}</span>
             <span class="info-row__value" [class.text-danger]="isAtrasada(op)">{{ op.previsaoEntrega }}</span>
           </div>
         </div>

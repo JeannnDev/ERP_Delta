@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -11,14 +11,22 @@ export interface DashboardOP {
   operacao: string;
   recurso: string;
   operador: string;
-  status: 'Em Andamento' | 'Encerrada' | 'Aguardando';
+  status: 'Em Andamento' | 'Encerrada' | 'Aguardando' | 'Pausada';
   pausado: boolean;
   motivoPausa?: string;
-  tempoDecorrido: string;
+  tempoEfetivo: string;
+  tempoPausaTotal: string;
+  totalSeconds: number; // Para facilitar o tick do cronômetro
   previsaoEntrega: string;
+  dataPrevista: string; // Sempre guarda a previsão original para cálculo de atraso
   qtdSolicitada: number;
   qtdProduzida: number;
 }
+
+import { ApontamentoApiService } from '../../services/apontamento-api.service';
+import { ApontamentoService } from '../../services/apontamento.service';
+import { firstValueFrom } from 'rxjs';
+import { CtrlTempoData } from '../../models/apontamento.model';
 
 @Component({
   selector: 'app-dashboard-op',
@@ -28,6 +36,8 @@ export interface DashboardOP {
   styleUrl: './dashboard-op.css',
 })
 export class DashboardOpComponent implements OnInit, OnDestroy {
+  private apiService = inject(ApontamentoApiService);
+  private apontamentoService = inject(ApontamentoService);
   private tickInterval?: ReturnType<typeof setInterval>;
 
   // ── State ──
@@ -42,57 +52,8 @@ export class DashboardOpComponent implements OnInit, OnDestroy {
   totalAguardando  = signal(0);
   totalAtrasadas   = signal(0);
 
-  // ── Mock Data ──
-  ops: DashboardOP[] = [
-    {
-      op: '53243801001', produto: 'I1000227',
-      descProduto: 'CHAPA PARALAMAS 3X45X595 4DIAM10',
-      operacao: '01 - CORTE LASER', recurso: '2101 - CORTE LASER',
-      operador: 'JEAN SILVA', status: 'Em Andamento', pausado: false,
-      tempoDecorrido: '00:45:22', previsaoEntrega: '08/05/2026',
-      qtdSolicitada: 10, qtdProduzida: 4,
-    },
-    {
-      op: '53243801002', produto: 'B2000115',
-      descProduto: 'SUPORTE FIXAÇÃO LATERAL M8',
-      operacao: '02 - DOBRAMENTO', recurso: '3002 - DOBRADEIRA CNC',
-      operador: 'MARCOS LIMA', status: 'Em Andamento', pausado: true, motivoPausa: 'Máquina Travada',
-      tempoDecorrido: '01:12:08', previsaoEntrega: '09/05/2026',
-      qtdSolicitada: 25, qtdProduzida: 14,
-    },
-    {
-      op: '53243801003', produto: 'C3100009',
-      descProduto: 'EIXO TRANSMISSÃO 50MM',
-      operacao: '03 - TORNEAMENTO', recurso: '4001 - TORNO CNC',
-      operador: 'ANA FERREIRA', status: 'Em Andamento', pausado: false,
-      tempoDecorrido: '02:05:47', previsaoEntrega: '07/05/2026',
-      qtdSolicitada: 6, qtdProduzida: 6,
-    },
-    {
-      op: '53243801004', produto: 'A1050032',
-      descProduto: 'TAMPA CAIXA REDUTORA',
-      operacao: '01 - CORTE PLASMA', recurso: '2200 - PLASMA CNC',
-      operador: 'ROBERTO SANTOS', status: 'Encerrada', pausado: false,
-      tempoDecorrido: '03:22:15', previsaoEntrega: '06/05/2026',
-      qtdSolicitada: 8, qtdProduzida: 8,
-    },
-    {
-      op: '53243801005', produto: 'D4200007',
-      descProduto: 'FLANGE ROSQUEADA 3/4 BSP',
-      operacao: '04 - FRESAMENTO', recurso: '5001 - CENTRO USINAGEM',
-      operador: '-', status: 'Aguardando', pausado: false,
-      tempoDecorrido: '00:00:00', previsaoEntrega: '10/05/2026',
-      qtdSolicitada: 15, qtdProduzida: 0,
-    },
-    {
-      op: '53243801006', produto: 'E5300021',
-      descProduto: 'BUCHA BRONZE FLANGEADA 30MM',
-      operacao: '02 - TORNEAMENTO', recurso: '4002 - TORNO CONV.',
-      operador: 'CARLOS MENDES', status: 'Encerrada', pausado: false,
-      tempoDecorrido: '01:58:33', previsaoEntrega: '05/05/2026',
-      qtdSolicitada: 20, qtdProduzida: 18,
-    },
-  ];
+  isLoading = signal(false);
+  ops: DashboardOP[] = [];
 
   // ── Computed filter (status + busca + ordenação) ──
   get filteredOps(): DashboardOP[] {
@@ -141,8 +102,126 @@ export class DashboardOpComponent implements OnInit, OnDestroy {
 
   // ── Lifecycle ──
   ngOnInit(): void {
-    this.recalcCounters();
+    this.loadDashboardData();
     this.tickInterval = setInterval(() => this.tickTimers(), 1000);
+    // Refresh dos dados a cada 30 segundos
+    setInterval(() => this.loadDashboardData(), 30000);
+  }
+
+  async loadDashboardData() {
+    this.isLoading.set(true);
+    try {
+      const history = await firstValueFrom(this.apiService.fetchCtrlTempo({}));
+      this.ops = this.processHistory(history as CtrlTempoData[]);
+      this.recalcCounters();
+    } catch (error) {
+      console.error('Erro ao carregar dashboard:', error);
+    } finally {
+      this.isLoading.set(false);
+    }
+  }
+
+  private processHistory(history: CtrlTempoData[]): DashboardOP[] {
+    const grouped = new Map<string, CtrlTempoData[]>();
+
+    history.forEach(event => {
+      const key = `${event.ZT_OP}_${event.ZT_OPER}`;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key)?.push(event);
+    });
+
+    const dashboardData: DashboardOP[] = [];
+
+    grouped.forEach((events) => {
+      // Ordena por data/hora
+      const sorted = [...events].sort((a, b) => (a.ZT_DATA + a.ZT_HORA).localeCompare(b.ZT_DATA + b.ZT_HORA));
+      const firstInicio = sorted.find(e => e.ZT_EVENTO === 'INICIO');
+      const lastEvent = sorted[sorted.length - 1];
+
+      if (!firstInicio) return;
+
+      const startTime = this.parseDateTime(firstInicio.ZT_DATA, firstInicio.ZT_HORA).getTime();
+      const lastTime = this.parseDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime();
+      
+      const totalLeadTimeSeconds = lastEvent.ZT_EVENTO === 'FIM'
+        ? Math.floor((lastTime - startTime) / 1000)
+        : Math.floor((Date.now() - startTime) / 1000);
+
+      // Cálculo do Tempo de Pausa Total
+      let pauseSeconds = 0;
+      for (let i = 0; i < sorted.length - 1; i++) {
+        const current = sorted[i];
+        const next = sorted[i + 1];
+        
+        if (current.ZT_EVENTO === 'PAUSA' && next.ZT_EVENTO === 'INICIO') {
+          const pauseStart = this.parseDateTime(current.ZT_DATA, current.ZT_HORA).getTime();
+          const pauseEnd = this.parseDateTime(next.ZT_DATA, next.ZT_HORA).getTime();
+          pauseSeconds += Math.floor((pauseEnd - pauseStart) / 1000);
+        }
+      }
+      
+      // Se o último evento for PAUSA, soma o tempo até agora no tempo de pausa
+      if (lastEvent.ZT_EVENTO === 'PAUSA') {
+        const pauseStart = this.parseDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime();
+        pauseSeconds += Math.floor((Date.now() - pauseStart) / 1000);
+      }
+
+      const netSeconds = totalLeadTimeSeconds - pauseSeconds;
+
+      dashboardData.push({
+        op: lastEvent.ZT_OP,
+        produto: lastEvent.ZT_COD,
+        descProduto: 'Carregando...', 
+        operacao: lastEvent.ZT_OPER,
+        recurso: lastEvent.ZT_RECURSO,
+        operador: lastEvent.ZT_NOME,
+        status: this.mapEventToStatus(lastEvent.ZT_EVENTO),
+        pausado: lastEvent.ZT_EVENTO === 'PAUSA',
+        motivoPausa: lastEvent.ZT_MOTIVO,
+        tempoEfetivo: this.formatSeconds(netSeconds),
+        tempoPausaTotal: this.formatSeconds(pauseSeconds),
+        totalSeconds: netSeconds, // Agora o cronômetro vivo vai incrementar o tempo efetivo
+        // Exibição na tela: mostra o fim se encerrada, senão a previsão.
+        previsaoEntrega: lastEvent.ZT_EVENTO === 'FIM' 
+          ? this.formatDate(lastEvent.ZT_DATA) 
+          : this.formatDate(lastEvent.ZT_PRVFIM),
+        // Referência fixa para cálculo de atraso (sempre a previsão original)
+        dataPrevista: this.formatDate(lastEvent.ZT_PRVFIM),
+        qtdSolicitada: 0,
+        qtdProduzida: 0
+      });
+    });
+
+    return dashboardData;
+  }
+
+  private mapEventToStatus(evento: string): 'Em Andamento' | 'Encerrada' | 'Aguardando' | 'Pausada' {
+    switch (evento) {
+      case 'INICIO': return 'Em Andamento';
+      case 'PAUSA':  return 'Pausada';
+      case 'FIM':    return 'Encerrada';
+      default:       return 'Aguardando';
+    }
+  }
+
+  private parseDateTime(d: string, t: string): Date {
+    const year = parseInt(d.substring(0, 4));
+    const month = parseInt(d.substring(4, 6)) - 1;
+    const day = parseInt(d.substring(6, 8));
+    const [h, m] = t.split(':').map(Number);
+    return new Date(year, month, day, h, m || 0);
+  }
+
+  private formatSeconds(seconds: number): string {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
+
+  private formatDate(date: string): string {
+    if (!date || date.length < 8) return '-';
+    return `${date.substring(6,8)}/${date.substring(4,6)}/${date.substring(0,4)}`;
   }
 
   ngOnDestroy(): void {
@@ -187,9 +266,22 @@ export class DashboardOpComponent implements OnInit, OnDestroy {
   }
 
   isAtrasada(op: DashboardOP): boolean {
-    if (op.status === 'Encerrada') return false;
-    const [d, m, y] = op.previsaoEntrega.split('/').map(Number);
-    return new Date(y, m - 1, d) < new Date();
+    if (!op.dataPrevista || op.dataPrevista === '-') return false;
+    
+    const [pd, pm, py] = op.dataPrevista.split('/').map(Number);
+    const plannedDate = new Date(py, pm - 1, pd);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (op.status === 'Encerrada') {
+       // Para encerradas, compara se o dia que terminou foi depois do planejado
+       const [fd, fm, fy] = op.previsaoEntrega.split('/').map(Number);
+       const finishDate = new Date(fy, fm - 1, fd);
+       return finishDate > plannedDate;
+    }
+    
+    // Para as demais, compara se hoje já passou do prazo
+    return plannedDate < today;
   }
 
   private recalcCounters(): void {
@@ -202,16 +294,25 @@ export class DashboardOpComponent implements OnInit, OnDestroy {
 
   private tickTimers(): void {
     this.ops = this.ops.map(op => {
-      if (op.status !== 'Em Andamento' || op.pausado) return op;
-      const [h, m, s] = op.tempoDecorrido.split(':').map(Number);
-      let total = h * 3600 + m * 60 + s + 1;
-      const nh = Math.floor(total / 3600); total %= 3600;
-      const nm = Math.floor(total / 60);
-      const ns = total % 60;
-      return {
-        ...op,
-        tempoDecorrido: `${String(nh).padStart(2,'0')}:${String(nm).padStart(2,'0')}:${String(ns).padStart(2,'0')}`,
-      };
+      // Se estiver produzindo, incrementa o tempo efetivo
+      if (op.status === 'Em Andamento') {
+        const total = op.totalSeconds + 1;
+        return {
+          ...op,
+          totalSeconds: total,
+          tempoEfetivo: this.formatSeconds(total),
+        };
+      }
+      // Se estiver pausado, incrementa o tempo total de pausa
+      if (op.status === 'Pausada') {
+        const [h, m, s] = op.tempoPausaTotal.split(':').map(Number);
+        const totalP = h * 3600 + m * 60 + s + 1;
+        return {
+          ...op,
+          tempoPausaTotal: this.formatSeconds(totalP),
+        };
+      }
+      return op;
     });
   }
 }

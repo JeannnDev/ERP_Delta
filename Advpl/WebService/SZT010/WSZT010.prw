@@ -126,7 +126,23 @@ WSMETHOD POST WSSERVICE WsCtrlTempo
     SZT->ZT_MOTIVO   := PadR(AllTrim(oJson["ZT_MOTIVO"]),  TamSX3("ZT_MOTIVO")[1])
     SZT->ZT_CODPER   := PadR(AllTrim(oJson["ZT_CODPER"]),  TamSX3("ZT_CODPER")[1])
     SZT->ZT_NOME     := PadR(AllTrim(oJson["ZT_NOME"]),    TamSX3("ZT_NOME")[1])
-    SZT->ZT_STATUS   := PadR(AllTrim(oJson["ZT_STATUS"]),  TamSX3("ZT_STATUS")[1])
+    
+    // Status conforme regra: I=Iniciado, P=Pendente (Pausa), F=Finalizado
+    If AllTrim(oJson["ZT_EVENTO"]) == "INICIO"
+        SZT->ZT_STATUS := "I"
+    ElseIf AllTrim(oJson["ZT_EVENTO"]) == "PAUSA"
+        SZT->ZT_STATUS := "P"
+    ElseIf AllTrim(oJson["ZT_EVENTO"]) == "FIM"
+        SZT->ZT_STATUS := "F"
+    Else
+        SZT->ZT_STATUS := PadR(AllTrim(oJson["ZT_STATUS"]), TamSX3("ZT_STATUS")[1])
+    EndIf
+    
+    // Grava o tempo efetivo se for enviado (convertendo segundos para minutos se necessario)
+    If oJson:HasProperty("ZT_TEMPO_EFETIVO")
+        SZT->ZT_PROD := oJson["ZT_TEMPO_EFETIVO"] / 60
+    EndIf
+
     SZT->(MsUnlock())
 
     oRet["status"] := "sucesso"

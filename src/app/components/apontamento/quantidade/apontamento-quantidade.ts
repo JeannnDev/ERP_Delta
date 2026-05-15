@@ -259,9 +259,13 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     if (this.isProcessingEvent) return;
     this.isProcessingEvent = true;
     try {
-      const success = await this.apontamentoService.registerCtrlTempoEvent('FIM');
+      // Calcula o tempo efetivo (Líquido) antes de fechar
+      const history = this.apontamentoService.ctrlTempoHistory();
+      const netTimeSeconds = this.apontamentoService.calculateNetProductionTime(history);
+      
+      const success = await this.apontamentoService.registerCtrlTempoEvent('FIM', '', netTimeSeconds);
       if (success) {
-        this.notification.success('Tempo finalizado. Agora você pode realizar o apontamento de produção.');
+        this.notification.success('Tempo finalizado com sucesso!');
         // Para o cronômetro local para visualização
         this.apontamentoService.stopTimer(); 
       }

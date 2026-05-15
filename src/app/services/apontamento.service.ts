@@ -177,7 +177,7 @@ export class ApontamentoService {
     }
   }
 
-  async registerCtrlTempoEvent(evento: 'INICIO' | 'PAUSA' | 'FIM', motivo = ''): Promise<boolean> {
+  async registerCtrlTempoEvent(evento: 'INICIO' | 'PAUSA' | 'FIM', motivo = '', tempoEfetivo = 0): Promise<boolean> {
     const data = this._data();
     const payload: CtrlTempoPayload = {
       ZT_OP: data.opNumber,
@@ -189,7 +189,8 @@ export class ApontamentoService {
       ZT_MOTIVO: motivo,
       ZT_CODPER: data.operatorCode,
       ZT_NOME: data.operatorName || '',
-      ZT_STATUS: 'A'
+      ZT_STATUS: evento === 'INICIO' ? 'I' : (evento === 'PAUSA' ? 'P' : 'F'),
+      ZT_TEMPO_EFETIVO: tempoEfetivo
     };
 
     try {
@@ -226,62 +227,91 @@ export class ApontamentoService {
     const firstInicio = sorted.find(e => e.ZT_EVENTO === 'INICIO');
     if (!firstInicio) return;
 
-    const firstStartTime = this.parseSztDateTime(firstInicio.ZT_DATA, firstInicio.ZT_HORA).getTime();
+    // NOVO: Cálculo do tempo líquido (Tempo Efetivo)
+    const netSeconds = this.calculateNetProductionTime(sorted);
     const lastEvent = sorted[sorted.length - 1];
-    const lastEventTime = this.parseSztDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime();
-    let totalSeconds = 0;
-
-    // Se estiver finalizado, o tempo total é FIM - primeiro INICIO
-    // Se estiver pausado ou rodando, o tempo acumulado até agora é NOW - primeiro INICIO
-    if (lastEvent.ZT_EVENTO === 'FIM') {
-      totalSeconds = Math.max(0, Math.floor((lastEventTime - firstStartTime) / 1000));
-    } else {
-      const now = Date.now();
-      totalSeconds = Math.max(0, Math.floor((now - firstStartTime) / 1000));
-    }
-    
-    // Guardamos o primeiro início para o cronômetro continuar contando corretamente
-    const lastStartTime = firstStartTime;
     
     // Usamos setTimeout para evitar o erro NG0100: ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
-      if (lastEvent.ZT_EVENTO === 'INICIO' && lastStartTime) {
+      if (lastEvent.ZT_EVENTO === 'INICIO') {
         // Está rodando. 
-        // 1. totalSeconds tem o tempo acumulado de segmentos INICIO->PAUSA anteriores.
-        // 2. O segmento atual começou em lastStartTime.
         const now = Date.now();
-        const currentSegmentSeconds = Math.max(0, Math.floor((now - lastStartTime) / 1000));
-        const accumulatedTotal = totalSeconds + currentSegmentSeconds;
-
-        this._elapsedTime.set(accumulatedTotal);
-        // Ajustamos o _startTime para que a diferença (now - _startTime) dê o tempo total
-        this._startTime.set(now - (accumulatedTotal * 1000));
+        this._elapsedTime.set(netSeconds);
+        // Ajustamos o _startTime para que a diferença (now - _startTime) dê o tempo líquido atual
+        this._startTime.set(now - (netSeconds * 1000));
         
         this._isStarted.set(true);
         this._isPaused.set(false);
         this._isFinished.set(false);
         this.startTimerInterval();
         
-        console.log(`[TimerSync] Operação em execução. Tempo acumulado: ${accumulatedTotal}s`);
+        console.log(`[TimerSync] Operação em execução. Tempo Efetivo: ${netSeconds}s`);
       } 
       else if (lastEvent.ZT_EVENTO === 'PAUSA') {
-        this._elapsedTime.set(totalSeconds);
-        // Mesmo pausado para controle, o cronômetro de produção (Lead Time) continua rodando
+        this._elapsedTime.set(netSeconds);
+        // Se pausado, o cronômetro para no tempo líquido acumulado
         this._isStarted.set(true);
         this._isPaused.set(true);
         this._isFinished.set(false);
-        this.startTimerInterval(); 
-        console.log(`[TimerSync] Operação pausada para controle. Tempo de produção continua em: ${totalSeconds}s`);
+        // Não chamamos startTimerInterval aqui para o tempo não correr na pausa
+        console.log(`[TimerSync] Operação pausada. Tempo Efetivo travado em: ${netSeconds}s`);
       }
       else if (lastEvent.ZT_EVENTO === 'FIM') {
-        this._elapsedTime.set(totalSeconds);
+        this._elapsedTime.set(netSeconds);
         this._isStarted.set(true);
         this._isFinished.set(true);
         this._isPaused.set(false);
-        this.stopTimerInterval();
-        console.log(`[TimerSync] Operação finalizada. Tempo total: ${totalSeconds}s`);
+        console.log(`[TimerSync] Operação finalizada. Tempo Efetivo final: ${netSeconds}s`);
       }
     }, 0);
+  }
+
+  /**
+   * Calcula o tempo efetivo de produção (Lead Time - Pausas) em segundos
+   */
+  calculateNetProductionTime(history: CtrlTempoData[]): number {
+    if (history.length === 0) return 0;
+
+    const sorted = [...history].sort((a, b) => {
+      const dateTimeA = a.ZT_DATA + a.ZT_HORA;
+      const dateTimeB = b.ZT_DATA + b.ZT_HORA;
+      return dateTimeA.localeCompare(dateTimeB);
+    });
+
+    const firstInicio = sorted.find(e => e.ZT_EVENTO === 'INICIO');
+    if (!firstInicio) return 0;
+
+    const firstStartTime = this.parseSztDateTime(firstInicio.ZT_DATA, firstInicio.ZT_HORA).getTime();
+    const lastEvent = sorted[sorted.length - 1];
+    
+    // O tempo de referência para o fim do cálculo é agora ou o momento do FIM se já encerrou
+    const endTime = lastEvent.ZT_EVENTO === 'FIM' 
+      ? this.parseSztDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime() 
+      : Date.now();
+
+    const totalLeadTimeSeconds = Math.floor((endTime - firstStartTime) / 1000);
+
+    let totalPauseSeconds = 0;
+    for (let i = 0; i < sorted.length - 1; i++) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+      
+      // Se houve uma pausa e depois um retorno (INICIO), calcula o gap
+      if (current.ZT_EVENTO === 'PAUSA' && next.ZT_EVENTO === 'INICIO') {
+        const pStart = this.parseSztDateTime(current.ZT_DATA, current.ZT_HORA).getTime();
+        const pEnd = this.parseSztDateTime(next.ZT_DATA, next.ZT_HORA).getTime();
+        totalPauseSeconds += Math.floor((pEnd - pStart) / 1000);
+      }
+    }
+
+    // Se o estado atual for PAUSA, soma a pausa que está ocorrendo agora
+    if (lastEvent.ZT_EVENTO === 'PAUSA') {
+       const pStart = this.parseSztDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime();
+       totalPauseSeconds += Math.floor((endTime - pStart) / 1000);
+    }
+
+    const netSeconds = totalLeadTimeSeconds - totalPauseSeconds;
+    return Math.max(0, netSeconds);
   }
 
   private parseSztDateTime(ztData: string, ztHora: string): Date {

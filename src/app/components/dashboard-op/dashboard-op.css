@@ -315,6 +315,27 @@
   margin: 4px 0 0;
 }
 
+.op-card__pause-summary {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(0,0,0,0.08);
+  font-size: 12px;
+}
+
+.pause-label {
+  color: #64748b;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.pause-value {
+  color: #1e293b;
+  font-weight: 800;
+}
+
 /* ── DYNAMIC INFO LISTING ── */
 .op-card__dynamic-info {
   display: flex;
