@@ -15,6 +15,7 @@ WSRESTFUL WsCtrlTempo DESCRIPTION "Servico REST para Controle de Producao - SZT0
 END WSRESTFUL
 
 WSMETHOD GET WSSERVICE WsCtrlTempo
+
     Local aArea     := GetArea()
     Local oRet      := JsonObject():New()
     Local aData     := {}
@@ -52,8 +53,12 @@ WSMETHOD GET WSSERVICE WsCtrlTempo
             Loop
         EndIf
 
+
+        SB1->(DbSelectArea("SB1"), DbSetOrder(1), DbSeek(xFilial("SB1") + SZT->ZT_COD))
+        
         oItem := JsonObject():New()
         oItem["ZT_COD"]      := AllTrim(SZT->ZT_COD)
+        oItem["B1_DESCPRD"]  := AllTrim(SB1->B1_DESC)
         oItem["ZT_OP"]       := AllTrim(SZT->ZT_OP)
         oItem["ZT_RECURSO"]  := AllTrim(SZT->ZT_RECURSO)
         oItem["ZT_OPER"]     := AllTrim(SZT->ZT_OPER)
@@ -66,7 +71,7 @@ WSMETHOD GET WSSERVICE WsCtrlTempo
         oItem["ZT_NOME"]     := AllTrim(SZT->ZT_NOME)
         oItem["ZT_STATUS"]   := AllTrim(SZT->ZT_STATUS)
         oItem["ZT_FILIAL"]   := AllTrim(SZT->ZT_FILIAL)
-        
+
         AAdd(aData, oItem)
         SZT->(DbSkip())
     EndDo
@@ -126,7 +131,7 @@ WSMETHOD POST WSSERVICE WsCtrlTempo
     SZT->ZT_MOTIVO   := PadR(AllTrim(oJson["ZT_MOTIVO"]),  TamSX3("ZT_MOTIVO")[1])
     SZT->ZT_CODPER   := PadR(AllTrim(oJson["ZT_CODPER"]),  TamSX3("ZT_CODPER")[1])
     SZT->ZT_NOME     := PadR(AllTrim(oJson["ZT_NOME"]),    TamSX3("ZT_NOME")[1])
-    
+
     // Status conforme regra: I=Iniciado, P=Pendente (Pausa), F=Finalizado
     If AllTrim(oJson["ZT_EVENTO"]) == "INICIO"
         SZT->ZT_STATUS := "I"
@@ -137,7 +142,7 @@ WSMETHOD POST WSSERVICE WsCtrlTempo
     Else
         SZT->ZT_STATUS := PadR(AllTrim(oJson["ZT_STATUS"]), TamSX3("ZT_STATUS")[1])
     EndIf
-    
+
     // Grava o tempo efetivo se for enviado (convertendo segundos para minutos se necessario)
     If oJson:HasProperty("ZT_TEMPO_EFETIVO")
         SZT->ZT_PROD := oJson["ZT_TEMPO_EFETIVO"] / 60

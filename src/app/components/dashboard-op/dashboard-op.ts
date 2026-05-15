@@ -171,7 +171,7 @@ export class DashboardOpComponent implements OnInit, OnDestroy {
       dashboardData.push({
         op: lastEvent.ZT_OP,
         produto: lastEvent.ZT_COD,
-        descProduto: 'Carregando...', 
+        descProduto: lastEvent.B1_DESCPRD || 'Não Encontrado', 
         operacao: lastEvent.ZT_OPER,
         recurso: lastEvent.ZT_RECURSO,
         operador: lastEvent.ZT_NOME,

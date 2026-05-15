@@ -144,8 +144,10 @@
       <!-- Info List -->
       <div class="op-card__dynamic-info">
         <div class="info-row info-row--product">
-          <span class="info-row__label">PRODUTO</span>
-          <span class="info-row__value">{{ op.produto }} — {{ op.descProduto }}</span>
+          <p class="info-row__label">PRODUTO</p>
+          <p class="info-row__value" [title]="op.descProduto">
+            <strong>{{ op.produto }}</strong> — {{ op.descProduto }}
+          </p>
         </div>
 
         <div class="info-row-grid">

@@ -367,6 +367,11 @@
 .info-row--product .info-row__value {
   font-size: 15px;
   color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  max-width: 100%;
 }
 
 .info-row-grid {

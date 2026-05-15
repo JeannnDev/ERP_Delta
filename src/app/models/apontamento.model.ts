@@ -174,6 +174,7 @@ export interface CtrlTempoData {
   ZT_NOME: string;
   ZT_STATUS: string;
   ZT_FILIAL: string;
+  B1_DESCPRD?: string;
 }
 
 export interface CtrlTempoPayload {
