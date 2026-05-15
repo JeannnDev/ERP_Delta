@@ -215,9 +215,6 @@ export class ApontamentoService {
   private syncTimerWithHistory(history: CtrlTempoData[]): void {
     if (history.length === 0) return;
 
-    let totalSeconds = 0;
-    let lastStartTime: number | null = null;
-
     // Ordena o histórico por data e hora por segurança
     const sorted = [...history].sort((a, b) => {
       const dateTimeA = a.ZT_DATA + a.ZT_HORA;
@@ -225,20 +222,26 @@ export class ApontamentoService {
       return dateTimeA.localeCompare(dateTimeB);
     });
 
-    sorted.forEach(event => {
-      const eventTime = this.parseSztDateTime(event.ZT_DATA, event.ZT_HORA).getTime();
+    // Encontra o primeiro INICIO absoluto
+    const firstInicio = sorted.find(e => e.ZT_EVENTO === 'INICIO');
+    if (!firstInicio) return;
 
-      if (event.ZT_EVENTO === 'INICIO') {
-        lastStartTime = eventTime;
-      } else if (event.ZT_EVENTO === 'PAUSA' || event.ZT_EVENTO === 'FIM') {
-        if (lastStartTime) {
-          totalSeconds += Math.floor((eventTime - lastStartTime) / 1000);
-          lastStartTime = null;
-        }
-      }
-    });
-
+    const firstStartTime = this.parseSztDateTime(firstInicio.ZT_DATA, firstInicio.ZT_HORA).getTime();
     const lastEvent = sorted[sorted.length - 1];
+    const lastEventTime = this.parseSztDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime();
+    let totalSeconds = 0;
+
+    // Se estiver finalizado, o tempo total é FIM - primeiro INICIO
+    // Se estiver pausado ou rodando, o tempo acumulado até agora é NOW - primeiro INICIO
+    if (lastEvent.ZT_EVENTO === 'FIM') {
+      totalSeconds = Math.max(0, Math.floor((lastEventTime - firstStartTime) / 1000));
+    } else {
+      const now = Date.now();
+      totalSeconds = Math.max(0, Math.floor((now - firstStartTime) / 1000));
+    }
+    
+    // Guardamos o primeiro início para o cronômetro continuar contando corretamente
+    const lastStartTime = firstStartTime;
     
     // Usamos setTimeout para evitar o erro NG0100: ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
@@ -263,12 +266,12 @@ export class ApontamentoService {
       } 
       else if (lastEvent.ZT_EVENTO === 'PAUSA') {
         this._elapsedTime.set(totalSeconds);
-        this._pausedElapsedTime.set(totalSeconds);
+        // Mesmo pausado para controle, o cronômetro de produção (Lead Time) continua rodando
         this._isStarted.set(true);
         this._isPaused.set(true);
         this._isFinished.set(false);
-        this.stopTimerInterval();
-        console.log(`[TimerSync] Operação pausada. Tempo travado em: ${totalSeconds}s`);
+        this.startTimerInterval(); 
+        console.log(`[TimerSync] Operação pausada para controle. Tempo de produção continua em: ${totalSeconds}s`);
       }
       else if (lastEvent.ZT_EVENTO === 'FIM') {
         this._elapsedTime.set(totalSeconds);

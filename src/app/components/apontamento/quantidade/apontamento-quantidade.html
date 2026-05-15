@@ -118,12 +118,20 @@
         @if (!isOpEncerrada()) {
           <div class="controls-row">
             
-            <!-- Caso inicial ou após finalizar (pronto para novo ciclo se necessário) -->
-            @if (apontamentoService.currentTempoStatus() === 'IDLE' || apontamentoService.currentTempoStatus() === 'FINISHED') {
+            <!-- Caso inicial (apenas IDLE) -->
+            @if (apontamentoService.currentTempoStatus() === 'IDLE') {
               <button class="control-btn btn--play" (click)="handleIniciar()" [disabled]="isProcessingEvent">
                 <po-icon p-icon="an an-play"></po-icon> 
                 {{ isProcessingEvent ? 'PROCESSANDO...' : 'INICIAR' }}
               </button>
+            }
+
+            <!-- Mensagem quando já está finalizado -->
+            @if (apontamentoService.currentTempoStatus() === 'FINISHED') {
+              <div class="status-alert status-alert--success">
+                <po-icon p-icon="an an-check-circle"></po-icon>
+                <span>Tempo de produção finalizado com sucesso.</span>
+              </div>
             }
 
             <!-- Se estiver em execução, permite Pausar ou Finalizar -->

@@ -497,7 +497,16 @@ app-apontamento-step-indicator {
   font-weight: 600;
   justify-content: center;
   border: 1px dashed #cbd5e1;
+  grid-column: span 3; /* Ocupa a largura toda */
 }
+
+.status-alert--success {
+  background: #ecfdf5;
+  color: #065f46;
+  border-color: #10b981;
+}
+
+.status-alert--success po-icon { color: #10b981; }
 
 .status-alert po-icon { font-size: 20px; color: #14253d; }
 
