@@ -92,12 +92,14 @@ WSMETHOD GET WSSERVICE WsCtrlTempo
 Return .T.
 
 WSMETHOD POST WSSERVICE WsCtrlTempo
+
     Local aArea     := GetArea()
     Local oJson     := JsonObject():New()
     Local oRet      := JsonObject():New()
     Local cFilLoc   := ::filial
     Local dData     := dDataBase
     Local cHora     := Time()
+
 
     If Empty(cFilLoc)
         cFilLoc := Self:GetHeader("FILIAL")
@@ -144,9 +146,9 @@ WSMETHOD POST WSSERVICE WsCtrlTempo
     EndIf
 
     // Grava o tempo efetivo se for enviado (convertendo segundos para minutos se necessario)
-    If oJson:HasProperty("ZT_TEMPO_EFETIVO")
-        SZT->ZT_PROD := oJson["ZT_TEMPO_EFETIVO"] / 60
-    EndIf
+    // If oJson:HasProperty("ZT_TEMPO_EFETIVO")
+    //     SZT->ZT_PROD := oJson["ZT_TEMPO_EFETIVO"] / 60
+    // EndIf
 
     SZT->(MsUnlock())
 

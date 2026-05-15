@@ -197,7 +197,7 @@ export class ApontamentoService {
       const filial = data.operatorFilial || data.apiData?.filial || '';
       const result = await firstValueFrom(this.apiService.postCtrlTempo(payload, filial));
       if (result.success) {
-        await this.loadCtrlTempoHistory();
+        this.loadCtrlTempoHistory(); // Carrega em background para não travar a navegação
         return true;
       } else {
         this._genericErrorMessage.set(result.error || 'Erro ao registrar evento de tempo');
@@ -257,10 +257,14 @@ export class ApontamentoService {
         console.log(`[TimerSync] Operação pausada. Tempo Efetivo travado em: ${netSeconds}s`);
       }
       else if (lastEvent.ZT_EVENTO === 'FIM') {
+        const fEnd = this.parseSztDateTime(lastEvent.ZT_DATA, lastEvent.ZT_HORA).getTime();
         this._elapsedTime.set(netSeconds);
+        this._startTime.set(fEnd - (netSeconds * 1000));
+        this._endTime.set(fEnd);
         this._isStarted.set(true);
         this._isFinished.set(true);
         this._isPaused.set(false);
+        this.stopTimerInterval();
         console.log(`[TimerSync] Operação finalizada. Tempo Efetivo final: ${netSeconds}s`);
       }
     }, 0);
@@ -610,12 +614,11 @@ export class ApontamentoService {
 
   // ── Reset ──
   reset(redirectPath: string | null = '/apontamento/login'): void {
-    const current = this._data();
     this._data.set({
       opNumber: '',
-      operatorCode: current.operatorCode,
-      operatorName: current.operatorName,
-      operatorPassword: current.operatorPassword,
+      operatorCode: '',
+      operatorName: '',
+      operatorPassword: '',
       operation: '',
       resource: '',
       quantityProduced: '',

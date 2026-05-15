@@ -2,8 +2,8 @@
 
   <!-- ── KPI CARDS ── -->
   <div class="kpi-row">
-    <div class="kpi-card kpi-card--late" [class.kpi-card--active]="activeFilter() === 'Atrasada'"
-      tabindex="0" (click)="setFilter('Atrasada')" (keyup.enter)="setFilter('Atrasada')">
+    <div class="kpi-card kpi-card--late" [class.kpi-card--active]="activeFilter() === 'Atrasada'" tabindex="0"
+      (click)="setFilter('Atrasada')" (keyup.enter)="setFilter('Atrasada')">
       <div class="kpi-card__left">
         <po-icon p-icon="an an-warning" class="kpi-card__icon"></po-icon>
       </div>
@@ -14,8 +14,8 @@
       @if (totalAtrasadas() > 0) { <div class="kpi-card__pulse-red"></div> }
     </div>
 
-    <div class="kpi-card kpi-card--running" [class.kpi-card--active]="activeFilter() === 'Em Andamento'"
-      tabindex="0" (click)="setFilter('Em Andamento')" (keyup.enter)="setFilter('Em Andamento')">
+    <div class="kpi-card kpi-card--running" [class.kpi-card--active]="activeFilter() === 'Em Andamento'" tabindex="0"
+      (click)="setFilter('Em Andamento')" (keyup.enter)="setFilter('Em Andamento')">
       <div class="kpi-card__left">
         <po-icon p-icon="an an-play-circle" class="kpi-card__icon"></po-icon>
       </div>
@@ -26,8 +26,8 @@
       @if (totalEmAndamento() > 0) { <div class="kpi-card__pulse"></div> }
     </div>
 
-    <div class="kpi-card kpi-card--paused" [class.kpi-card--active]="activeFilter() === 'Pausada'"
-      tabindex="0" (click)="setFilter('Pausada')" (keyup.enter)="setFilter('Pausada')">
+    <div class="kpi-card kpi-card--paused" [class.kpi-card--active]="activeFilter() === 'Pausada'" tabindex="0"
+      (click)="setFilter('Pausada')" (keyup.enter)="setFilter('Pausada')">
       <div class="kpi-card__left"><po-icon p-icon="an an-pause-circle" class="kpi-card__icon"></po-icon></div>
       <div class="kpi-card__right">
         <span class="kpi-card__number">{{ totalPausadas() }}</span>
@@ -35,8 +35,8 @@
       </div>
     </div>
 
-    <div class="kpi-card kpi-card--waiting" [class.kpi-card--active]="activeFilter() === 'Aguardando'"
-      tabindex="0" (click)="setFilter('Aguardando')" (keyup.enter)="setFilter('Aguardando')">
+    <div class="kpi-card kpi-card--waiting" [class.kpi-card--active]="activeFilter() === 'Aguardando'" tabindex="0"
+      (click)="setFilter('Aguardando')" (keyup.enter)="setFilter('Aguardando')">
       <div class="kpi-card__left"><po-icon p-icon="an an-hourglass" class="kpi-card__icon"></po-icon></div>
       <div class="kpi-card__right">
         <span class="kpi-card__number">{{ totalAguardando() }}</span>
@@ -44,8 +44,8 @@
       </div>
     </div>
 
-    <div class="kpi-card kpi-card--done" [class.kpi-card--active]="activeFilter() === 'Encerrada'"
-      tabindex="0" (click)="setFilter('Encerrada')" (keyup.enter)="setFilter('Encerrada')">
+    <div class="kpi-card kpi-card--done" [class.kpi-card--active]="activeFilter() === 'Encerrada'" tabindex="0"
+      (click)="setFilter('Encerrada')" (keyup.enter)="setFilter('Encerrada')">
       <div class="kpi-card__left"><po-icon p-icon="an an-check-circle" class="kpi-card__icon"></po-icon></div>
       <div class="kpi-card__right">
         <span class="kpi-card__number">{{ totalEncerradas() }}</span>
@@ -53,8 +53,8 @@
       </div>
     </div>
 
-    <div class="kpi-card kpi-card--all" [class.kpi-card--active]="activeFilter() === 'Todos'"
-      tabindex="0" (click)="setFilter('Todos')" (keyup.enter)="setFilter('Todos')">
+    <div class="kpi-card kpi-card--all" [class.kpi-card--active]="activeFilter() === 'Todos'" tabindex="0"
+      (click)="setFilter('Todos')" (keyup.enter)="setFilter('Todos')">
       <div class="kpi-card__left"><po-icon p-icon="an an-list-bullets" class="kpi-card__icon"></po-icon></div>
       <div class="kpi-card__right">
         <span class="kpi-card__number">{{ ops.length }}</span>
@@ -66,16 +66,9 @@
   <!-- ── SEARCH + FILTER BAR (PO-UI style) ── -->
   <div class="search-bar-row">
     <div class="search-bar-input">
-      <po-input
-        name="dashboardSearch"
-        p-label="Pesquisar"
-        p-placeholder="OP, Produto, Operador, Recurso..."
-        p-icon="an an-magnifying-glass"
-        p-clean
-        [p-no-autocomplete]="true"
-        [(ngModel)]="searchTermValue"
-        (ngModelChange)="onSearch($event)"
-        (p-clean-model)="clearSearch()">
+      <po-input name="dashboardSearch" p-label="Pesquisar" p-placeholder="OP, Produto, Operador, Recurso..."
+        p-icon="an an-magnifying-glass" p-clean [p-no-autocomplete]="true" [(ngModel)]="searchTermValue"
+        (ngModelChange)="onSearch($event)" (p-clean-model)="clearSearch()">
       </po-input>
     </div>
   </div>
@@ -83,16 +76,14 @@
   <!-- ── OP CARDS GRID ── -->
   <div class="op-grid">
     @if (isLoading()) {
-      <div class="loading-overlay">
-        <po-loading-overlay p-text="Carregando Dashboard..."></po-loading-overlay>
-      </div>
+    <div class="loading-overlay">
+      <po-loading-overlay p-text="Carregando Dashboard"></po-loading-overlay>
+    </div>
     }
 
     @for (op of filteredOps; track op.op) {
-    <div class="op-card-container"
-      [class.op-card--running]="op.status === 'Em Andamento'"
-      [class.op-card--done]="op.status === 'Encerrada'"
-      [class.op-card--paused]="op.pausado"
+    <div class="op-card-container" [class.op-card--running]="op.status === 'Em Andamento'"
+      [class.op-card--done]="op.status === 'Encerrada'" [class.op-card--paused]="op.pausado"
       [class.op-card--waiting]="op.status === 'Aguardando'">
 
       <!-- Header -->
@@ -102,41 +93,41 @@
           <h2 class="op-card__op-number">{{ op.op }}</h2>
         </div>
         <div class="op-card__badges">
-          <po-tag [p-value]="(op.status === 'Encerrada' && isAtrasada(op)) ? 'Encerrada (Atrasada)' : op.status" 
-                  [p-color]="getStatusTagColor(op.status)"></po-tag>
+          <po-tag [p-value]="(op.status === 'Encerrada' && isAtrasada(op)) ? 'Encerrada (Atrasada)' : op.status"
+            [p-color]="getStatusTagColor(op.status)"></po-tag>
         </div>
       </div>
       <!-- Alert Badges Row -->
       @if (isAtrasada(op) || op.pausado) {
-        <div class="op-card__alert-row">
-          @if (isAtrasada(op) && op.status !== 'Encerrada') {
-            <span class="badge-late"><po-icon p-icon="an an-warning"></po-icon> ATRASADA</span>
-          }
-          @if (op.pausado) {
-            <span class="badge-paused"><po-icon p-icon="an an-pause-circle"></po-icon> PAUSADA</span>
-          }
-        </div>
+      <div class="op-card__alert-row">
+        @if (isAtrasada(op) && op.status !== 'Encerrada') {
+        <span class="badge-late"><po-icon p-icon="an an-warning"></po-icon> ATRASADA</span>
+        }
+        @if (op.pausado) {
+        <span class="badge-paused"><po-icon p-icon="an an-pause-circle"></po-icon> PAUSADA</span>
+        }
+      </div>
       }
 
       <!-- Timer Box -->
       <div class="op-card__timer"
-           [class.op-card__timer--live]="op.status === 'Em Andamento' && !op.pausado && !isAtrasada(op)"
-           [class.op-card__timer--late]="isAtrasada(op)"
-           [class.op-card__timer--paused]="op.pausado">
+        [class.op-card__timer--live]="op.status === 'Em Andamento' && !op.pausado && !isAtrasada(op)"
+        [class.op-card__timer--late]="isAtrasada(op)" [class.op-card__timer--paused]="op.pausado">
         <div class="op-card__timer-icon">
-          <po-icon [p-icon]="op.pausado ? 'an an-pause-circle' : (op.status === 'Encerrada' ? 'an an-check-circle' : 'an an-clock')"></po-icon>
+          <po-icon
+            [p-icon]="op.pausado ? 'an an-pause-circle' : (op.status === 'Encerrada' ? 'an an-check-circle' : 'an an-clock')"></po-icon>
         </div>
         <div class="op-card__timer-content">
           <p class="op-card__timer-label">TEMPO EFETIVO DE PRODUÇÃO</p>
           <p class="op-card__timer-value">{{ op.tempoEfetivo }}</p>
-          
+
           <div class="op-card__pause-summary">
             <span class="pause-label">TOTAL PAUSADO:</span>
             <span class="pause-value">{{ op.tempoPausaTotal }}</span>
           </div>
 
           @if (op.pausado && op.motivoPausa) {
-            <p class="op-card__pause-reason">Motivo: {{ op.motivoPausa }}</p>
+          <p class="op-card__pause-reason">Motivo: {{ op.motivoPausa }}</p>
           }
         </div>
       </div>
@@ -167,7 +158,7 @@
             <span class="info-row__value">{{ op.operador }}</span>
           </div>
           <div class="info-row">
-            <span class="info-row__label">{{ op.status === 'Encerrada' ? 'TÉRMINO' : 'ENTREGA' }}</span>
+            <span class="info-row__label">{{ op.status === 'Encerrada' ? 'TÉRMINO' : 'PREVISÃO' }}</span>
             <span class="info-row__value" [class.text-danger]="isAtrasada(op)">{{ op.previsaoEntrega }}</span>
           </div>
         </div>
@@ -177,15 +168,15 @@
       <div class="op-card__progress">
         <div class="progress-container">
           <div class="progress-track">
-            <div class="progress-fill"
-                 [style.width.%]="getProgressPercent(op)"
-                 [style.background]="getProgressColor(getProgressPercent(op))">
+            <div class="progress-fill" [style.width.%]="getProgressPercent(op)"
+              [style.background]="getProgressColor(getProgressPercent(op))">
             </div>
           </div>
           <span class="progress-pct-label">{{ getProgressPercent(op) }}%</span>
         </div>
         <div class="progress-details">
-          <span class="po-font-text-small">Produzido: <strong>{{ op.qtdProduzida }}</strong> / {{ op.qtdSolicitada }}</span>
+          <span class="po-font-text-small">Produzido: <strong>{{ op.qtdProduzida }}</strong> / {{ op.qtdSolicitada
+            }}</span>
         </div>
       </div>
 
@@ -197,11 +188,11 @@
       <po-icon p-icon="an an-clipboard-text"></po-icon>
       <h3>Nenhuma OP encontrada</h3>
       @if (searchTerm()) {
-        <p>Nenhum resultado para "<strong>{{ searchTerm() }}</strong>".</p>
-        <po-button p-label="Limpar pesquisa" p-kind="tertiary" (p-click)="clearSearch()"></po-button>
+      <p>Nenhum resultado para "<strong>{{ searchTerm() }}</strong>".</p>
+      <po-button p-label="Limpar pesquisa" p-kind="tertiary" (p-click)="clearSearch()"></po-button>
       } @else {
-        <p>Não há OPs com o filtro "{{ activeFilter() }}".</p>
-        <po-button p-label="Ver Todas" (p-click)="setFilter('Todos')"></po-button>
+      <p>Não há OPs com o filtro "{{ activeFilter() }}".</p>
+      <po-button p-label="Ver Todas" (p-click)="setFilter('Todos')"></po-button>
       }
     </div>
     }

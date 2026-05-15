@@ -141,7 +141,7 @@
                 {{ isProcessingEvent ? 'PROCESSANDO...' : 'PAUSAR' }}
               </button>
 
-              <button class="control-btn btn--stop" (click)="handleFinalizar()" [disabled]="isProcessingEvent">
+              <button class="control-btn btn--stop" (click)="confirmStopTimer()" [disabled]="isProcessingEvent">
                 <po-icon p-icon="an an-check-circle"></po-icon> 
                 {{ isProcessingEvent ? 'PROCESSANDO...' : 'FINALIZAR' }}
               </button>
@@ -154,7 +154,7 @@
                 {{ isProcessingEvent ? 'PROCESSANDO...' : 'RETOMAR' }}
               </button>
 
-              <button class="control-btn btn--stop" (click)="handleFinalizar()" [disabled]="isProcessingEvent">
+              <button class="control-btn btn--stop" (click)="confirmStopTimer()" [disabled]="isProcessingEvent">
                 <po-icon p-icon="an an-check-circle"></po-icon> 
                 {{ isProcessingEvent ? 'PROCESSANDO...' : 'FINALIZAR' }}
               </button>

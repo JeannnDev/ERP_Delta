@@ -99,8 +99,8 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     label: 'CONFIRMAR ENCERRAMENTO',
     danger: true,
     action: () => {
-      this.apontamentoService.stopTimer();
       this.stopModal.close();
+      this.handleFinalizar();
     },
   };
 
@@ -213,7 +213,8 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       const success = await this.apontamentoService.registerCtrlTempoEvent('INICIO');
       if (success) {
         this.notification.success('Operação iniciada com sucesso!');
-        this.apontamentoService.reset('/apontamento/login');
+        this.apontamentoService.reset();
+        setTimeout(() => this.router.navigate(['/apontamento/login']), 100);
       }
     } finally {
       this.isProcessingEvent = false;
@@ -247,7 +248,8 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       const success = await this.apontamentoService.registerCtrlTempoEvent('PAUSA', finalReason);
       if (success) {
         this.notification.success(`Pausa registrada: ${finalReason}`);
-        this.apontamentoService.reset('/apontamento/login');
+        this.apontamentoService.reset();
+        setTimeout(() => this.router.navigate(['/apontamento/login']), 100);
       }
     } finally {
       this.isProcessingEvent = false;
@@ -268,6 +270,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
         this.notification.success('Tempo finalizado com sucesso!');
         // Para o cronômetro local para visualização
         this.apontamentoService.stopTimer(); 
+        // Não resetamos aqui para permitir o preenchimento das quantidades finais
       }
     } finally {
       this.isProcessingEvent = false;
