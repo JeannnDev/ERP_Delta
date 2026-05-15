@@ -116,32 +116,43 @@
         </div>
 
         @if (!isOpEncerrada()) {
-        <div class="controls-row">
-          @if (!apontamentoService.isStarted()) {
-            <button class="control-btn btn--play" (click)="startTimer()">
-              <po-icon p-icon="an an-play"></po-icon> INICIAR
-            </button>
-          } @else if (apontamentoService.isPaused()) {
-            <button class="control-btn btn--play active" (click)="resumeTimer()">
-              <po-icon p-icon="an an-play"></po-icon> RETOMAR
-            </button>
-          } @else {
-            <button class="control-btn btn--play active" disabled>
-              <po-icon p-icon="an an-play"></po-icon> {{ apontamentoService.isFinished() ? 'TEMPO FINALIZADO' : 'EM OPERAÇÃO' }}
-            </button>
-          }
+          <div class="controls-row">
+            
+            <!-- Caso inicial ou após finalizar (pronto para novo ciclo se necessário) -->
+            @if (apontamentoService.currentTempoStatus() === 'IDLE' || apontamentoService.currentTempoStatus() === 'FINISHED') {
+              <button class="control-btn btn--play" (click)="handleIniciar()" [disabled]="isProcessingEvent">
+                <po-icon p-icon="an an-play"></po-icon> 
+                {{ isProcessingEvent ? 'PROCESSANDO...' : 'INICIAR' }}
+              </button>
+            }
 
-          <button class="control-btn btn--pause" [class.active]="apontamentoService.isPaused()"
-            [disabled]="!apontamentoService.isStarted() || apontamentoService.isPaused() || apontamentoService.isFinished()" (click)="pauseTimer()">
-            <po-icon p-icon="an an-pause"></po-icon> PAUSAR
-          </button>
+            <!-- Se estiver em execução, permite Pausar ou Finalizar -->
+            @if (apontamentoService.currentTempoStatus() === 'RUNNING') {
+              <button class="control-btn btn--pause" (click)="handlePausar()" [disabled]="isProcessingEvent">
+                <po-icon p-icon="an an-pause"></po-icon> 
+                {{ isProcessingEvent ? 'PROCESSANDO...' : 'PAUSAR' }}
+              </button>
 
-          <button class="control-btn btn--stop"
-            [class.btn--disabled]="(apontamentoService.isStarted() && (apontamentoService.elapsedTime() < 60 || quantityProduced <= 0)) || apontamentoService.isFinished()"
-            [disabled]="!apontamentoService.isStarted() || apontamentoService.isFinished() || quantityProduced <= 0" (click)="confirmStopTimer()">
-            <po-icon p-icon="an an-x-circle"></po-icon> {{ apontamentoService.isFinished() ? 'ENCERRADO' : 'ENCERRAR' }} ({{ apontamentoService.formattedElapsedTime() }})
-          </button>
-        </div>
+              <button class="control-btn btn--stop" (click)="handleFinalizar()" [disabled]="isProcessingEvent">
+                <po-icon p-icon="an an-check-circle"></po-icon> 
+                {{ isProcessingEvent ? 'PROCESSANDO...' : 'FINALIZAR' }}
+              </button>
+            }
+
+            <!-- Se estiver pausado, permite Retomar (Iniciar) ou Finalizar -->
+            @if (apontamentoService.currentTempoStatus() === 'PAUSED') {
+              <button class="control-btn btn--play active" (click)="handleIniciar()" [disabled]="isProcessingEvent">
+                <po-icon p-icon="an an-play"></po-icon> 
+                {{ isProcessingEvent ? 'PROCESSANDO...' : 'RETOMAR' }}
+              </button>
+
+              <button class="control-btn btn--stop" (click)="handleFinalizar()" [disabled]="isProcessingEvent">
+                <po-icon p-icon="an an-check-circle"></po-icon> 
+                {{ isProcessingEvent ? 'PROCESSANDO...' : 'FINALIZAR' }}
+              </button>
+            }
+
+          </div>
         }
 
         @if (isOpEncerrada()) {
@@ -237,6 +248,37 @@
     <po-icon p-icon="an an-check" class="modal-icon modal-icon--success"></po-icon>
     <p>Apontamento realizado com sucesso!</p>
   </div>
+</po-modal>
+
+<!-- Modal de Motivos de Pausa -->
+<po-modal #pauseReasonModal p-title="Motivo da Pausa" [p-primary-action]="confirmPauseAction" [p-secondary-action]="cancelPauseAction">
+  <div class="pause-modal-container">
+    <div class="pause-reasons-grid">
+      @for (option of pauseReasonOptions; track option.value) {
+        <div 
+          class="pause-card" 
+          [class.active]="selectedPauseReason === option.value"
+          (click)="selectedPauseReason = option.value"
+          (keydown.enter)="selectedPauseReason = option.value"
+          tabindex="0"
+          role="button"
+          [aria-pressed]="selectedPauseReason === option.value">
+          <po-icon [p-icon]="selectedPauseReason === option.value ? 'an an-check-circle' : 'an an-circle'"></po-icon>
+          <span>{{ option.label }}</span>
+        </div>
+      }
+    </div>
+
+      @if (selectedPauseReason === 'Outros') {
+        <po-input
+          class="po-md-12"
+          name="customReason"
+          [(ngModel)]="customPauseReason"
+          p-label="Descreva o motivo (Obrigatório)"
+          p-placeholder="Digite o motivo da pausa aqui...">
+        </po-input>
+      }
+    </div>
 </po-modal>
 
 @if (isApontando) {

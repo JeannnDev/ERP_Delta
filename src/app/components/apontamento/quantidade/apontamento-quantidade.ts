@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild, inject, ChangeDetectorRef, effect } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -37,10 +37,23 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   apontamentoService = inject(ApontamentoService);
   private apiService = inject(ApontamentoApiService);
   private notification = inject(PoNotificationService);
+  private hideNotification = false;
   private cdr = inject(ChangeDetectorRef);
+
+  constructor() {
+    // Recarrega o histórico sempre que a OP ou Operação mudar
+    effect(async () => {
+      const op = this.apontamentoService.data().opNumber;
+      const oper = this.apontamentoService.data().operation;
+      if (op && oper) {
+        await this.apontamentoService.loadCtrlTempoHistory(op, oper);
+      }
+    });
+  }
 
   @ViewChild('stopModal') stopModal!: PoModalComponent;
   @ViewChild('successModal') successModal!: PoModalComponent;
+  @ViewChild('pauseReasonModal') pauseReasonModal!: PoModalComponent;
   @ViewChild('resourceSheet') resourceSheet!: PoPageSlideComponent;
 
   quantityProduced = 0;
@@ -54,9 +67,33 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   filteredResources: RecursoApontamento[] = [];
   resourceSearch = '';
   isLoadingResources = false;
+  isProcessingEvent = false;
 
   // Estado para NF
   tempNF = '';
+
+  // Controle de Motivos de Pausa
+  selectedPauseReason = 'Banheiro';
+  customPauseReason = '';
+  readonly pauseReasonOptions = [
+    { label: 'Banheiro', value: 'Banheiro' },
+    { label: 'Café', value: 'Café' },
+    { label: 'Almoço', value: 'Almoço' },
+    { label: 'Máquina em manutenção', value: 'Máquina em manutenção' },
+    { label: 'Falta de Recurso', value: 'Falta de Recurso' },
+    { label: 'Outros (Descrever)', value: 'Outros' }
+  ];
+
+  confirmPauseAction: PoModalAction = {
+    label: 'Confirmar Pausa',
+    action: () => this.confirmarPausa(),
+    danger: true
+  };
+
+  cancelPauseAction: PoModalAction = {
+    label: 'Cancelar',
+    action: () => this.pauseReasonModal.close()
+  };
 
   stopPrimaryAction: PoModalAction = {
     label: 'CONFIRMAR ENCERRAMENTO',
@@ -89,7 +126,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     return this.apontamentoService.data().apiData?.status === 'Enc. Total';
   }
 
-  ngOnInit(): void {
+  async ngOnInit() {
     const data = this.apontamentoService.data();
     if (!data.opNumber || !data.operatorCode) {
       this.router.navigate(['/apontamento/login']);
@@ -97,6 +134,8 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     }
     if (data.quantityProduced) this.quantityProduced = parseFloat(data.quantityProduced);
     if (data.loss) this.loss = parseFloat(data.loss);
+    
+    console.log('[QuantidadeComponent] ngOnInit disparado.');
     
     this.tempNF = data.apiData?.nf || '';
     this.loadResources();
@@ -154,7 +193,71 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   resumeTimer(): void {
     this.apontamentoService.resumeTimer();
   }
-  
+
+  async handleIniciar(): Promise<void> {
+    if (this.isProcessingEvent) return;
+    this.isProcessingEvent = true;
+    try {
+      const success = await this.apontamentoService.registerCtrlTempoEvent('INICIO');
+      if (success) {
+        this.notification.success('Operação iniciada com sucesso!');
+        this.apontamentoService.reset('/apontamento/login');
+      }
+    } finally {
+      this.isProcessingEvent = false;
+    }
+  }
+
+  async handlePausar(): Promise<void> {
+    if (this.isProcessingEvent) return;
+    this.selectedPauseReason = 'Banheiro';
+    this.customPauseReason = '';
+    this.pauseReasonModal.open();
+  }
+
+  async confirmarPausa(): Promise<void> {
+    let finalReason = this.selectedPauseReason;
+
+    if (this.selectedPauseReason === 'Outros') {
+      if (!this.customPauseReason.trim()) {
+        this.notification.warning('Por favor, descreva o motivo no campo abaixo.');
+        return;
+      }
+      finalReason = this.customPauseReason;
+    } else if (this.customPauseReason.trim()) {
+      finalReason = `${this.selectedPauseReason} - ${this.customPauseReason}`;
+    }
+
+    this.pauseReasonModal.close();
+    this.isProcessingEvent = true;
+    
+    try {
+      const success = await this.apontamentoService.registerCtrlTempoEvent('PAUSA', finalReason);
+      if (success) {
+        this.notification.success(`Pausa registrada: ${finalReason}`);
+        this.apontamentoService.reset('/apontamento/login');
+      }
+    } finally {
+      this.isProcessingEvent = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async handleFinalizar(): Promise<void> {
+    if (this.isProcessingEvent) return;
+    this.isProcessingEvent = true;
+    try {
+      const success = await this.apontamentoService.registerCtrlTempoEvent('FIM');
+      if (success) {
+        this.notification.success('Tempo finalizado. Agora você pode realizar o apontamento de produção.');
+        // Para o cronômetro local para visualização
+        this.apontamentoService.stopTimer(); 
+      }
+    } finally {
+      this.isProcessingEvent = false;
+    }
+  }
+
   confirmStopTimer(): void {
     if (this.apontamentoService.elapsedTime() < 60) {
       this.notification.warning('Você só pode encerrar o apontamento após 1 minuto de operação.');

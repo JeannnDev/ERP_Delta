@@ -619,3 +619,75 @@ app-apontamento-step-indicator {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+.pause-reasons-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.pause-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 14px 20px;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  box-sizing: border-box; /* Garante que o padding não aumente a largura além de 100% */
+}
+
+.pause-card po-icon {
+  font-size: 24px;
+  color: #94a3b8;
+}
+
+.pause-card span {
+  font-size: 16px;
+  font-weight: 700;
+  color: #334155;
+}
+
+.pause-card:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.pause-card.active {
+  background-color: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.pause-card.active po-icon {
+  color: #3b82f6;
+}
+
+.pause-card.active span {
+  color: #1e40af;
+}
+
+:host ::ng-deep .pause-modal-container .po-input-label {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  margin-top: 10px;
+}
+
+:host ::ng-deep .pause-modal-container .po-input {
+  height: 48px !important;
+  font-size: 16px !important;
+}
+
+:host ::ng-deep .pause-modal-container .po-input-label {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  margin-top: 12px;
+}
+
+:host ::ng-deep .pause-modal-container .po-input {
+  height: 48px !important;
+  font-size: 16px !important;
+}

@@ -295,6 +295,7 @@ export class ApontamentoLoginComponent implements OnInit {
       // 2. Se o operador está OK, atualizamos o nome e buscamos a OP
       this.apontamentoService.updateData({
         operatorName: validation.data?.nome || '',
+        operatorFilial: (validation.data as Record<string, unknown>)['filial'] as string
       });
 
       // Primeira tentativa de buscar a OP

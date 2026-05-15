@@ -9,7 +9,9 @@ import {
   Etiqueta,
   ApontamentoPayload,
   ImpressaoPayload,
-  ApontamentoApiResponse
+  ApontamentoApiResponse,
+  CtrlTempoData,
+  CtrlTempoPayload
 } from '../models/apontamento.model';
 
 @Injectable({
@@ -82,6 +84,7 @@ export class ApontamentoApiService {
             nest: (response['nest'] as number) || 0,
             quantidade: (response['quantidadeSolicitada'] as number) || 0,
             quantidadeSolicitada: (response['quantidadeSolicitada'] as number) || 0,
+            filial: (response['filial'] as string) || (response['C2_FILIAL'] as string) || (response['cFilAnt'] as string) || (response['codFilial'] as string) || '',
             previsaoIni: (response['previsaoIni'] as string) || '',
             dtEntrega: ((response['dtEntrega'] as string) || '').trim(),
             previsaoEntrega: (response['previsaoEntrega'] as string) || '',
@@ -228,7 +231,16 @@ export class ApontamentoApiService {
           ''
         ).toString().trim();
 
-        return { success: true, data: { nome } };
+        const filial = (
+          operadorEncontrado['Filial'] ||
+          operadorEncontrado['FILIAL'] ||
+          operadorEncontrado['filial'] ||
+          operadorEncontrado['CodFilial'] ||
+          ''
+        ).toString().trim();
+
+        console.log(`[API] Operador validado: ${nome} (Filial: ${filial})`);
+        return { success: true, data: { nome, filial } };
       })
     );
   }
@@ -419,6 +431,72 @@ export class ApontamentoApiService {
         catchError(error => {
           console.error('Erro ao atualizar NF:', error);
           return of({ success: false, error: error.message || 'Erro ao atualizar NF' });
+        })
+      );
+  }
+
+  /**
+   * Busca registros de controle de tempo (SZT010)
+   */
+  fetchCtrlTempo(filters: { op?: string, oper?: string, filial?: string } = {}): Observable<CtrlTempoData[]> {
+    let params = '';
+    const queryParts: string[] = [];
+    if (filters.op) queryParts.push(`cOP=${filters.op}`);
+    if (filters.oper) queryParts.push(`cOper=${filters.oper}`);
+    if (filters.filial) queryParts.push(`filial=${filters.filial}`);
+
+    if (queryParts.length > 0) {
+      params = '?' + queryParts.join('&');
+    }
+
+    const fullUrl = `WsCtrlTempo${params}`;
+    console.log(`[ApontamentoApiService] Chamando GET: ${fullUrl}`);
+
+    return this.protheusApi.resource(fullUrl)
+      .get<unknown>()
+      .pipe(
+        map((response: unknown) => {
+          const raw = response as Record<string, unknown>;
+          
+          // Novo padrão: { status: 'sucesso', dados: [...] }
+          if (raw?.['status'] === 'sucesso' && Array.isArray(raw['dados'])) {
+            return raw['dados'] as CtrlTempoData[];
+          }
+
+          // Se for uma resposta de erro ou vazia do ADVPL
+          if (raw?.['status'] === 'vazio') return [];
+
+          // Legado ou Fallback: Se for o array de dados direto
+          if (Array.isArray(response)) return response as CtrlTempoData[];
+
+          return [];
+        }),
+        catchError(error => {
+          console.error('Erro ao buscar controle de tempo:', error);
+          return of([]);
+        })
+      );
+  }
+
+  /**
+   * Inclui novo evento no controle de tempo (SZT010)
+   */
+  postCtrlTempo(payload: CtrlTempoPayload, filial = ''): Observable<ApontamentoApiResponse<CtrlTempoData>> {
+    const query = filial ? `?filial=${filial}` : '';
+
+    return this.protheusApi.resource(`WsCtrlTempo${query}`)
+      .post<unknown>('', payload)
+      .pipe(
+        map((response: unknown) => {
+          const raw = response as Record<string, unknown>;
+          if (raw['status'] === 'erro') {
+            return { success: false, error: (raw['mensagem'] as string) || 'Erro ao registrar evento' };
+          }
+          return { success: true, data: response as CtrlTempoData };
+        }),
+        catchError(error => {
+          console.error('Erro ao registrar evento de tempo:', error);
+          return of({ success: false, error: error.message || 'Erro de conexão' });
         })
       );
   }

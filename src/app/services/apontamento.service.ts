@@ -1,7 +1,7 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApontamentoApiService } from './apontamento-api.service';
-import { ApontamentoData, OPApiData, Operacao } from '../models/apontamento.model';
+import { ApontamentoData, OPApiData, Operacao, CtrlTempoData, CtrlTempoPayload } from '../models/apontamento.model';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable({
@@ -32,6 +32,7 @@ export class ApontamentoService {
   private _isApontando = signal<boolean>(false);
   private _hasApontado = signal<boolean>(false);
   private _operadores = signal<Record<string, unknown>[]>([]);
+  private _ctrlTempoHistory = signal<CtrlTempoData[]>([]);
 
   // Diálogos de estado
   private _showNoOperationsDialog = signal<boolean>(false);
@@ -62,6 +63,7 @@ export class ApontamentoService {
   readonly isApontando = this._isApontando.asReadonly();
   readonly hasApontado = this._hasApontado.asReadonly();
   readonly operadores = this._operadores.asReadonly();
+  readonly ctrlTempoHistory = this._ctrlTempoHistory.asReadonly();
   readonly showNoOperationsDialog = this._showNoOperationsDialog.asReadonly();
   readonly showError404Dialog = this._showError404Dialog.asReadonly();
   readonly error404Message = this._error404Message.asReadonly();
@@ -80,6 +82,23 @@ export class ApontamentoService {
     const mins = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  });
+
+  // Status atual baseado no último evento do histórico (SZT010)
+  readonly currentTempoStatus = computed(() => {
+    const history = this._ctrlTempoHistory();
+    if (history.length === 0) return 'IDLE';
+    
+    // O histórico vem do Protheus, assumimos que o último do array é o mais recente 
+    // (ou podemos ordenar por data/hora se necessário, mas o GET costuma vir por ordem de inclusão)
+    const lastEvent = history[history.length - 1];
+    
+    switch (lastEvent.ZT_EVENTO) {
+      case 'INICIO': return 'RUNNING';
+      case 'PAUSA':  return 'PAUSED';
+      case 'FIM':    return 'FINISHED';
+      default:       return 'IDLE';
+    }
   });
 
   constructor() {
@@ -129,8 +148,152 @@ export class ApontamentoService {
   private loadOperators(): void {
     this.apiService.fetchOperadoresList().subscribe((operadores) => {
       this._operadores.set(operadores);
+      // -- Controle de Tempo (SZT010) --
       console.log(`[ApontamentoService] ${operadores.length} operadores carregados para cache.`);
     });
+  }
+
+  async loadCtrlTempoHistory(op?: string, oper?: string): Promise<void> {
+    const data = this._data();
+    const filters = {
+      op: op || data.opNumber,
+      oper: oper || data.operation,
+      filial: data.operatorFilial || data.apiData?.filial || ''
+    };
+    
+    console.log(`[ApontamentoService] Buscando histórico SZT010 para OP ${filters.op} / Oper ${filters.oper} / Filial ${filters.filial}`);
+    
+    try {
+      const history = await firstValueFrom(this.apiService.fetchCtrlTempo(filters));
+      
+      // setTimeout evita o erro ExpressionChangedAfterItHasBeenCheckedError
+      setTimeout(() => {
+        this._ctrlTempoHistory.set(history);
+        this.syncTimerWithHistory(history);
+      }, 0);
+      
+    } catch (error) {
+      console.error('[ApontamentoService] Erro ao carregar histórico de tempo:', error);
+    }
+  }
+
+  async registerCtrlTempoEvent(evento: 'INICIO' | 'PAUSA' | 'FIM', motivo = ''): Promise<boolean> {
+    const data = this._data();
+    const payload: CtrlTempoPayload = {
+      ZT_OP: data.opNumber,
+      ZT_COD: data.apiData?.produto || '',
+      ZT_RECURSO: data.resource,
+      ZT_OPER: data.operation,
+      ZT_PRVFIM: data.apiData?.previsaoEntrega || data.apiData?.dtEntrega || '',
+      ZT_EVENTO: evento,
+      ZT_MOTIVO: motivo,
+      ZT_CODPER: data.operatorCode,
+      ZT_NOME: data.operatorName || '',
+      ZT_STATUS: 'A'
+    };
+
+    try {
+      const filial = data.operatorFilial || data.apiData?.filial || '';
+      const result = await firstValueFrom(this.apiService.postCtrlTempo(payload, filial));
+      if (result.success) {
+        await this.loadCtrlTempoHistory();
+        return true;
+      } else {
+        this._genericErrorMessage.set(result.error || 'Erro ao registrar evento de tempo');
+        this._showGenericErrorDialog.set(true);
+        return false;
+      }
+    } catch (error) {
+      console.error('[ApontamentoService] Erro ao registrar evento de tempo:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Analisa o histórico e sincroniza o cronômetro local
+   */
+  private syncTimerWithHistory(history: CtrlTempoData[]): void {
+    if (history.length === 0) return;
+
+    let totalSeconds = 0;
+    let lastStartTime: number | null = null;
+
+    // Ordena o histórico por data e hora por segurança
+    const sorted = [...history].sort((a, b) => {
+      const dateTimeA = a.ZT_DATA + a.ZT_HORA;
+      const dateTimeB = b.ZT_DATA + b.ZT_HORA;
+      return dateTimeA.localeCompare(dateTimeB);
+    });
+
+    sorted.forEach(event => {
+      const eventTime = this.parseSztDateTime(event.ZT_DATA, event.ZT_HORA).getTime();
+
+      if (event.ZT_EVENTO === 'INICIO') {
+        lastStartTime = eventTime;
+      } else if (event.ZT_EVENTO === 'PAUSA' || event.ZT_EVENTO === 'FIM') {
+        if (lastStartTime) {
+          totalSeconds += Math.floor((eventTime - lastStartTime) / 1000);
+          lastStartTime = null;
+        }
+      }
+    });
+
+    const lastEvent = sorted[sorted.length - 1];
+    
+    // Usamos setTimeout para evitar o erro NG0100: ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      if (lastEvent.ZT_EVENTO === 'INICIO' && lastStartTime) {
+        // Está rodando. 
+        // 1. totalSeconds tem o tempo acumulado de segmentos INICIO->PAUSA anteriores.
+        // 2. O segmento atual começou em lastStartTime.
+        const now = Date.now();
+        const currentSegmentSeconds = Math.max(0, Math.floor((now - lastStartTime) / 1000));
+        const accumulatedTotal = totalSeconds + currentSegmentSeconds;
+
+        this._elapsedTime.set(accumulatedTotal);
+        // Ajustamos o _startTime para que a diferença (now - _startTime) dê o tempo total
+        this._startTime.set(now - (accumulatedTotal * 1000));
+        
+        this._isStarted.set(true);
+        this._isPaused.set(false);
+        this._isFinished.set(false);
+        this.startTimerInterval();
+        
+        console.log(`[TimerSync] Operação em execução. Tempo acumulado: ${accumulatedTotal}s`);
+      } 
+      else if (lastEvent.ZT_EVENTO === 'PAUSA') {
+        this._elapsedTime.set(totalSeconds);
+        this._pausedElapsedTime.set(totalSeconds);
+        this._isStarted.set(true);
+        this._isPaused.set(true);
+        this._isFinished.set(false);
+        this.stopTimerInterval();
+        console.log(`[TimerSync] Operação pausada. Tempo travado em: ${totalSeconds}s`);
+      }
+      else if (lastEvent.ZT_EVENTO === 'FIM') {
+        this._elapsedTime.set(totalSeconds);
+        this._isStarted.set(true);
+        this._isFinished.set(true);
+        this._isPaused.set(false);
+        this.stopTimerInterval();
+        console.log(`[TimerSync] Operação finalizada. Tempo total: ${totalSeconds}s`);
+      }
+    }, 0);
+  }
+
+  private parseSztDateTime(ztData: string, ztHora: string): Date {
+    // ztData: YYYYMMDD
+    // ztHora: HH:MM ou HH:MM:SS
+    const y = parseInt(ztData.substring(0, 4));
+    const m = parseInt(ztData.substring(4, 6)) - 1;
+    const d = parseInt(ztData.substring(6, 8));
+    
+    const timeParts = ztHora.split(':');
+    const hh = parseInt(timeParts[0] || '0');
+    const mm = parseInt(timeParts[1] || '0');
+    const ss = parseInt(timeParts[2] || '0');
+    
+    return new Date(y, m, d, hh, mm, ss);
   }
 
   // ── Atualização de dados ──
