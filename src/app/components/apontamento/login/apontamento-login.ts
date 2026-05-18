@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import {
   PoModule,
   PoModalComponent,
@@ -24,6 +24,7 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ApontamentoLoginComponent implements OnInit {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   public apontamentoService = inject(ApontamentoService);
   private apiService = inject(ApontamentoApiService);
   private notification = inject(PoNotificationService);
@@ -75,12 +76,29 @@ export class ApontamentoLoginComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Apenas limpa o estado, sem redirecionar ou recarregar a página forçadamente
-    this.apontamentoService.reset(null);
-    this.opNumber = '';
-    this.operatorCode = '';
-    this.operatorPassword = '';
-    this.isOperatorConfirmed = false;
+    const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+    const data = this.apontamentoService.data();
+
+    // Se já está logado e tem returnUrl, pode ir direto
+    if (data.operatorCode && returnUrl) {
+      this.router.navigate([returnUrl]);
+      return;
+    }
+
+    // Se NÃO tem returnUrl, limpa o estado (padrão antigo)
+    if (!returnUrl) {
+      this.apontamentoService.reset(null);
+      this.opNumber = '';
+      this.operatorCode = '';
+      this.operatorPassword = '';
+      this.isOperatorConfirmed = false;
+    } else {
+      // Se TEM returnUrl mas não está logado, preenche o que tiver
+      this.opNumber = data.opNumber || '';
+      this.operatorCode = data.operatorCode || '';
+      this.operatorPassword = data.operatorPassword || '';
+      this.isOperatorConfirmed = !!this.operatorCode;
+    }
   }
 
   onOpEnter(): void {
@@ -337,7 +355,8 @@ export class ApontamentoLoginComponent implements OnInit {
           return;
         }
 
-        const targetPath = !opResult.skipToSummary ? '/apontamento/recurso' : '/apontamento/resumo';
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'];
+        const targetPath = returnUrl || (!opResult.skipToSummary ? '/apontamento/recurso' : '/apontamento/resumo');
         this.router.navigate([targetPath]);
       } else {
         console.error('[Login] Ambas tentativas falharam.');

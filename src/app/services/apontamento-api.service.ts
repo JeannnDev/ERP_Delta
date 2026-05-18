@@ -187,7 +187,7 @@ export class ApontamentoApiService {
   /**
    * Valida operador pelo cache de operadores
    */
-  validateOperador(codigo: string, senha: string, cachedOperadores: Record<string, unknown>[]): Observable<ApontamentoApiResponse<{ nome: string }>> {
+  validateOperador(codigo: string, senha: string, cachedOperadores: Record<string, unknown>[]): Observable<ApontamentoApiResponse<{ nome: string, filial: string }>> {
     const source$ = cachedOperadores && cachedOperadores.length > 0
       ? of(cachedOperadores)
       : this.fetchOperadoresList();
@@ -412,16 +412,30 @@ export class ApontamentoApiService {
   }
 
   /**
-   * Atualiza a NF da OP via QueryString
+   * Atualiza a NF da OP
    */
-  updateNF(op: string, nf: string): Observable<ApontamentoApiResponse> {
-    return this.protheusApi.resource(`WsFuncApontamento?OP=${op}&NF=${nf}`)
-      .post<unknown>('', {})
+  updateNF(payload: { op: string, nf: string, codOper: string, nomeOp: string, qtd: number, filial?: string }): Observable<ApontamentoApiResponse> {
+    console.log('[API] Enviando atualização de NF (Path Params + QueryString):', payload);
+    
+    const filial = payload.filial || '01';
+    const encodedNome = encodeURIComponent(payload.nomeOp);
+    
+    // WSSYNTAX: "/WsFuncApontamento/{OP}/{NF}/{CODOPER}/{NOMEOP}/"
+    // Adicionamos FILIAL e QTD na QueryString para o Protheus ler via ::FILIAL e ::QTD
+    const path = `/${payload.op}/${payload.nf}/${payload.codOper}/${encodedNome}/`;
+    const query = `?FILIAL=${filial}&QTD=${payload.qtd}`;
+    
+    return this.protheusApi.resource('WsFuncApontamento')
+      .post<unknown>(path + query, payload)
       .pipe(
         map((response: unknown) => {
+          console.log('[API] Resposta da atualização de NF:', response);
           const raw = response as Record<string, unknown>;
-          if (raw['status'] === false || raw['success'] === false) {
-            const errorMessage = (raw['response'] as Record<string, unknown>)?.['errorMessage'] as string ||
+          if (raw['status'] === false || raw['success'] === false || raw['status'] === 'erro') {
+            const errorMessage = 
+              raw['mensagem'] as string || 
+              raw['errorMessage'] as string || 
+              (raw['response'] as Record<string, unknown>)?.['errorMessage'] as string ||
               raw['response'] as string ||
               'Erro ao atualizar NF';
             return { success: false, error: errorMessage };

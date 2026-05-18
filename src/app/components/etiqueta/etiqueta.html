@@ -109,19 +109,45 @@
 
   </div>
 
-  <!-- Teclado Numérico Modal/Overlay -->
   @if (showKeyboard) {
     <div class="keyboard-overlay">
       <div class="keyboard-wrapper">
-        <h3>{{ keyboardTarget === 'OP' ? 'Informe a OP' : (keyboardTarget === 'NF' ? 'Informe a NF' : 'Quantidade de
-          Cópias') }}</h3>
+        <h3>{{ keyboardTarget === 'OP' ? 'Informe a OP' : (keyboardTarget === 'NF' ? 'Informe a NF' : (keyboardTarget === 'OPERATOR' ? 'Código do Operador' : 'Quantidade de Cópias')) }}</h3>
         <app-numeric-keyboard [value]="keyboardValue"
-          [maxLength]="keyboardTarget === 'NF' ? 9 : (keyboardTarget === 'OP' ? 11 : 5)"
+          [maxLength]="keyboardTarget === 'NF' ? 9 : (keyboardTarget === 'OP' ? 12 : (keyboardTarget === 'OPERATOR' ? 6 : 5))"
           (valueChange)="onKeyboardValueChange($event)" (confirm)="onKeyboardConfirm()"
           (keyboardClose)="showKeyboard = false">
         </app-numeric-keyboard>
       </div>
     </div>
   }
+
+  @if (showPasswordKeyboard) {
+    <div class="keyboard-overlay">
+      <div class="keyboard-wrapper">
+        <h3>Informe a Senha</h3>
+        <app-password-keyboard [value]="operatorPassword" 
+          (valueChange)="operatorPassword = $event"
+          (confirm)="onPasswordKeyboardConfirm()" 
+          (keyboardClose)="showPasswordKeyboard = false">
+        </app-password-keyboard>
+      </div>
+    </div>
+  }
+
+  <po-modal #loginModal p-title="Identificação do Operador" [p-primary-action]="confirmLoginAction"
+    [p-secondary-action]="cancelLoginAction">
+    <div class="login-modal-content">
+      <div class="po-row">
+        <po-input name="modalOperator" class="po-md-12" p-label="Código do Operador" [(ngModel)]="operatorCode"
+          p-placeholder="Informe seu código" (click)="openKeyboard('OPERATOR')">
+        </po-input>
+        
+        <po-password name="modalPassword" class="po-md-12" p-label="Senha" [(ngModel)]="operatorPassword"
+          p-placeholder="Informe sua senha" (click)="openKeyboard('PASSWORD')">
+        </po-password>
+      </div>
+    </div>
+  </po-modal>
 
 </po-page-default>

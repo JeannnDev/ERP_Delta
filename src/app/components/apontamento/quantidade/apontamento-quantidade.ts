@@ -148,6 +148,11 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     // Sincroniza o histórico de tempo (SZT010) ao entrar na tela
     this.apontamentoService.loadCtrlTempoHistory().then(() => {
       console.log('[QuantidadeComponent] Histórico sincronizado.');
+      
+      const dataUpdated = this.apontamentoService.data();
+      if (dataUpdated.quantityProduced) this.quantityProduced = parseFloat(dataUpdated.quantityProduced);
+      if (dataUpdated.loss) this.loss = parseFloat(dataUpdated.loss);
+      this.cdr.detectChanges();
     });
 
     this.loadResources();
@@ -210,7 +215,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     if (this.isProcessingEvent) return;
     this.isProcessingEvent = true;
     try {
-      const success = await this.apontamentoService.registerCtrlTempoEvent('INICIO');
+      const success = await this.apontamentoService.registerCtrlTempoEvent('INICIO', '', 0, this.quantityProduced, this.loss);
       if (success) {
         this.notification.success('Operação iniciada com sucesso!');
         this.apontamentoService.reset();
@@ -245,7 +250,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
     this.isProcessingEvent = true;
     
     try {
-      const success = await this.apontamentoService.registerCtrlTempoEvent('PAUSA', finalReason);
+      const success = await this.apontamentoService.registerCtrlTempoEvent('PAUSA', finalReason, 0, this.quantityProduced, this.loss);
       if (success) {
         this.notification.success(`Pausa registrada: ${finalReason}`);
         this.apontamentoService.reset();
@@ -265,7 +270,7 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
       const history = this.apontamentoService.ctrlTempoHistory();
       const netTimeSeconds = this.apontamentoService.calculateNetProductionTime(history);
       
-      const success = await this.apontamentoService.registerCtrlTempoEvent('FIM', '', netTimeSeconds);
+      const success = await this.apontamentoService.registerCtrlTempoEvent('FIM', '', netTimeSeconds, this.quantityProduced, this.loss);
       if (success) {
         this.notification.success('Tempo finalizado com sucesso!');
         // Para o cronômetro local para visualização
@@ -347,12 +352,23 @@ export class ApontamentoQuantidadeComponent implements OnInit, OnDestroy {
   }
 
   async updateNF() {
-    const op = this.apontamentoService.data().opNumber;
+    const data = this.apontamentoService.data();
+    const op = data.opNumber;
     if (!op || this.isApontando) return;
 
     this.isApontando = true;
     try {
-      const res = await firstValueFrom(this.apiService.updateNF(op, this.tempNF));
+      const data = this.apontamentoService.data();
+      const payload = {
+        op: op,
+        nf: this.tempNF,
+        codOper: data.operatorCode,
+        nomeOp: data.operatorName || '',
+        qtd: this.quantityProduced || 0,
+        filial: data.operatorFilial || '01'
+      };
+
+      const res = await firstValueFrom(this.apiService.updateNF(payload));
       if (res.success) {
         this.notification.success('NF atualizada com sucesso!');
         // Atualiza os dados locais da OP para refletir a nova NF

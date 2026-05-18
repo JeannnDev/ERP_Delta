@@ -62,6 +62,8 @@ WSMETHOD GET WSSERVICE WsCtrlTempo
         oItem["ZT_OP"]       := AllTrim(SZT->ZT_OP)
         oItem["ZT_RECURSO"]  := AllTrim(SZT->ZT_RECURSO)
         oItem["ZT_OPER"]     := AllTrim(SZT->ZT_OPER)
+        oItem["ZT_QUANT"]    := SZT->ZT_QUANT
+        oItem["ZT_PRQUANT"]  := SZT->ZT_PRQUANT
         oItem["ZT_PRVFIM"]   := DToS(SZT->ZT_PRVFIM)
         oItem["ZT_EVENTO"]   := AllTrim(SZT->ZT_EVENTO)
         oItem["ZT_DATA"]     := DToS(SZT->ZT_DATA)
@@ -122,7 +124,7 @@ WSMETHOD POST WSSERVICE WsCtrlTempo
     DbSelectArea("SZT")
     RecLock("SZT", .T.)
     SZT->ZT_FILIAL   := cFilLoc
-    SZT->ZT_COD      := PadR(AllTrim(oJson["ZT_COD"]),     TamSX3("ZT_COD")[1]) // Codigo do Produto
+    SZT->ZT_COD      := PadR(AllTrim(oJson["ZT_COD"]),     TamSX3("ZT_COD")[1]) 
     SZT->ZT_OP       := PadR(AllTrim(oJson["ZT_OP"]),      TamSX3("ZT_OP")[1])
     SZT->ZT_RECURSO  := PadR(AllTrim(oJson["ZT_RECURSO"]), TamSX3("ZT_RECURSO")[1])
     SZT->ZT_OPER     := PadR(AllTrim(oJson["ZT_OPER"]),    TamSX3("ZT_OPER")[1])
@@ -133,6 +135,13 @@ WSMETHOD POST WSSERVICE WsCtrlTempo
     SZT->ZT_MOTIVO   := PadR(AllTrim(oJson["ZT_MOTIVO"]),  TamSX3("ZT_MOTIVO")[1])
     SZT->ZT_CODPER   := PadR(AllTrim(oJson["ZT_CODPER"]),  TamSX3("ZT_CODPER")[1])
     SZT->ZT_NOME     := PadR(AllTrim(oJson["ZT_NOME"]),    TamSX3("ZT_NOME")[1])
+    
+    If oJson:HasProperty("ZT_QUANT")
+        SZT->ZT_QUANT := oJson["ZT_QUANT"]
+    EndIf
+    If oJson:HasProperty("ZT_PRQUANT")
+        SZT->ZT_PRQUANT := oJson["ZT_PRQUANT"]
+    EndIf
 
     // Status conforme regra: I=Iniciado, P=Pendente (Pausa), F=Finalizado
     If AllTrim(oJson["ZT_EVENTO"]) == "INICIO"

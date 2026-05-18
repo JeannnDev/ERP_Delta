@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApontamentoApiService } from './apontamento-api.service';
 import { ApontamentoData, OPApiData, Operacao, CtrlTempoData, CtrlTempoPayload } from '../models/apontamento.model';
@@ -103,46 +103,6 @@ export class ApontamentoService {
 
   constructor() {
     this.loadOperators();
-    if (typeof window !== 'undefined') {
-      this.loadPersistedState();
-      effect(() => {
-        this.saveState();
-      });
-    }
-  }
-
-  private saveState(): void {
-    if (typeof window === 'undefined') return;
-    const state = {
-      data: this._data(),
-      startTime: this._startTime(),
-      isStarted: this._isStarted(),
-      isPaused: this._isPaused(),
-      pausedElapsedTime: this._pausedElapsedTime(),
-      elapsedTime: this._elapsedTime()
-    };
-    localStorage.setItem('apontamento_state', JSON.stringify(state));
-  }
-
-  private loadPersistedState(): void {
-    const saved = localStorage.getItem('apontamento_state');
-    if (saved) {
-      try {
-        const state = JSON.parse(saved);
-        this._data.set(state.data);
-        this._startTime.set(state.startTime);
-        this._isStarted.set(state.isStarted);
-        this._isPaused.set(state.isPaused);
-        this._pausedElapsedTime.set(state.pausedElapsedTime);
-        this._elapsedTime.set(state.elapsedTime || 0);
-
-        if (state.isStarted && !state.isPaused) {
-          this.startTimerInterval();
-        }
-      } catch (e) {
-        console.error('[ApontamentoService] Erro ao carregar estado persistido', e);
-      }
-    }
   }
 
   private loadOperators(): void {
@@ -167,17 +127,20 @@ export class ApontamentoService {
       const history = await firstValueFrom(this.apiService.fetchCtrlTempo(filters));
       
       // setTimeout evita o erro ExpressionChangedAfterItHasBeenCheckedError
-      setTimeout(() => {
-        this._ctrlTempoHistory.set(history);
-        this.syncTimerWithHistory(history);
-      }, 0);
+      return new Promise<void>((resolve) => {
+        setTimeout(() => {
+          this._ctrlTempoHistory.set(history);
+          this.syncTimerWithHistory(history);
+          resolve();
+        }, 0);
+      });
       
     } catch (error) {
       console.error('[ApontamentoService] Erro ao carregar histórico de tempo:', error);
     }
   }
 
-  async registerCtrlTempoEvent(evento: 'INICIO' | 'PAUSA' | 'FIM', motivo = '', tempoEfetivo = 0): Promise<boolean> {
+  async registerCtrlTempoEvent(evento: 'INICIO' | 'PAUSA' | 'FIM', motivo = '', tempoEfetivo = 0, quant = 0, prquant = 0): Promise<boolean> {
     const data = this._data();
     const payload: CtrlTempoPayload = {
       ZT_OP: data.opNumber,
@@ -190,7 +153,9 @@ export class ApontamentoService {
       ZT_CODPER: data.operatorCode,
       ZT_NOME: data.operatorName || '',
       ZT_STATUS: evento === 'INICIO' ? 'I' : (evento === 'PAUSA' ? 'P' : 'F'),
-      ZT_TEMPO_EFETIVO: tempoEfetivo
+      ZT_TEMPO_EFETIVO: tempoEfetivo,
+      ZT_QUANT: quant,
+      ZT_PRQUANT: prquant
     };
 
     try {
@@ -233,6 +198,14 @@ export class ApontamentoService {
     
     // Usamos setTimeout para evitar o erro NG0100: ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
+      // Sincroniza as quantidades apontadas anteriormente
+      if (lastEvent.ZT_QUANT !== undefined) {
+        this.updateData({ quantityProduced: String(lastEvent.ZT_QUANT) });
+      }
+      if (lastEvent.ZT_PRQUANT !== undefined) {
+        this.updateData({ loss: String(lastEvent.ZT_PRQUANT) });
+      }
+
       if (lastEvent.ZT_EVENTO === 'INICIO') {
         // Está rodando. 
         const now = Date.now();
@@ -383,10 +356,6 @@ export class ApontamentoService {
     const finalElapsed = this._startTime() ? Math.floor((now - this._startTime()!) / 1000) : 0;
     this._elapsedTime.set(finalElapsed);
     this.stopTimerInterval();
-
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('apontamento_state');
-    }
   }
 
   resetTimer(): void {
@@ -398,9 +367,6 @@ export class ApontamentoService {
     this._isFinished.set(false);
     this._isPaused.set(false);
     this._pausedElapsedTime.set(0);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('apontamento_state');
-    }
   }
 
   private startTimerInterval(): void {

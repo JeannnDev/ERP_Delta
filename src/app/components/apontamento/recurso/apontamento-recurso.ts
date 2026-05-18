@@ -38,7 +38,9 @@ export class ApontamentoRecursoComponent implements OnInit {
   selectedOpDetails: Operacao | null = null;
 
   get canProceed(): boolean {
-    return !!(this.selectedOperation && (this.useDefaultResource || this.selectedRecurso));
+    // Pode avançar se tiver uma selecionada OU se houver pelo menos uma disponível para auto-seleção
+    const hasAvailable = this.operacoes.some(op => !op.encerrada);
+    return !!(this.selectedOperation || hasAvailable);
   }
 
   ngOnInit(): void {
@@ -117,6 +119,9 @@ export class ApontamentoRecursoComponent implements OnInit {
     this.selectedOperation = op.operac;
     this.useDefaultResource = true;
     this.selectedRecurso = '';
+
+    // Avança automaticamente ao clicar no card
+    setTimeout(() => this.handleNext(), 100);
   }
 
   getDefaultResource(): string {
@@ -125,12 +130,23 @@ export class ApontamentoRecursoComponent implements OnInit {
   }
 
   handleNext(): void {
-    if (!this.canProceed) return;
+    // Se não selecionou nada manualmente, tenta pegar a primeira disponível
+    if (!this.selectedOperation) {
+      const nextAvailable = this.operacoes.find(op => !op.encerrada);
+      if (nextAvailable) {
+        this.selectedOperation = nextAvailable.operac;
+      }
+    }
+
+    if (!this.canProceed || !this.selectedOperation) {
+      this.notification.warning('Por favor, selecione uma operação para continuar.');
+      return;
+    }
 
     const opIndex = this.operacoes.findIndex((o) => o.operac === this.selectedOperation);
     const op = this.operacoes[opIndex];
     if (op && this.isOperationDisabled(op, opIndex)) {
-      this.notification.error('Operação bloqueada.');
+      this.notification.error('Esta operação está bloqueada por sequência ou falta de saldo.');
       return;
     }
 

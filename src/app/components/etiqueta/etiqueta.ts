@@ -1,4 +1,5 @@
 import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -10,23 +11,29 @@ import {
   PoLoadingModule,
 } from '@po-ui/ng-components';
 import { ApontamentoApiService } from '../../services/apontamento-api.service';
+import { ApontamentoService } from '../../services/apontamento.service';
 import { NumericKeyboardComponent } from '../apontamento/numeric-keyboard/numeric-keyboard.component';
+import { PasswordKeyboardComponent } from '../apontamento/password-keyboard/password-keyboard.component';
 import { OPApiData, ImpressaoPayload, ApontamentoApiResponse } from '../../models/apontamento.model';
 import { firstValueFrom, timeout } from 'rxjs';
 
 @Component({
   selector: 'app-etiqueta',
   standalone: true,
-  imports: [CommonModule, FormsModule, PoModule, PoLoadingModule, NumericKeyboardComponent],
+  imports: [CommonModule, FormsModule, PoModule, PoLoadingModule, NumericKeyboardComponent, PasswordKeyboardComponent],
   templateUrl: './etiqueta.html',
   styleUrls: ['./etiqueta.css'],
 })
 export class EtiquetaComponent implements OnInit {
-  private apiService = inject(ApontamentoApiService);
-  private notification = inject(PoNotificationService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private cdr = inject(ChangeDetectorRef);
+  private notification = inject(PoNotificationService);
+  private apiService = inject(ApontamentoApiService);
+  public apontamentoService = inject(ApontamentoService);
 
   @ViewChild('nfModal', { static: true }) nfModal!: PoModalComponent;
+  @ViewChild('loginModal') loginModal!: PoModalComponent;
 
   // Estado da OP
   opSearch = '';
@@ -45,8 +52,16 @@ export class EtiquetaComponent implements OnInit {
 
   // Teclado Numérico
   showKeyboard = false;
+  showPasswordKeyboard = false;
   keyboardValue = '';
-  keyboardTarget: 'OP' | 'NF' | 'QUANT' = 'OP';
+  keyboardTarget: 'OP' | 'NF' | 'QUANT' | 'OPERATOR' | 'PASSWORD' = 'OP';
+
+  // Login
+  operatorCode = '';
+  operatorPassword = '';
+  isLoggedIn = false;
+  isValidatingLogin = false;
+  pendingAction: (() => void) | null = null;
 
   confirmNFAction: PoModalAction = {
     action: () => this.updateNF(),
@@ -58,7 +73,28 @@ export class EtiquetaComponent implements OnInit {
     label: 'Cancelar',
   };
 
+  confirmLoginAction: PoModalAction = {
+    label: 'Entrar',
+    action: () => this.handleLogin(),
+  };
+
+  cancelLoginAction: PoModalAction = {
+    label: 'Cancelar',
+    action: () => {
+      this.loginModal.close();
+      this.pendingAction = null;
+    }
+  };
+
   ngOnInit(): void {
+    // Não setamos isLoggedIn = true automaticamente para garantir que o modal apareça
+    // se o usuário quiser se identificar novamente ou se for a primeira ação na tela.
+    const data = this.apontamentoService.data();
+    if (data.operatorCode) {
+      this.operatorCode = data.operatorCode;
+      this.operatorPassword = data.operatorPassword || '';
+    }
+
     this.loadPrinters();
     this.loadLayouts();
     this.restoreSettings();
@@ -94,12 +130,19 @@ export class EtiquetaComponent implements OnInit {
     localStorage.setItem('last_layout', this.selectedLayout);
   }
 
-  openKeyboard(target: 'OP' | 'NF' | 'QUANT') {
+  openKeyboard(target: 'OP' | 'NF' | 'QUANT' | 'OPERATOR' | 'PASSWORD') {
     this.keyboardTarget = target;
     if (target === 'OP') this.keyboardValue = this.opSearch;
     if (target === 'NF') this.keyboardValue = this.opData?.nf || '';
     if (target === 'QUANT') this.keyboardValue = this.quantidade.toString();
-    this.showKeyboard = true;
+    if (target === 'OPERATOR') this.keyboardValue = this.operatorCode;
+    
+    if (target === 'PASSWORD') {
+      this.showPasswordKeyboard = true;
+    } else {
+      this.showKeyboard = true;
+    }
+    this.cdr.detectChanges();
   }
 
   onKeyboardConfirm() {
@@ -118,9 +161,16 @@ export class EtiquetaComponent implements OnInit {
         this.updateNF();
       } else if (target === 'QUANT') {
         this.quantidade = parseInt(value) || 1;
+      } else if (target === 'OPERATOR') {
+        this.operatorCode = value;
       }
       this.cdr.detectChanges();
     });
+  }
+
+  onPasswordKeyboardConfirm() {
+    this.showPasswordKeyboard = false;
+    this.cdr.detectChanges();
   }
 
   onKeyboardValueChange(val: string) {
@@ -130,13 +180,22 @@ export class EtiquetaComponent implements OnInit {
   async validateOP() {
     if (!this.opSearch || this.isLoading) return;
 
+    if (!this.isLoggedIn) {
+      this.pendingAction = () => this.validateOP();
+      setTimeout(() => this.loginModal.open());
+      return;
+    }
+
     this.isLoading = true;
     this.cdr.detectChanges();
 
     try {
+      const op = this.opSearch;
+      const operator = this.operatorCode;
+
       // Timeout de 15 segundos para não travar a tela
       const result = await firstValueFrom(
-        this.apiService.fetchOPData(this.opSearch, '000001').pipe(timeout(15000))
+        this.apiService.fetchOPData(op, operator).pipe(timeout(15000))
       ) as ApontamentoApiResponse<OPApiData>;
       
       if (result.success && result.data) {
@@ -169,12 +228,28 @@ export class EtiquetaComponent implements OnInit {
 
   async updateNF() {
     if (!this.opData || this.isLoading) return;
+
+    if (!this.isLoggedIn) {
+      this.pendingAction = () => this.updateNF();
+      setTimeout(() => this.loginModal.open());
+      return;
+    }
     
     this.isLoading = true;
     this.cdr.detectChanges();
 
     try {
-      const result = await firstValueFrom(this.apiService.updateNF(this.opData.op, this.tempNF)) as ApontamentoApiResponse;
+      const data = this.apontamentoService.data();
+      const payload = {
+        op: this.opData.op,
+        nf: this.tempNF,
+        codOper: data.operatorCode,
+        nomeOp: data.operatorName || '',
+        qtd: this.quantidade || 0,
+        filial: data.operatorFilial || '01'
+      };
+
+      const result = await firstValueFrom(this.apiService.updateNF(payload)) as ApontamentoApiResponse;
       
       if (result.success) {
         this.notification.success('Nota Fiscal atualizada com sucesso!');
@@ -196,6 +271,13 @@ export class EtiquetaComponent implements OnInit {
       this.notification.warning('Valide uma OP primeiro.');
       return;
     }
+
+    if (!this.isLoggedIn) {
+      this.pendingAction = () => this.printLabel();
+      setTimeout(() => this.loginModal.open());
+      return;
+    }
+
     if (!this.selectedPrinter || !this.selectedLayout) {
       this.notification.warning('Selecione impressora e layout.');
       return;
@@ -223,6 +305,48 @@ export class EtiquetaComponent implements OnInit {
       this.notification.error('Falha na requisição de impressão.');
     } finally {
       this.isLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  async handleLogin() {
+    if (!this.operatorCode || !this.operatorPassword) {
+      this.notification.warning('Informe código e senha.');
+      return;
+    }
+
+    this.isValidatingLogin = true;
+    this.cdr.detectChanges();
+
+    try {
+      const validation = await firstValueFrom(
+        this.apiService.validateOperador(this.operatorCode, this.operatorPassword, [])
+      );
+
+      if (validation.success) {
+        this.isLoggedIn = true;
+        this.apontamentoService.updateData({
+          operatorCode: this.operatorCode,
+          operatorPassword: this.operatorPassword,
+          operatorName: validation.data?.nome || '',
+          operatorFilial: validation.data?.filial || '01'
+        });
+        this.loginModal.close();
+        this.notification.success(`Olá, ${validation.data?.nome}`);
+        
+        if (this.pendingAction) {
+          const action = this.pendingAction;
+          this.pendingAction = null;
+          action();
+        }
+      } else {
+        this.notification.error(validation.error || 'Falha na autenticação.');
+      }
+    } catch (error) {
+      console.error('Erro no login:', error);
+      this.notification.error('Erro de conexão ao validar login.');
+    } finally {
+      this.isValidatingLogin = false;
       this.cdr.detectChanges();
     }
   }
