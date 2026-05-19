@@ -143,7 +143,19 @@ export class ApontamentoApiService {
               : [],
             roteiro: (response['roteiro'] && typeof response['roteiro'] === 'object')
               ? response['roteiro'] as Record<string, import('../models/apontamento.model').Operacao[]>
-              : undefined
+              : undefined,
+            historico_nf: Array.isArray(response['historico_nf'])
+              ? (response['historico_nf'] as Record<string, unknown>[]).map((nf) => ({
+                  filial: nf['filial'] as string,
+                  op: nf['op'] as string,
+                  seq: nf['seq'] as string,
+                  nf: nf['nf'] as string,
+                  qtd: nf['qtd'] as number,
+                  dtEmiss: nf['dtEmiss'] as string,
+                  codOper: nf['codOper'] as string,
+                  nomeOp: nf['nomeOp'] as string
+                }))
+              : []
           };
 
           return { success: true, data: opData };

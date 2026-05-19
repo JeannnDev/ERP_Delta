@@ -52,6 +52,17 @@ export interface SaldoItem {
   status: boolean;
 }
 
+export interface HistoricoNF {
+  filial: string;
+  op: string;
+  seq: string;
+  nf: string;
+  qtd: number;
+  dtEmiss: string;
+  codOper: string;
+  nomeOp: string;
+}
+
 export interface OPApiData {
   status: string;
   op: string;
@@ -78,6 +89,7 @@ export interface OPApiData {
   operacoes: Operacao[];
   saldo_item: SaldoItem[];
   roteiro?: Record<string, Operacao[]>;
+  historico_nf?: HistoricoNF[];
 }
 
 export interface ApontamentoData {

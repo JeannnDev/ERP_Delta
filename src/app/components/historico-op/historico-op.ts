@@ -9,7 +9,8 @@ import {
   Operacao,
   HistoricoApontamento,
   SaldoItem,
-  ApontamentoApiResponse
+  ApontamentoApiResponse,
+  HistoricoNF
 } from '../../models/apontamento.model';
 import { firstValueFrom, timeout } from 'rxjs';
 import * as XLSX from 'xlsx';
@@ -38,6 +39,11 @@ interface OperacaoDisplay extends Operacao {
   tempoApont: string;
 }
 
+// Tipo local: Historico NF formatado
+interface HistoricoNFDisplay extends HistoricoNF {
+  dtEmissFormatada: string;
+}
+
 @Component({
   selector: 'app-historico-op',
   standalone: true,
@@ -61,6 +67,7 @@ export class HistoricoOPComponent {
   isLoading = false;
   items: SaldoItemDisplay[] = [];
   roteiro: OperacaoDisplay[] = [];
+  historicoNF: HistoricoNFDisplay[] = [];
   opData: OPApiData | null = null;
 
   // Teclado e Modal
@@ -110,6 +117,14 @@ export class HistoricoOPComponent {
         { value: 'Pendente', color: 'color-07', label: 'Pendente' }
       ]
     }
+  ];
+
+  readonly nfColumns: PoTableColumn[] = [
+    { property: 'filial', label: 'Filial', width: '80px' },
+    { property: 'nf', label: 'Nota Fiscal', width: '110px' },
+    { property: 'dtEmissFormatada', label: 'Emissão', width: '100px' },
+    { property: 'codOper', label: 'Cód. Op.', width: '90px' },
+    { property: 'nomeOp', label: 'Operador', width: '180px' }
   ];
 
   // Formata data do Protheus (AAAAMMDD -> DD/MM/AAAA)
@@ -201,6 +216,12 @@ export class HistoricoOPComponent {
           };
         });
 
+        // 3. Historico de NFs
+        this.historicoNF = (data.historico_nf || []).map((nf: HistoricoNF): HistoricoNFDisplay => ({
+          ...nf,
+          dtEmissFormatada: this.formatProtheusDate(nf.dtEmiss || '')
+        }));
+
         // Delay para garantir que o Angular renderize as tabelas no DOM antes de tirar o overlay
         setTimeout(() => {
           this.isLoading = false;
@@ -226,6 +247,7 @@ export class HistoricoOPComponent {
   private resetData(): void {
     this.items = [];
     this.roteiro = [];
+    this.historicoNF = [];
     this.opData = null;
   }
 
@@ -293,6 +315,25 @@ export class HistoricoOPComponent {
         item.status === 'true' ? 'Disponível' : 'Indisponível'
       ]);
     });
+
+    if (this.historicoNF.length > 0) {
+      opInfo.push(['']);
+      opInfo.push(['HISTÓRICO DE NOTAS FISCAIS']);
+      opInfo.push(['Filial', 'OP', 'Seq', 'Nota Fiscal', 'Qtd', 'Emissão', 'Cód. Op.', 'Operador']);
+
+      this.historicoNF.forEach(nf => {
+        opInfo.push([
+          nf.filial || '',
+          nf.op || '',
+          nf.seq || '',
+          nf.nf || '',
+          nf.qtd ?? 0,
+          nf.dtEmissFormatada || '',
+          nf.codOper || '',
+          nf.nomeOp || ''
+        ]);
+      });
+    }
 
     const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(opInfo);
     const wb: XLSX.WorkBook = XLSX.utils.book_new();
@@ -393,12 +434,8 @@ export class HistoricoOPComponent {
 
     currentY += 50; // Espaço para as duas linhas de cards
 
-    // 3. TABELAS - Estilização Premium
-    
-    // Roteiro
-    doc.setFontSize(12);
-    doc.setTextColor(20, 37, 61);
-    doc.text('ROTEIRO DE OPERAÇÕES', 10, currentY);
+    // 3. TABELAS
+    this.drawSectionTitle(doc, 'Roteiro de Operações', 10, currentY);
     
     const roteiroBody = this.roteiro.map(op => [
       op.operac || '',
@@ -455,9 +492,7 @@ export class HistoricoOPComponent {
       finalY += 15;
     }
 
-    doc.setFontSize(12);
-    doc.setTextColor(20, 37, 61);
-    doc.text('MATERIAIS EMPENHADOS', 10, finalY);
+    this.drawSectionTitle(doc, 'Materiais Empenhados', 10, finalY);
 
     const materiaisBody = this.items.map(item => [
       item.produto || '',
@@ -490,7 +525,47 @@ export class HistoricoOPComponent {
       }
     });
 
-    // 4. FOOTER - Rodapé em todas as páginas
+    // 4. Histórico de NFs
+    if (this.historicoNF.length > 0) {
+      finalY = doc.lastAutoTable?.finalY || finalY + 20;
+      
+      if (finalY > pageHeight - 60) {
+        doc.addPage();
+        finalY = 20;
+      } else {
+        finalY += 15;
+      }
+
+      this.drawSectionTitle(doc, 'Histórico de Notas Fiscais', 10, finalY);
+
+      const nfBody = this.historicoNF.map(nf => [
+        nf.filial || '',
+        nf.nf || '',
+        nf.dtEmissFormatada || '',
+        nf.codOper || '',
+        nf.nomeOp || ''
+      ]);
+
+      autoTable(doc, {
+        startY: finalY + 4,
+        head: [['Filial', 'Nota Fiscal', 'Emissão', 'Cód. Op.', 'Operador']],
+        body: nfBody,
+        theme: 'striped',
+        headStyles: { 
+          fillColor: [71, 85, 105], 
+          textColor: [255, 255, 255], 
+          fontSize: 8,
+          halign: 'center' 
+        },
+        styles: { fontSize: 7, cellPadding: 3, textColor: [51, 65, 85] },
+        columnStyles: {
+          2: { halign: 'center' },
+          3: { halign: 'center' }
+        }
+      });
+    }
+
+    // 5. FOOTER - Rodapé em todas as páginas
     const totalPages = doc.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       doc.setPage(i);
@@ -507,5 +582,16 @@ export class HistoricoOPComponent {
 
     doc.save(`Historico_OP_${this.opData.op}.pdf`);
     this.notification.success('PDF Profissional exportado com sucesso!');
+  }
+
+  // Helper: renderiza título de seção compacto
+  private drawSectionTitle(doc: jsPDFWithPlugin, title: string, x: number, y: number): void {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(20, 37, 61);
+    doc.text(title.toUpperCase(), x, y + 1);
+
+    // Reset
+    doc.setFont('helvetica', 'normal');
   }
 }

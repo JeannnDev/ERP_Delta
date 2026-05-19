@@ -102,6 +102,15 @@
     </po-table>
   </div>
 
+  <!-- Histórico de NFs -->
+  @if (historicoNF.length > 0) {
+  <div class="section-card">
+    <h3 class="section-title">Histórico de Notas Fiscais</h3>
+    <po-table [p-columns]="nfColumns" [p-items]="historicoNF" [p-striped]="true" p-container="shadow">
+    </po-table>
+  </div>
+  }
+
   } @else if (!isLoading) {
   <div class="empty-state">
     <po-info p-label="Aguardando" p-value="Digite o número da OP e clique em Consultar."></po-info>
